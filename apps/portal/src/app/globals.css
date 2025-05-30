@@ -1,0 +1,190 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary-green: #004643;
+  --color-primary-orange: #f77d19;
+  --color-primary-dark: #1c1c1c;
+  --color-primary-pastel: #f5f5dc;
+  --color-orange-light: rgba(247, 125, 25, 0.14);
+
+  @keyframes shake {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+    10%,
+    30%,
+    50%,
+    70%,
+    90% {
+      transform: translate3d(-10px, 0, 0);
+    }
+    20%,
+    40%,
+    60%,
+    80% {
+      transform: translate3d(10px, 0, 0);
+    }
+  }
+
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 100%, 0);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes fade-in-down {
+    from {
+      opacity: 0;
+      transform: translate3d(0, -30%, 0);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes fade-out-down {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+      transform: translate3d(0, 100%, 0);
+    }
+  }
+
+  @keyframes fade-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fade-in-left {
+    from {
+      opacity: 0;
+      transform: translate3d(-50%, 0, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  @keyframes fade-in-right {
+    from {
+      opacity: 0;
+      transform: translate3d(50%, 0, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  @keyframes slide-in-left {
+    from {
+      transform: translate3d(-20%, 0, 0);
+      visibility: visible;
+    }
+    to {
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  @keyframes slide-in-right {
+    from {
+      transform: translate3d(100%, 0, 0);
+      visibility: visible;
+    }
+    to {
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  @keyframes slide-in-down {
+    from {
+      transform: translate3d(0, -20%, 0);
+      visibility: visible;
+    }
+    to {
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  /* ==== Định nghĩa shorthand cho animation ==== */
+  --animate-shake: shake 500ms ease-in-out;
+  --animate-fade-in-up-fast: fade-in-up 150ms ease-in-out;
+  --animate-fade-out-down-fast: fade-out-down 150ms ease-in-out;
+  --animate-fade-in-down: fade-in-down 250ms ease-in-out;
+  --animate-fade-in-down-slow: fade-in-down 500ms ease-in-out;
+  --animate-fade-out: fade-out 250ms ease-in-out;
+  --animate-fade-in: fade-in 300ms ease-in-out;
+  --animate-fade-in-fast: fade-in 150ms ease-in-out;
+  --animate-slide-in-left-slow: slide-in-left 500ms ease-in-out;
+  --animate-slide-in-left: slide-in-left 300ms ease-in-out;
+  --animate-slide-in-right-slow: slide-in-right 500ms ease-in-out;
+  --animate-slide-in-down: slide-in-down 300ms ease-in-out;
+  --animate-fade-in-left-fast: fade-in-left 150ms ease-in-out;
+  --animate-fade-in-left: fade-in-left 300ms ease-in-out;
+  --animate-fade-in-right-fast: fade-in-right 150ms ease-in-out;
+  --animate-fade-in-right: fade-in-right 300ms ease-in-out;
+}
+
+@font-face {
+  font-family: "Pretendard";
+  src: url("../../public/fonts/PretendardStdVariable.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: "Pretendard", sans-serif !important;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #8b8b8b #f1f1f1;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #8b8b8b;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #555555;
+}

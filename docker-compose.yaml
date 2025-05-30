@@ -1,0 +1,35 @@
+services:
+  database:
+    image: mongo:7
+    container_name: next-nest-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+    ports:
+      - 27017:27017
+    volumes:
+      - next-nest-mongodb-data:/data/db
+    networks:
+      - my-network
+
+  mongo-express:
+    depends_on:
+      - database
+    image: mongo-express
+    container_name: next-nest-mongo-express
+    restart: always
+    ports:
+      - "8090:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      ME_CONFIG_MONGODB_SERVER: database
+    networks:
+      - my-network
+
+networks:
+  my-network:
+
+volumes:
+  next-nest-mongodb-data:

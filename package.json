@@ -1,0 +1,15 @@
+{
+  "name": "next-nest-base",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "pnpm run --parallel dev",
+    "lint": "pnpm run --parallel lint",
+    "build:portal": "pnpm --filter portal build",
+    "build:api": "pnpm --filter api build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
