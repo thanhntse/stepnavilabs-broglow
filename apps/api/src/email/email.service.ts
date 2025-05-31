@@ -1,48 +1,44 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  SESClient,
-  SendEmailCommand,
-  SendTemplatedEmailCommand,
-  SendRawEmailCommand
-} from '@aws-sdk/client-ses';
-import { EmailOptions, EmailResponse } from './interfaces/email.interface';
 import * as nodemailer from 'nodemailer';
 import Mail from 'nodemailer/lib/mailer';
 import * as Handlebars from 'handlebars';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { EmailOptions, EmailResponse } from './interfaces/email.interface';
 import { EmailTemplate, EmailTemplateType } from './schema/email-template.schema';
 
 @Injectable()
 export class EmailService {
-  private readonly sesClient: SESClient;
   private readonly logger = new Logger(EmailService.name);
+  private readonly transporter: nodemailer.Transporter;
   private readonly sender: string;
 
   constructor(
     private configService: ConfigService,
     @InjectModel(EmailTemplate.name) private emailTemplateModel: Model<EmailTemplate>
   ) {
-    const senderEmail = this.configService.get<string>('AWS_SES_SENDER_EMAIL');
+    const senderEmail = this.configService.get<string>('EMAIL_SENDER');
     if (!senderEmail) {
-      throw new Error('AWS_SES_SENDER_EMAIL is not defined in environment variables');
+      throw new Error('EMAIL_SENDER is not defined in environment variables');
     }
     this.sender = senderEmail;
 
-    const region = this.configService.get<string>('AWS_REGION');
-    const accessKeyId = this.configService.get<string>('AWS_ACCESS_KEY_ID');
-    const secretAccessKey = this.configService.get<string>('AWS_SECRET_ACCESS_KEY');
+    const emailPassword = this.configService.get<string>('EMAIL_PASSWORD');
+    const emailHost = this.configService.get<string>('EMAIL_HOST');
+    const emailPort = this.configService.get<number>('EMAIL_PORT');
 
-    if (!region || !accessKeyId || !secretAccessKey) {
-      throw new Error('AWS credentials are not properly configured in environment variables');
+    if (!emailPassword || !emailHost || !emailPort) {
+      throw new Error('Email credentials are not properly configured in environment variables');
     }
 
-    this.sesClient = new SESClient({
-      region,
-      credentials: {
-        accessKeyId,
-        secretAccessKey,
+    this.transporter = nodemailer.createTransport({
+      host: emailHost,
+      port: emailPort,
+      secure: emailPort === 465, // true for 465, false for other ports
+      auth: {
+        user: senderEmail,
+        pass: emailPassword,
       },
     });
   }
@@ -52,9 +48,11 @@ export class EmailService {
       if (options.templateData && options.templateType) {
         return this.sendHandlebarsTemplateEmail(options);
       } else if (options.templateId) {
-        return this.sendSESTemplateEmail(options);
-      } else if (options.attachments && options.attachments.length > 0) {
-        return this.sendEmailWithAttachments(options);
+        // For backward compatibility, redirect to Handlebars templates
+        return this.sendHandlebarsTemplateEmail({
+          ...options,
+          templateType: options.templateId as unknown as EmailTemplateType,
+        });
       } else {
         return this.sendRawEmail(options);
       }
@@ -69,87 +67,33 @@ export class EmailService {
 
   private async sendRawEmail(options: EmailOptions): Promise<EmailResponse> {
     try {
-      const { to, cc, bcc, subject, html, text } = options;
+      const { to, cc, bcc, subject, html, text, attachments } = options;
 
-      const toAddresses = Array.isArray(to) ? to : [to];
-      const ccAddresses = cc ? (Array.isArray(cc) ? cc : [cc]) : undefined;
-      const bccAddresses = bcc ? (Array.isArray(bcc) ? bcc : [bcc]) : undefined;
+      // Prepare email data
+      const mailOptions: Mail.Options = {
+        from: this.sender,
+        to: Array.isArray(to) ? to.join(',') : to,
+        ...(cc && { cc: Array.isArray(cc) ? cc.join(',') : cc }),
+        ...(bcc && { bcc: Array.isArray(bcc) ? bcc.join(',') : bcc }),
+        subject,
+        ...(html && { html }),
+        ...(text && { text }),
+        ...(attachments && { attachments: attachments.map(attachment => ({
+          filename: attachment.filename,
+          content: attachment.content,
+          contentType: attachment.contentType,
+        }))})
+      };
 
-      const command = new SendEmailCommand({
-        Source: this.sender,
-        Destination: {
-          ToAddresses: toAddresses,
-          CcAddresses: ccAddresses,
-          BccAddresses: bccAddresses,
-        },
-        Message: {
-          Subject: {
-            Data: subject,
-            Charset: 'UTF-8',
-          },
-          Body: {
-            ...(html && {
-              Html: {
-                Data: html,
-                Charset: 'UTF-8',
-              },
-            }),
-            ...(text && {
-              Text: {
-                Data: text,
-                Charset: 'UTF-8',
-              },
-            }),
-          },
-        },
-      });
-
-      const result = await this.sesClient.send(command);
+      // Send email
+      const info = await this.transporter.sendMail(mailOptions);
 
       return {
         success: true,
-        messageId: result.MessageId,
+        messageId: info.messageId,
       };
     } catch (error) {
       this.logger.error(`Failed to send raw email: ${error.message}`, error.stack);
-      return {
-        success: false,
-        error,
-      };
-    }
-  }
-
-  private async sendSESTemplateEmail(options: EmailOptions): Promise<EmailResponse> {
-    try {
-      const { to, cc, bcc, templateId, templateData } = options;
-
-      if (!templateId) {
-        throw new Error('Template ID is required for template emails');
-      }
-
-      const toAddresses = Array.isArray(to) ? to : [to];
-      const ccAddresses = cc ? (Array.isArray(cc) ? cc : [cc]) : undefined;
-      const bccAddresses = bcc ? (Array.isArray(bcc) ? bcc : [bcc]) : undefined;
-
-      const command = new SendTemplatedEmailCommand({
-        Source: this.sender,
-        Destination: {
-          ToAddresses: toAddresses,
-          CcAddresses: ccAddresses,
-          BccAddresses: bccAddresses,
-        },
-        Template: templateId,
-        TemplateData: JSON.stringify(templateData || {}),
-      });
-
-      const result = await this.sesClient.send(command);
-
-      return {
-        success: true,
-        messageId: result.MessageId,
-      };
-    } catch (error) {
-      this.logger.error(`Failed to send template email: ${error.message}`, error.stack);
       return {
         success: false,
         error,
@@ -189,50 +133,10 @@ export class EmailService {
         subject: template.subject,
         html: htmlContent,
         text: textContent || undefined,
+        attachments: options.attachments,
       });
     } catch (error) {
       this.logger.error(`Failed to send Handlebars template email: ${error.message}`, error.stack);
-      return {
-        success: false,
-        error,
-      };
-    }
-  }
-
-  private async sendEmailWithAttachments(options: EmailOptions): Promise<EmailResponse> {
-    try {
-      const { to, cc, bcc, subject, html, text, attachments } = options;
-
-      // Create a Nodemailer transport using SES
-      const transporter = nodemailer.createTransport({
-        SES: { ses: this.sesClient, aws: { SendRawEmailCommand } },
-      });
-
-      // Prepare email data
-      const mailOptions: Mail.Options = {
-        from: this.sender,
-        to: Array.isArray(to) ? to.join(',') : to,
-        ...(cc && { cc: Array.isArray(cc) ? cc.join(',') : cc }),
-        ...(bcc && { bcc: Array.isArray(bcc) ? bcc.join(',') : bcc }),
-        subject,
-        ...(html && { html }),
-        ...(text && { text }),
-        attachments: attachments?.map(attachment => ({
-          filename: attachment.filename,
-          content: attachment.content,
-          contentType: attachment.contentType,
-        })),
-      };
-
-      // Send email
-      const info = await transporter.sendMail(mailOptions);
-
-      return {
-        success: true,
-        messageId: info.messageId,
-      };
-    } catch (error) {
-      this.logger.error(`Failed to send email with attachments: ${error.message}`, error.stack);
       return {
         success: false,
         error,
