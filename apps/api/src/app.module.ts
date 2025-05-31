@@ -16,6 +16,7 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { v4 as uuid } from 'uuid';
 import { EmailModule } from './email/email.module';
+import { ProductsModule } from './products/products.module';
 
 @Module({
   imports: [
@@ -27,8 +28,6 @@ import { EmailModule } from './email/email.module';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         uri: configService.get('MONGODB_URI'),
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
       }),
       inject: [ConfigService],
     }),
@@ -50,6 +49,7 @@ import { EmailModule } from './email/email.module';
     OpenAiModule,
     FilesModule,
     EmailModule,
+    ProductsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

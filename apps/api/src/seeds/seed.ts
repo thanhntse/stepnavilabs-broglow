@@ -3,6 +3,7 @@ import { defaultRoles } from '../roles/seeds/default-roles.seed';
 import { defaultPermissions } from '@api/permissions/seeds/default-permissions.seed';
 import * as bcrypt from 'bcrypt';
 import { seedEmailTemplates } from './email-templates.seed';
+import { seedProducts } from './products.seed';
 
 export async function seed(mongoUri: string): Promise<void> {
   console.log('Seeding data...');
@@ -16,6 +17,7 @@ export async function seed(mongoUri: string): Promise<void> {
     const rolesCollection = db.collection('roles');
     const usersCollection = db.collection('users');
     const emailTemplatesCollection = db.collection('email_templates');
+    const productsCollection = db.collection('products');
 
     // Seed permissions
     for (const permissionData of defaultPermissions) {
@@ -89,6 +91,9 @@ export async function seed(mongoUri: string): Promise<void> {
 
     // Seed email templates
     await seedEmailTemplates(emailTemplatesCollection);
+
+    // Seed products
+    await seedProducts(productsCollection);
 
     console.log('Seeding completed');
   } finally {
