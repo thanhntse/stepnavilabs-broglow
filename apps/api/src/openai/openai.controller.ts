@@ -140,11 +140,10 @@ export class OpenAiController {
       );
     }
 
-    const { content, tone } = messageDto;
+    const { content } = messageDto;
     const stream = await this.openAiService.sendMessageToThread(
       threadId,
       content,
-      tone,
     );
 
     // Đặt header đúng cho stream

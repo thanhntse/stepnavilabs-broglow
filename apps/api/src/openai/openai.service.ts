@@ -15,7 +15,6 @@ import {
   CustomNotFoundException
 } from '@api/common/exceptions/custom-exceptions';
 import { validateObjectId } from '@api/common/utils/mongoose.utils';
-import { ConversationTone } from './enums/tone.enum';
 import { FilesService } from '@api/files/files.service';
 
 @Injectable()
@@ -128,7 +127,6 @@ export class OpenAiService {
   async sendMessageToThread(
     threadId: string,
     content: any,
-    tone?: ConversationTone,
   ) {
     validateObjectId(threadId, 'thread');
     const thread = await this.threadModel.findById(threadId);
@@ -137,44 +135,9 @@ export class OpenAiService {
     }
 
     try {
-      // Handle content based on its type and add tone instructions if provided
-      let messageContent = content;
-      if (tone) {
-        const toneInstructions = this.getToneInstructions(tone);
-
-        try {
-          // Check if content is JSON string
-          if (Array.isArray(content)) {
-            // If content is array of content parts, add tone instruction as first text element
-            messageContent = [
-              {
-                type: 'text',
-                text: `[Phong thái: ${toneInstructions}]`
-              },
-              ...content
-            ];
-          } else {
-            // If content is JSON but not array, wrap both in array
-            messageContent = [
-              {
-                type: 'text',
-                text: `[Phong thái: ${toneInstructions}]`
-              },
-              {
-                type: 'text',
-                text: content
-              }
-            ];
-          }
-        } catch (e) {
-          // If content is not JSON, treat as plain text
-          messageContent = `[Phong thái: ${toneInstructions}]\n\nUser Message: ${content}`;
-        }
-      }
-
       const userMessage = await this.openai.beta.threads.messages.create(
         thread.openaiThreadId,
-        { role: 'user', content: messageContent },
+        { role: 'user', content: content },
       );
 
       const userMsgEntity = new this.messageModel({
@@ -186,7 +149,6 @@ export class OpenAiService {
         metadata: {
           contentType: typeof content === 'object' ? 'json' : 'text',
           timestamp: new Date().toISOString(),
-          tone: tone || null,
         },
       });
 
@@ -511,40 +473,6 @@ Tiêu đề:`;
     } catch (error) {
       console.error('Error generating thread title:', error);
       // Error is caught and logged but not re-thrown to prevent blocking the main response flow
-    }
-  }
-
-  /**
-   * Get instructions based on the selected tone
-   * @param tone - The conversation tone
-   * @returns Instructions for the AI based on the tone
-   */
-  private getToneInstructions(tone: ConversationTone): string {
-    switch (tone) {
-      case ConversationTone.PROFESSIONAL:
-        return 'Hãy trả lời với phong cách chuyên nghiệp. Sử dụng ngôn ngữ trang trọng, ngắn gọn và giữ giọng điệu phù hợp với môi trường kinh doanh.';
-      case ConversationTone.FRIENDLY:
-        return 'Hãy trả lời với phong cách thân thiện và dễ gần. Sử dụng ngôn ngữ hội thoại, thể hiện sự ấm áp và khuyến khích.';
-      case ConversationTone.FORMAL:
-        return 'Hãy trả lời với phong cách trang trọng. Sử dụng ngữ pháp chuẩn mực, tránh viết tắt, và giữ khoảng cách tôn trọng.';
-      case ConversationTone.CASUAL:
-        return 'Hãy trả lời với phong cách thông thường, thoải mái. Có thể sử dụng ngôn ngữ không quá trang trọng, viết tắt, và giọng điệu thoải mái.';
-      case ConversationTone.HUMOROUS:
-        return 'Hãy trả lời với sự hài hước khi thích hợp. Sử dụng sự dí dỏm, ngôn ngữ nhẹ nhàng, và thỉnh thoảng đưa ra những câu đùa hoặc yếu tố vui vẻ.';
-      case ConversationTone.EMPATHETIC:
-        return 'Hãy trả lời với sự đồng cảm và thấu hiểu. Ghi nhận cảm xúc, thể hiện sự thấu hiểu, và hỗ trợ.';
-      case ConversationTone.DIRECT:
-        return 'Hãy trả lời trực tiếp và đi thẳng vào vấn đề. Ngắn gọn, tránh giải thích không cần thiết, và tập trung vào thông điệp chính.';
-      case ConversationTone.DIPLOMATIC:
-        return 'Hãy trả lời với sự ngoại giao. Khéo léo, cân nhắc nhiều góc nhìn, và tránh gây tranh cãi.';
-      case ConversationTone.ENTHUSIASTIC:
-        return 'Hãy trả lời với sự nhiệt tình và năng lượng. Sử dụng ngôn ngữ tích cực, thể hiện sự phấn khích, và khuyến khích.';
-      case ConversationTone.ANALYTICAL:
-        return 'Hãy trả lời với phong cách phân tích. Tập trung vào sự kiện, sử dụng lý luận logic, và cung cấp giải thích có cấu trúc.';
-      case ConversationTone.YOUNGTIVE:
-        return 'Hãy trả lời với phong cách trẻ trung và tươi mới. Sử dụng ngôn ngữ mới mẻ, thể hiện sự sáng tạo với các icon, và không quá trang trọng.';
-      default:
-        return '';
     }
   }
 
