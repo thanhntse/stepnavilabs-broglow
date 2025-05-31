@@ -10,7 +10,7 @@ import { RouteGuard } from "./(auth)/components/route-guard";
 
 export const metadata: Metadata = {
   title: apiConfig.appName,
-  description: "Hausto AI Content Generator",
+  description: "BroGlow AI Content Generator",
 };
 
 export default function RootLayout({

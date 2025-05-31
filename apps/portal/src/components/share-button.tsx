@@ -12,7 +12,7 @@ interface ShareButtonProps {
 
 const ShareButton: React.FC<ShareButtonProps> = ({
   content,
-  title = "Hausto AI",
+  title = "BroGlow AI",
   url = window.location.href,
 }) => {
   const { toast, showSuccess, showError } = useToast();

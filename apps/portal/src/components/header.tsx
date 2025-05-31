@@ -181,7 +181,7 @@ export default function Header({
             {variant === "home" && isLoggedIn && (
               <div className="flex items-center gap-6 text-sm font-semibold">
                 <div>{t("common.home")}</div>
-                <div>Hausto AI</div>
+                <div>BroGlow AI</div>
               </div>
             )}
           </div>
@@ -287,7 +287,7 @@ export default function Header({
                     }}
                     className="text-left py-4 font-semibold text-xl hover:bg-gray-100 border-b border-gray-200 cursor-pointer"
                   >
-                    Hausto AI
+                    BroGlow AI
                   </button>
                 </div>
                 {showCreateNew && (

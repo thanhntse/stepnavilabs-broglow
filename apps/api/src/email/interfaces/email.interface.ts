@@ -22,7 +22,7 @@ export class EmailOptions {
   @ApiPropertyOptional({ description: 'BCC recipient email address(es)', example: 'bcc@example.com' })
   bcc?: string | string[];
 
-  @ApiPropertyOptional({ description: 'Email subject', example: 'Welcome to Hausto' })
+  @ApiPropertyOptional({ description: 'Email subject', example: 'Welcome to BroGlow' })
   subject?: string;
 
   @ApiPropertyOptional({ description: 'HTML content of the email' })
@@ -65,7 +65,7 @@ export class CreateEmailTemplateDto {
   })
   type: EmailTemplateType;
 
-  @ApiProperty({ description: 'Email subject', example: 'Welcome to Hausto' })
+  @ApiProperty({ description: 'Email subject', example: 'Welcome to BroGlow' })
   subject: string;
 
   @ApiProperty({
@@ -88,7 +88,7 @@ export class UpdateEmailTemplateDto {
   @ApiPropertyOptional({ description: 'Template name', example: 'Welcome Email' })
   name?: string;
 
-  @ApiPropertyOptional({ description: 'Email subject', example: 'Welcome to Hausto' })
+  @ApiPropertyOptional({ description: 'Email subject', example: 'Welcome to BroGlow' })
   subject?: string;
 
   @ApiPropertyOptional({

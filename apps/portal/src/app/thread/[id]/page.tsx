@@ -931,7 +931,7 @@ export default function ChatPage() {
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-6 justify-center text-sm font-semibold">
               <div>{t("common.home")}</div>
-              <div>{t("common.hausto")}</div>
+              <div>{t("common.BroGlow")}</div>
             </div>
             <div className="text-xs text-gray-200 flex flex-col items-center gap-1.5">
               {t("common.poweredBy")}

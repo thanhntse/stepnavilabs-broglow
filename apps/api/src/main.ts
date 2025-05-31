@@ -11,7 +11,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const mongoUri =
-    process.env.MONGODB_URI || 'mongodb://localhost:27017/hausto';
+    process.env.MONGODB_URI || 'mongodb://localhost:27017/broglow';
   await seed(mongoUri);
 
   app.useGlobalPipes(new ValidationPipe());
@@ -25,7 +25,7 @@ async function bootstrap() {
   app.use('/uploads', express.static(join(process.cwd(), 'uploads')));
 
   const config = new DocumentBuilder()
-    .setTitle('Hausto Platform API')
+    .setTitle('BroGlow Platform API')
     .setVersion('1.0')
     .addBearerAuth(
       {

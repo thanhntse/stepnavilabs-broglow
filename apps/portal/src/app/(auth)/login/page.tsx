@@ -117,7 +117,7 @@ const LoginPage = () => {
               src="/logo.svg"
               width={120}
               height={22}
-              alt="Hausto Logo"
+              alt="BroGlow Logo"
               className="cursor-pointer"
               onClick={() => router.push("/")}
             />
@@ -163,7 +163,7 @@ const LoginPage = () => {
                 src="/logo.svg"
                 width={120}
                 height={22}
-                alt="Hausto Logo"
+                alt="BroGlow Logo"
                 className="cursor-pointer"
                 onClick={() => router.push("/")}
               />

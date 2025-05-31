@@ -131,7 +131,7 @@ export class AuthService {
         verificationLink: verificationUrl,
         verificationCode: verificationToken,
         expirationMinutes: 1440, // 24 hours
-        appName: this.configService.get('APP_NAME') || 'Hausto',
+        appName: this.configService.get('APP_NAME') || 'BroGlow',
       }
     });
 
@@ -166,7 +166,7 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
-        appName: this.configService.get('APP_NAME') || 'Hausto',
+        appName: this.configService.get('APP_NAME') || 'BroGlow',
         loginUrl: this.configService.get('PUBLIC_URL') ? `${this.configService.get('PUBLIC_URL')}/login` : '/login',
       }
     });
@@ -336,7 +336,7 @@ export class AuthService {
         lastName: user.lastName,
         otp,
         expirationMinutes: 5,
-        appName: this.configService.get('APP_NAME') || 'Hausto',
+        appName: this.configService.get('APP_NAME') || 'BroGlow',
       }
     });
 
@@ -373,8 +373,8 @@ export class AuthService {
       templateData: {
         firstName: user.firstName,
         lastName: user.lastName,
-        appName: this.configService.get('APP_NAME') || 'Hausto',
-        supportEmail: this.configService.get('SUPPORT_EMAIL') || 'support@hausto.co',
+        appName: this.configService.get('APP_NAME') || 'BroGlow',
+        supportEmail: this.configService.get('SUPPORT_EMAIL') || 'support@BroGlow.co',
       }
     });
 

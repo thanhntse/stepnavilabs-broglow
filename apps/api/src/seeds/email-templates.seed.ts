@@ -9,7 +9,7 @@ export const seedEmailTemplates = async (emailTemplateCollection: Collection) =>
   const welcomeTemplate = {
     name: 'Welcome Email',
     type: EmailTemplateType.WELCOME,
-    subject: 'Welcome to Hausto',
+    subject: 'Welcome to BroGlow',
     htmlContent: `
       <!DOCTYPE html>
       <html>
@@ -68,7 +68,7 @@ export const seedEmailTemplates = async (emailTemplateCollection: Collection) =>
   const verifyEmailTemplate = {
     name: 'Email Verification',
     type: EmailTemplateType.VERIFY_EMAIL,
-    subject: 'Verify Your Email - Hausto',
+    subject: 'Verify Your Email - BroGlow',
     htmlContent: `
       <!DOCTYPE html>
       <html>
@@ -132,7 +132,7 @@ export const seedEmailTemplates = async (emailTemplateCollection: Collection) =>
   const forgotPasswordTemplate = {
     name: 'Forgot Password',
     type: EmailTemplateType.FORGOT_PASSWORD,
-    subject: 'Password Reset Code - Hausto',
+    subject: 'Password Reset Code - BroGlow',
     htmlContent: `
       <!DOCTYPE html>
       <html>
@@ -189,7 +189,7 @@ export const seedEmailTemplates = async (emailTemplateCollection: Collection) =>
   const passwordChangeTemplate = {
     name: 'Password Changed',
     type: EmailTemplateType.CHANGE_PASSWORD,
-    subject: 'Password Changed Successfully - Hausto',
+    subject: 'Password Changed Successfully - BroGlow',
     htmlContent: `
       <!DOCTYPE html>
       <html>
