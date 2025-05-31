@@ -34,10 +34,8 @@ export class AuthController {
   @ApiResponse({ status: 201, description: 'Registration initiated. Verification email sent' })
   async register(
     @Body() registerDto: RegisterDto,
-    @Req() req: ExpressRequest,
   ): Promise<{ success: boolean; message: string; email: string }> {
-    const ip = req.ip || (req.socket && req.socket.remoteAddress) || '';
-    return this.authService.register(registerDto, ip);
+    return this.authService.register(registerDto);
   }
 
   @Post('login')
@@ -45,10 +43,8 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Login successful' })
   async login(
     @Body() loginDto: LoginDto,
-    @Req() req: ExpressRequest,
   ): Promise<{ token: string; refreshToken: string; user: AuthUserDto }> {
-    const ip = req.ip || (req.socket && req.socket.remoteAddress) || '';
-    return this.authService.login(loginDto, ip);
+    return this.authService.login(loginDto);
   }
 
   @ApiBearerAuth('JWT-auth')

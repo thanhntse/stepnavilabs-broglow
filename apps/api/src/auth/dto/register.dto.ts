@@ -49,12 +49,4 @@ export class RegisterDto {
       'Password must contain at least 1 uppercase letter, 1 lowercase letter, and 1 number or special character',
   })
   password: string;
-
-  @ApiProperty({
-    example: 'turnstile-token',
-    description: 'Cloudflare Turnstile verification token',
-  })
-  @IsString({ message: 'Turnstile token must be a string' })
-  @IsNotEmpty({ message: 'Turnstile token is required' })
-  turnstileToken: string;
 }

@@ -9,7 +9,6 @@ import { User, UserSchema } from '@api/users/schema/user.schema';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GoogleStrategy } from './google.strategy';
 import { RoleModule } from '@api/roles/role.module';
-import { HttpModule } from '@nestjs/axios';
 import { EmailModule } from '@api/email/email.module';
 
 @Module({
@@ -25,7 +24,6 @@ import { EmailModule } from '@api/email/email.module';
       inject: [ConfigService],
     }),
     RoleModule,
-    HttpModule,
     EmailModule,
   ],
   controllers: [AuthController],

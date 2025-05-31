@@ -19,12 +19,4 @@ export class LoginDto {
   @IsString()
   @MinLength(8, { message: 'Password must be at least 8 characters long' })
   password: string;
-
-  @ApiProperty({
-    example: 'turnstile-token',
-    description: 'Cloudflare Turnstile verification token',
-  })
-  @IsString({ message: 'Turnstile token must be a string' })
-  @IsNotEmpty({ message: 'Turnstile token is required' })
-  turnstileToken: string;
 }

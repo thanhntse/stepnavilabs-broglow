@@ -14,8 +14,6 @@ import {
   CustomUnauthorizedException,
   CustomNotFoundException,
 } from '@api/common/exceptions/custom-exceptions';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
 import { EmailService } from '@api/email/email.service';
 import { EmailTemplateType } from '@api/email/schema/email-template.schema';
 import { v4 as uuidv4 } from 'uuid';
@@ -27,49 +25,11 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private roleService: RoleService,
-    private httpService: HttpService,
     private emailService: EmailService,
   ) {}
 
-  private async verifyTurnstileToken(
-    token: string,
-    ip?: string,
-  ): Promise<boolean> {
-    try {
-      const secretKey =
-        this.configService.get<string>('TURNSTILE_SECRET_KEY') || '';
-
-      // Sử dụng URLSearchParams để gửi dữ liệu dưới dạng application/x-www-form-urlencoded
-      const formData = new URLSearchParams();
-      formData.append('secret', secretKey);
-      formData.append('response', token);
-
-      // Thêm IP của người dùng nếu có
-      if (ip) {
-        formData.append('remoteip', ip);
-      }
-
-      const { data } = await firstValueFrom(
-        this.httpService.post(
-          'https://challenges.cloudflare.com/turnstile/v0/siteverify',
-          formData.toString(),
-          {
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-          },
-        ),
-      );
-
-      return data.success === true;
-    } catch (error) {
-      console.error('Turnstile verification error:', error);
-      return false;
-    }
-  }
-
-  async register(registerDto: RegisterDto, ip?: string) {
-    const { firstName, lastName, email, password, turnstileToken } =
+  async register(registerDto: RegisterDto) {
+    const { firstName, lastName, email, password } =
       registerDto;
 
     // Validate input
@@ -77,15 +37,6 @@ export class AuthService {
       throw new CustomBadRequestException(
         'All fields are required',
         'missingFields',
-      );
-    }
-
-    // Verify Turnstile token
-    const isValidToken = await this.verifyTurnstileToken(turnstileToken, ip);
-    if (!isValidToken) {
-      throw new CustomBadRequestException(
-        'CAPTCHA verification failed. Please try again.',
-        'invalidCaptcha',
       );
     }
 
@@ -179,18 +130,8 @@ export class AuthService {
 
   async login(
     loginDto: LoginDto,
-    ip?: string,
   ): Promise<{ token: string; refreshToken: string; user: AuthUserDto }> {
-    const { email, password, turnstileToken } = loginDto;
-
-    // Verify Turnstile token
-    const isValidToken = await this.verifyTurnstileToken(turnstileToken, ip);
-    if (!isValidToken) {
-      throw new CustomBadRequestException(
-        'CAPTCHA verification failed. Please try again.',
-        'invalidCaptcha',
-      );
-    }
+    const { email, password } = loginDto;
 
     // Find user
     const user = await this.userModel.findOne({ email });
