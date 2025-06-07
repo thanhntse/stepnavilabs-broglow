@@ -15,7 +15,23 @@ async function bootstrap() {
   await seed(mongoUri);
 
   app.useGlobalPipes(new ValidationPipe());
-  app.enableCors();
+
+  // Enhanced CORS configuration for mobile development
+  app.enableCors({
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:8081',
+      'http://192.168.1.10:3000',
+      'http://192.168.1.10:8081',
+      /^http:\/\/192\.168\.\d+\.\d+:(3000|8081)$/,
+      /^http:\/\/172\.\d+\.\d+\.\d+:(3000|8081)$/,
+      /^http:\/\/10\.\d+\.\d+\.\d+:(3000|8081)$/,
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'],
+  });
+
   app.setGlobalPrefix('api');
 
   // Apply global exception filter
@@ -47,6 +63,6 @@ async function bootstrap() {
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory());
 
-  await app.listen(3001);
+  await app.listen(3001, '0.0.0.0'); // Listen on all network interfaces
 }
 bootstrap();
