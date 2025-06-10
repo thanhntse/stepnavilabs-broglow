@@ -16,7 +16,7 @@ import { OpenAiService } from './openai.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
 import { Readable } from 'stream';
-import { ApiBearerAuth, ApiConsumes, ApiSecurity, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { MessageDto } from './dto/message.dto';
 import { AILimitInterceptor } from './interceptors/ai-limit.interceptor';
 import { AuthGuard } from '@nestjs/passport';
@@ -245,6 +245,46 @@ export class OpenAiController {
   async getAIUsage(@User() user: UserDocument) {
     return this.openAiService.getUsage(user);
   }
+
+  /* ================= PRODUCT RECOMMENDATION START HERE ===================== */
+  @Post('thread/:threadId/recommend-products')
+  @ApiOperation({ summary: 'Get product recommendations based on skin scan results' })
+  @ApiResponse({ status: 200, description: 'Returns array of recommended product IDs' })
+  @UseInterceptors(AILimitInterceptor)
+  async getProductRecommendations(
+    @Param('threadId') threadId: string,
+    @User() user: UserDocument
+  ) {
+    try {
+      // Check if user owns the thread
+      const isOwner = await this.openAiService.isThreadOwner(threadId, user.id);
+      if (!isOwner) {
+        throw new CustomBadRequestException(
+          'Bạn không có quyền truy cập vào đoạn hội thoại này',
+          'threadPermissionDenied'
+        );
+      }
+
+      const recommendedProductIds = await this.openAiService.getProductRecommendations(
+        threadId,
+        user.id
+      );
+
+      return {
+        success: true,
+        recommendedProducts: recommendedProductIds
+      };
+    } catch (error) {
+      if (error instanceof CustomNotFoundException || error instanceof CustomBadRequestException) {
+        throw error;
+      }
+      throw new CustomBadRequestException(
+        error.message || 'Không thể lấy gợi ý sản phẩm',
+        'productRecommendationFailed'
+      );
+    }
+  }
+  /* ================= PRODUCT RECOMMENDATION END HERE ===================== */
 
   @Get('generate')
   @UseInterceptors(AILimitInterceptor)

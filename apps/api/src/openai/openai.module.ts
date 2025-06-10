@@ -14,6 +14,7 @@ import { FilesModule } from '@api/files/files.module';
 import { PermissionModule } from '@api/permissions/permissions.module';
 import { SkinProfileModule } from '@api/skin-profile/skin-profile.module';
 import { AILimitInterceptor } from './interceptors/ai-limit.interceptor';
+import { Product, ProductSchema } from '@api/products/schema/product.schema';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { AILimitInterceptor } from './interceptors/ai-limit.interceptor';
       { name: Message.name, schema: MessageSchema },
       { name: AIUsage.name, schema: AIUsageSchema },
       { name: File.name, schema: FileSchema },
+      { name: Product.name, schema: ProductSchema },
     ]),
     UsersModule,
     ApiKeyModule,

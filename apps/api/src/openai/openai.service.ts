@@ -17,6 +17,7 @@ import {
 import { validateObjectId } from '@api/common/utils/mongoose.utils';
 import { FilesService } from '@api/files/files.service';
 import { SkinProfileService } from '@api/skin-profile/skin-profile.service';
+import { Product } from '@api/products/schema/product.schema';
 
 @Injectable()
 export class OpenAiService {
@@ -29,6 +30,7 @@ export class OpenAiService {
     @InjectModel(Thread.name) private threadModel: Model<Thread>,
     @InjectModel(Message.name) private messageModel: Model<Message>,
     @InjectModel(File.name) private fileModel: Model<File>,
+    @InjectModel(Product.name) private productModel: Model<Product>,
     private filesService: FilesService,
     private skinProfileService: SkinProfileService,
   ) {
@@ -579,4 +581,140 @@ Tiêu đề:`;
 
     return ownerId === userIdStr;
   }
+
+  /* ================= PRODUCT RECOMMENDATION START HERE ===================== */
+  async getProductRecommendations(threadId: string, userId: string): Promise<string[]> {
+    validateObjectId(threadId, 'thread');
+
+    // Check if thread exists and user owns it
+    const thread = await this.threadModel.findById(threadId);
+    if (!thread) {
+      throw new CustomNotFoundException(`Không tìm thấy đoạn hội thoại với ID ${threadId}`, 'threadNotFound');
+    }
+
+    const isOwner = await this.isThreadOwner(threadId, userId);
+    if (!isOwner) {
+      throw new CustomBadRequestException(
+        'Bạn không có quyền truy cập vào đoạn hội thoại này',
+        'threadPermissionDenied'
+      );
+    }
+
+    // Get all products from the system
+    const products = await this.productModel.find({ isActive: true }).exec();
+
+    if (!products || products.length === 0) {
+      throw new CustomBadRequestException(
+        'Không có sản phẩm nào trong hệ thống',
+        'noProductsFound'
+      );
+    }
+
+    // Format products for OpenAI
+    const productsInfo = products.map(product => ({
+      id: product._id.toString(),
+      name: product.name,
+      brand: product.brand,
+      description: product.description || '',
+      categories: product.categories || [],
+      benefits: product.benefits || [],
+      price: product.price || 0
+    }));
+
+    // Send message to thread with products data
+    await this.openai.beta.threads.messages.create(
+      thread.openaiThreadId,
+      {
+        role: 'user',
+        content: `Dựa vào kết quả phân tích da và các cuộc trò chuyện trước đó, vui lòng gợi ý các sản phẩm phù hợp nhất từ danh sách sau. Chỉ trả về ID của các sản phẩm được gợi ý, tối đa 5 sản phẩm, định dạng JSON: ["id1", "id2", "id3"]. Danh sách sản phẩm: ${JSON.stringify(productsInfo)}`
+      }
+    );
+
+    // Create a run to process the message
+    const run = await this.openai.beta.threads.runs.create(
+      thread.openaiThreadId,
+      {
+        assistant_id: this.assistantId
+      }
+    );
+
+    // Poll for completion
+    let runStatus = await this.openai.beta.threads.runs.retrieve(
+      thread.openaiThreadId,
+      run.id
+    );
+
+    // Wait for the run to complete
+    while (runStatus.status !== 'completed' && runStatus.status !== 'failed') {
+      // Wait for 1 second before checking again
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      runStatus = await this.openai.beta.threads.runs.retrieve(
+        thread.openaiThreadId,
+        run.id
+      );
+
+      if (runStatus.status === 'failed') {
+        throw new CustomBadRequestException(
+          'Không thể xử lý yêu cầu gợi ý sản phẩm',
+          'productRecommendationFailed'
+        );
+      }
+    }
+
+    // Get the assistant's response
+    const messages = await this.openai.beta.threads.messages.list(
+      thread.openaiThreadId,
+      { order: 'desc', limit: 1 }
+    );
+
+    // Extract the product IDs from the response
+    const assistantMessage = messages.data[0];
+    if (!assistantMessage || assistantMessage.role !== 'assistant') {
+      throw new CustomBadRequestException(
+        'Không nhận được phản hồi từ AI',
+        'noAssistantResponse'
+      );
+    }
+
+    try {
+      // Extract JSON from the response
+      const messageContent = assistantMessage.content[0];
+      if (messageContent.type !== 'text') {
+        throw new Error('Expected text response from assistant');
+      }
+
+      const contentText = messageContent.text.value;
+      // Find JSON array in the text
+      const jsonMatch = contentText.match(/\[.*?\]/);
+
+      if (!jsonMatch) {
+        throw new Error('No JSON array found in response');
+      }
+
+      const productIds = JSON.parse(jsonMatch[0]);
+
+      // Validate that all IDs exist in our database
+      const validProductIds = [];
+      for (const id of productIds) {
+        try {
+          const exists = await this.productModel.exists({ _id: id });
+          if (exists) {
+            validProductIds.push(id);
+          }
+        } catch (error) {
+          // Skip invalid IDs
+          console.error(`Invalid product ID: ${id}`);
+        }
+      }
+
+      return validProductIds;
+    } catch (error) {
+      console.error('Error parsing product recommendations:', error);
+      throw new CustomBadRequestException(
+        'Không thể phân tích phản hồi gợi ý sản phẩm',
+        'invalidRecommendationFormat'
+      );
+    }
+  }
+  /* ================= PRODUCT RECOMMENDATION END HERE ===================== */
 }
