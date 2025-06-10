@@ -17,6 +17,7 @@ import { extname } from 'path';
 import { v4 as uuid } from 'uuid';
 import { EmailModule } from './email/email.module';
 import { ProductsModule } from './products/products.module';
+import { SkinProfileModule } from './skin-profile/skin-profile.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { ProductsModule } from './products/products.module';
     FilesModule,
     EmailModule,
     ProductsModule,
+    SkinProfileModule,
   ],
   controllers: [AppController],
   providers: [AppService],

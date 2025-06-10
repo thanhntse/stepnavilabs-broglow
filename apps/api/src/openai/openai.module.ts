@@ -11,6 +11,9 @@ import { ApiKeyModule } from '@api/api-keys/api-key.module';
 import { CaslModule } from '@api/casl/casl.module';
 import { FilesService } from '@api/files/files.service';
 import { FilesModule } from '@api/files/files.module';
+import { PermissionModule } from '@api/permissions/permissions.module';
+import { SkinProfileModule } from '@api/skin-profile/skin-profile.module';
+import { AILimitInterceptor } from './interceptors/ai-limit.interceptor';
 
 @Module({
   imports: [
@@ -24,8 +27,11 @@ import { FilesModule } from '@api/files/files.module';
     ApiKeyModule,
     CaslModule,
     FilesModule,
+    PermissionModule,
+    SkinProfileModule,
   ],
   controllers: [OpenAiController],
-  providers: [OpenAiService, FilesService],
+  providers: [OpenAiService, FilesService, AILimitInterceptor],
+  exports: [OpenAiService],
 })
 export class OpenAiModule {}

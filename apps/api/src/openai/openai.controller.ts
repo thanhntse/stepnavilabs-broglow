@@ -144,6 +144,7 @@ export class OpenAiController {
     const stream = await this.openAiService.sendMessageToThread(
       threadId,
       content,
+      user.id,
     );
 
     // Đặt header đúng cho stream

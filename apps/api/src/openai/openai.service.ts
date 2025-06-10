@@ -16,6 +16,7 @@ import {
 } from '@api/common/exceptions/custom-exceptions';
 import { validateObjectId } from '@api/common/utils/mongoose.utils';
 import { FilesService } from '@api/files/files.service';
+import { SkinProfileService } from '@api/skin-profile/skin-profile.service';
 
 @Injectable()
 export class OpenAiService {
@@ -29,9 +30,84 @@ export class OpenAiService {
     @InjectModel(Message.name) private messageModel: Model<Message>,
     @InjectModel(File.name) private fileModel: Model<File>,
     private filesService: FilesService,
+    private skinProfileService: SkinProfileService,
   ) {
     this.openai = new OpenAI();
     this.assistantId = this.configService.get('OPENAI_ASSISTANT_ID') ?? '';
+  }
+
+  // Function to enhance content with skin profile data
+  private async enhanceContentWithSkinProfile(userId: string, content: any): Promise<any> {
+    try {
+      // Check if user has a skin profile
+      const skinProfile = await this.skinProfileService.getUserSkinProfile(userId).catch(() => null);
+
+      if (!skinProfile) {
+        // Return original content if no profile found
+        return content;
+      }
+
+      // Create an enhanced content with skin profile information
+      let skinProfileInfo = {
+        skinType: skinProfile.skinType || 'Chưa xác định',
+        concerns: skinProfile.concerns || [],
+        recommendations: skinProfile.recommendations || '',
+        answers: [] as any[]
+      };
+
+      // Format each answer with corresponding question
+      if (skinProfile.answers && skinProfile.answers.length > 0) {
+        for (const answer of skinProfile.answers) {
+          // Using any type to bypass TypeScript strict type checking
+          // This works because we know Mongoose has populated the questionId field
+          const questionObj = answer.questionId as any;
+          if (questionObj && typeof questionObj === 'object' && questionObj.question) {
+            skinProfileInfo.answers.push({
+              question: questionObj.question,
+              answer: answer.answer
+            });
+          }
+        }
+      }
+
+      // Format the final content based on original content type
+      if (typeof content === 'string') {
+        // If original content is plain text, add the skin profile context
+        return `[THÔNG TIN HỒ SƠ DA CỦA NGƯỜI DÙNG]
+Loại da: ${skinProfileInfo.skinType}
+Các vấn đề quan tâm: ${skinProfileInfo.concerns.join(', ')}
+${skinProfileInfo.answers.map(a => `Hỏi: ${a.question}\nTrả lời: ${a.answer}`).join('\n')}
+[KẾT THÚC THÔNG TIN HỒ SƠ DA]
+
+Yêu cầu của người dùng: ${content}`;
+      } else if (Array.isArray(content)) {
+        // If content is already an array (for images etc.), add skin profile as the first text item
+        const skinProfileText = `[THÔNG TIN HỒ SƠ DA CỦA NGƯỜI DÙNG]
+Loại da: ${skinProfileInfo.skinType}
+Các vấn đề quan tâm: ${skinProfileInfo.concerns.join(', ')}
+${skinProfileInfo.answers.map(a => `Hỏi: ${a.question}\nTrả lời: ${a.answer}`).join('\n')}
+[KẾT THÚC THÔNG TIN HỒ SƠ DA]`;
+
+        // Check if first item is text type and modify it, otherwise add new first item
+        if (content.length > 0 && content[0].type === 'text') {
+          content[0].text = skinProfileText + '\n\nYêu cầu của người dùng: ' + content[0].text;
+          return content;
+        } else {
+          // Add new text item for skin profile
+          return [
+            { type: 'text', text: skinProfileText },
+            ...content
+          ];
+        }
+      }
+
+      // Fallback: return original content
+      return content;
+    } catch (error) {
+      console.error('Error enhancing content with skin profile:', error);
+      // Return original content if there was an error
+      return content;
+    }
   }
 
   async retrieveFile(openaiFileId: string) {
@@ -44,8 +120,8 @@ export class OpenAiService {
 
   async createAssistant() {
     const assistant = await this.openai.beta.assistants.create({
-      instructions: 'You are a helpful assistant.',
-      name: 'Quickstart Assistant',
+      instructions: 'Bạn là một trợ lý hữu ích về chăm sóc da.',
+      name: 'Trợ lý BroGlow',
       model: 'gpt-4o',
       tools: [
         { type: 'code_interpreter' },
@@ -53,13 +129,13 @@ export class OpenAiService {
           type: 'function',
           function: {
             name: 'get_weather',
-            description: 'Determine weather in my location',
+            description: 'Xác định thời tiết tại vị trí của tôi',
             parameters: {
               type: 'object',
               properties: {
                 location: {
                   type: 'string',
-                  description: 'City and state e.g. San Francisco, CA',
+                  description: 'Thành phố và tiểu bang, ví dụ: Hà Nội, Việt Nam',
                 },
                 unit: { type: 'string', enum: ['c', 'f'] },
               },
@@ -127,17 +203,24 @@ export class OpenAiService {
   async sendMessageToThread(
     threadId: string,
     content: any,
+    userId?: string,
   ) {
     validateObjectId(threadId, 'thread');
     const thread = await this.threadModel.findById(threadId);
     if (!thread) {
-      throw new CustomNotFoundException(`Thread with ID ${threadId} not found`, 'threadNotFound');
+      throw new CustomNotFoundException(`Không tìm thấy đoạn hội thoại với ID ${threadId}`, 'threadNotFound');
+    }
+
+    // Enhance content with skin profile if userId is provided
+    let enhancedContent = content;
+    if (userId) {
+      enhancedContent = await this.enhanceContentWithSkinProfile(userId, content);
     }
 
     try {
       const userMessage = await this.openai.beta.threads.messages.create(
         thread.openaiThreadId,
-        { role: 'user', content: content },
+        { role: 'user', content: enhancedContent },
       );
 
       const userMsgEntity = new this.messageModel({
