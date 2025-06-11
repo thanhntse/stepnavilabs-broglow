@@ -1,6 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsMongoId, IsNotEmpty, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsMongoId,
+  IsNotEmpty,
+  ValidateNested,
+} from 'class-validator';
 
 export class AnswerDto {
   @ApiProperty({ description: 'Question ID' })

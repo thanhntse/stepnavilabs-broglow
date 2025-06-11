@@ -51,7 +51,10 @@ export class UsersService {
     validateObjectId(id, 'user');
     const user = await this.userModel.findById(id).exec();
     if (!user) {
-      throw new CustomNotFoundException(`User with ID ${id} not found`, 'userNotFound');
+      throw new CustomNotFoundException(
+        `User with ID ${id} not found`,
+        'userNotFound',
+      );
     }
     return user;
   }
@@ -59,7 +62,10 @@ export class UsersService {
   async findOneByEmail(email: string): Promise<User> {
     const user = await this.userModel.findOne({ email }).exec();
     if (!user) {
-      throw new CustomNotFoundException(`User with email ${email} not found`, 'userNotFound');
+      throw new CustomNotFoundException(
+        `User with email ${email} not found`,
+        'userNotFound',
+      );
     }
     return user;
   }
@@ -73,7 +79,10 @@ export class UsersService {
       .findByIdAndUpdate(id, updateUserDto, { new: true })
       .exec();
     if (!user) {
-      throw new CustomNotFoundException(`User with ID ${id} not found`, 'userNotFound');
+      throw new CustomNotFoundException(
+        `User with ID ${id} not found`,
+        'userNotFound',
+      );
     }
     return user;
   }
@@ -82,7 +91,10 @@ export class UsersService {
     validateObjectId(id, 'user');
     const user = await this.userModel.findByIdAndDelete(id).exec();
     if (!user) {
-      throw new CustomNotFoundException(`User with ID ${id} not found`, 'userNotFound');
+      throw new CustomNotFoundException(
+        `User with ID ${id} not found`,
+        'userNotFound',
+      );
     }
   }
 
@@ -95,10 +107,16 @@ export class UsersService {
     const role = await this.roleService.findOne(roleId);
 
     if (!user) {
-      throw new CustomNotFoundException(`User with id ${userId} not found`, 'userNotFound');
+      throw new CustomNotFoundException(
+        `User with id ${userId} not found`,
+        'userNotFound',
+      );
     }
     if (!role) {
-      throw new CustomNotFoundException(`Role with id ${roleId} not found`, 'roleNotFound');
+      throw new CustomNotFoundException(
+        `Role with id ${roleId} not found`,
+        'roleNotFound',
+      );
     }
     user.roles = user.roles ? [...user.roles, role] : [role];
     return user.save();

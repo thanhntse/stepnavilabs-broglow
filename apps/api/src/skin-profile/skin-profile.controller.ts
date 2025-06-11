@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Param, Delete, Put, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+  Request,
+} from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SkinProfileService } from './skin-profile.service';
 import { CreateSkinQuestionDto } from './dto/create-skin-question.dto';
@@ -55,9 +64,18 @@ export class SkinProfileController {
   // User endpoints for submitting and retrieving skin profiles
   @Post()
   @ApiOperation({ summary: 'Submit skin profile answers' })
-  @ApiResponse({ status: 201, description: 'Skin profile submitted successfully' })
-  @ApiResponse({ status: 400, description: 'Bad request (missing required questions or invalid data)' })
-  submitSkinProfile(@Request() req: any, @Body() submitDto: SubmitSkinProfileDto) {
+  @ApiResponse({
+    status: 201,
+    description: 'Skin profile submitted successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request (missing required questions or invalid data)',
+  })
+  submitSkinProfile(
+    @Request() req: any,
+    @Body() submitDto: SubmitSkinProfileDto,
+  ) {
     return this.skinProfileService.submitSkinProfile(req.user.id, submitDto);
   }
 
@@ -71,7 +89,10 @@ export class SkinProfileController {
 
   @Delete()
   @ApiOperation({ summary: 'Delete current user skin profile' })
-  @ApiResponse({ status: 200, description: 'Skin profile deleted successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Skin profile deleted successfully',
+  })
   @ApiResponse({ status: 404, description: 'Skin profile not found' })
   deleteUserSkinProfile(@Request() req: any) {
     return this.skinProfileService.deleteUserSkinProfile(req.user.id);

@@ -1,6 +1,4 @@
-import {
-  Injectable,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -12,7 +10,7 @@ import { Message } from './schema/message.schema';
 import { File } from '@api/files/schema/file.schema';
 import {
   CustomBadRequestException,
-  CustomNotFoundException
+  CustomNotFoundException,
 } from '@api/common/exceptions/custom-exceptions';
 import { validateObjectId } from '@api/common/utils/mongoose.utils';
 import { FilesService } from '@api/files/files.service';
@@ -39,10 +37,15 @@ export class OpenAiService {
   }
 
   // Function to enhance content with skin profile data
-  private async enhanceContentWithSkinProfile(userId: string, content: any): Promise<any> {
+  private async enhanceContentWithSkinProfile(
+    userId: string,
+    content: any,
+  ): Promise<any> {
     try {
       // Check if user has a skin profile
-      const skinProfile = await this.skinProfileService.getUserSkinProfile(userId).catch(() => null);
+      const skinProfile = await this.skinProfileService
+        .getUserSkinProfile(userId)
+        .catch(() => null);
 
       if (!skinProfile) {
         // Return original content if no profile found
@@ -54,7 +57,7 @@ export class OpenAiService {
         skinType: skinProfile.skinType || 'Chưa xác định',
         concerns: skinProfile.concerns || [],
         recommendations: skinProfile.recommendations || '',
-        answers: [] as any[]
+        answers: [] as any[],
       };
 
       // Format each answer with corresponding question
@@ -63,10 +66,14 @@ export class OpenAiService {
           // Using any type to bypass TypeScript strict type checking
           // This works because we know Mongoose has populated the questionId field
           const questionObj = answer.questionId as any;
-          if (questionObj && typeof questionObj === 'object' && questionObj.question) {
+          if (
+            questionObj &&
+            typeof questionObj === 'object' &&
+            questionObj.question
+          ) {
             skinProfileInfo.answers.push({
               question: questionObj.question,
-              answer: answer.answer
+              answer: answer.answer,
             });
           }
         }
@@ -78,7 +85,7 @@ export class OpenAiService {
         return `[THÔNG TIN HỒ SƠ DA CỦA NGƯỜI DÙNG]
 Loại da: ${skinProfileInfo.skinType}
 Các vấn đề quan tâm: ${skinProfileInfo.concerns.join(', ')}
-${skinProfileInfo.answers.map(a => `Hỏi: ${a.question}\nTrả lời: ${a.answer}`).join('\n')}
+${skinProfileInfo.answers.map((a) => `Hỏi: ${a.question}\nTrả lời: ${a.answer}`).join('\n')}
 [KẾT THÚC THÔNG TIN HỒ SƠ DA]
 
 Yêu cầu của người dùng: ${content}`;
@@ -87,19 +94,17 @@ Yêu cầu của người dùng: ${content}`;
         const skinProfileText = `[THÔNG TIN HỒ SƠ DA CỦA NGƯỜI DÙNG]
 Loại da: ${skinProfileInfo.skinType}
 Các vấn đề quan tâm: ${skinProfileInfo.concerns.join(', ')}
-${skinProfileInfo.answers.map(a => `Hỏi: ${a.question}\nTrả lời: ${a.answer}`).join('\n')}
+${skinProfileInfo.answers.map((a) => `Hỏi: ${a.question}\nTrả lời: ${a.answer}`).join('\n')}
 [KẾT THÚC THÔNG TIN HỒ SƠ DA]`;
 
         // Check if first item is text type and modify it, otherwise add new first item
         if (content.length > 0 && content[0].type === 'text') {
-          content[0].text = skinProfileText + '\n\nYêu cầu của người dùng: ' + content[0].text;
+          content[0].text =
+            skinProfileText + '\n\nYêu cầu của người dùng: ' + content[0].text;
           return content;
         } else {
           // Add new text item for skin profile
-          return [
-            { type: 'text', text: skinProfileText },
-            ...content
-          ];
+          return [{ type: 'text', text: skinProfileText }, ...content];
         }
       }
 
@@ -137,7 +142,8 @@ ${skinProfileInfo.answers.map(a => `Hỏi: ${a.question}\nTrả lời: ${a.answe
               properties: {
                 location: {
                   type: 'string',
-                  description: 'Thành phố và tiểu bang, ví dụ: Hà Nội, Việt Nam',
+                  description:
+                    'Thành phố và tiểu bang, ví dụ: Hà Nội, Việt Nam',
                 },
                 unit: { type: 'string', enum: ['c', 'f'] },
               },
@@ -176,7 +182,10 @@ ${skinProfileInfo.answers.map(a => `Hỏi: ${a.question}\nTrả lời: ${a.answe
     validateObjectId(threadId, 'thread');
     const thread = await this.threadModel.findById(threadId);
     if (!thread) {
-      throw new CustomNotFoundException(`Thread with ID ${threadId} not found`, 'threadNotFound');
+      throw new CustomNotFoundException(
+        `Thread with ID ${threadId} not found`,
+        'threadNotFound',
+      );
     }
     return await this.openai.beta.threads.retrieve(thread.openaiThreadId);
   }
@@ -185,14 +194,20 @@ ${skinProfileInfo.answers.map(a => `Hỏi: ${a.question}\nTrả lời: ${a.answe
     validateObjectId(threadId, 'thread');
     const thread = await this.threadModel.findById(threadId);
     if (!thread) {
-      throw new CustomNotFoundException(`Thread with ID ${threadId} not found`, 'threadNotFound');
+      throw new CustomNotFoundException(
+        `Thread with ID ${threadId} not found`,
+        'threadNotFound',
+      );
     }
 
     try {
       await this.openai.beta.threads.del(thread.openaiThreadId);
     } catch (error) {
       console.error('Failed to delete thread on OpenAI:', error);
-      throw new CustomBadRequestException('Could not delete thread on OpenAI', 'threadDeletionFailed');
+      throw new CustomBadRequestException(
+        'Could not delete thread on OpenAI',
+        'threadDeletionFailed',
+      );
     }
 
     await this.threadModel.deleteOne({ _id: threadId });
@@ -202,21 +217,23 @@ ${skinProfileInfo.answers.map(a => `Hỏi: ${a.question}\nTrả lời: ${a.answe
   /* ================= THREAD END HERE ===================== */
 
   /* ================= MESSAGE START HERE ===================== */
-  async sendMessageToThread(
-    threadId: string,
-    content: any,
-    userId?: string,
-  ) {
+  async sendMessageToThread(threadId: string, content: any, userId?: string) {
     validateObjectId(threadId, 'thread');
     const thread = await this.threadModel.findById(threadId);
     if (!thread) {
-      throw new CustomNotFoundException(`Không tìm thấy đoạn hội thoại với ID ${threadId}`, 'threadNotFound');
+      throw new CustomNotFoundException(
+        `Không tìm thấy đoạn hội thoại với ID ${threadId}`,
+        'threadNotFound',
+      );
     }
 
     // Enhance content with skin profile if userId is provided
     let enhancedContent = content;
     if (userId) {
-      enhancedContent = await this.enhanceContentWithSkinProfile(userId, content);
+      enhancedContent = await this.enhanceContentWithSkinProfile(
+        userId,
+        content,
+      );
     }
 
     try {
@@ -246,7 +263,7 @@ ${skinProfileInfo.answers.map(a => `Hỏi: ${a.question}\nTrả lời: ${a.answe
       if (Array.isArray(content)) {
         // Lọc các phần tử có type là image_file
         const imageFileItems = content.filter(
-          item => item.type === 'image_file' && item.image_file?.file_id
+          (item) => item.type === 'image_file' && item.image_file?.file_id,
         );
 
         // Lấy file_id từ mỗi image_file
@@ -268,7 +285,7 @@ ${skinProfileInfo.answers.map(a => `Hỏi: ${a.question}\nTrả lời: ${a.answe
             // Nếu file đã tồn tại, cập nhật message ID
             await this.filesService.updateFileWithMessage(
               existingFile._id as unknown as string,
-              savedUserMsg._id as unknown as string
+              savedUserMsg._id as unknown as string,
             );
           } else {
             // Nếu không tìm thấy file, tạo mới record chỉ với openaiFileId và message
@@ -317,9 +334,11 @@ ${skinProfileInfo.answers.map(a => `Hỏi: ${a.question}\nTrả lời: ${a.answe
           // Auto-generate thread name if needed
           if (!thread.name) {
             // Non-blocking operation to generate thread name
-            this.generateThreadName(threadId, content, assistantContent).catch(error => {
-              console.error('Thread naming error:', error);
-            });
+            this.generateThreadName(threadId, content, assistantContent).catch(
+              (error) => {
+                console.error('Thread naming error:', error);
+              },
+            );
           }
         } catch (error) {
           console.error('Failed to save assistant message:', error);
@@ -331,7 +350,7 @@ ${skinProfileInfo.answers.map(a => `Hỏi: ${a.question}\nTrả lời: ${a.answe
       console.error('Error in sendMessageToThread:', error);
       throw new CustomBadRequestException(
         error.message || 'Failed to send message to thread',
-        'sendMessageFailed'
+        'sendMessageFailed',
       );
     }
   }
@@ -340,7 +359,10 @@ ${skinProfileInfo.answers.map(a => `Hỏi: ${a.question}\nTrả lời: ${a.answe
     validateObjectId(threadId, 'thread');
     const thread = await this.threadModel.findById(threadId);
     if (!thread) {
-      throw new CustomNotFoundException(`Thread with ID ${threadId} not found`, 'threadNotFound');
+      throw new CustomNotFoundException(
+        `Thread with ID ${threadId} not found`,
+        'threadNotFound',
+      );
     }
 
     const messages = await this.messageModel
@@ -448,7 +470,10 @@ ${skinProfileInfo.answers.map(a => `Hỏi: ${a.question}\nTrả lời: ${a.answe
       const data = await response.json();
 
       if (!data.id) {
-        throw new CustomBadRequestException('Upload file to OpenAI failed', 'openaiUploadFailed');
+        throw new CustomBadRequestException(
+          'Upload file to OpenAI failed',
+          'openaiUploadFailed',
+        );
       }
 
       return { openaiFileId: data.id };
@@ -456,7 +481,7 @@ ${skinProfileInfo.answers.map(a => `Hỏi: ${a.question}\nTrả lời: ${a.answe
       console.error('File upload error:', error);
       throw new CustomBadRequestException(
         error.message || 'Upload file failed',
-        'fileUploadFailed'
+        'fileUploadFailed',
       );
     }
   }
@@ -513,13 +538,14 @@ ${skinProfileInfo.answers.map(a => `Hỏi: ${a.question}\nTrả lời: ${a.answe
   private async generateThreadName(
     threadId: string,
     userContent: any,
-    assistantContent: string
+    assistantContent: string,
   ): Promise<void> {
     try {
       // Truncate content for the API request (to avoid token limits)
-      const userContentStr = typeof userContent === 'string'
-        ? userContent.substring(0, 500)
-        : JSON.stringify(userContent).substring(0, 500);
+      const userContentStr =
+        typeof userContent === 'string'
+          ? userContent.substring(0, 500)
+          : JSON.stringify(userContent).substring(0, 500);
 
       const assistantContentStr = assistantContent.substring(0, 500);
 
@@ -535,8 +561,13 @@ Tiêu đề:`;
 
       const titleResponse = await this.openai.chat.completions.create({
         model: 'gpt-4o',
-        messages: [{ role: 'system', content: 'Bạn là một AI giúp tạo tiêu đề ngắn gọn.' },
-        { role: 'user', content: summaryPrompt }],
+        messages: [
+          {
+            role: 'system',
+            content: 'Bạn là một AI giúp tạo tiêu đề ngắn gọn.',
+          },
+          { role: 'user', content: summaryPrompt },
+        ],
         max_tokens: 40,
         temperature: 0.7,
       });
@@ -548,11 +579,13 @@ Tiêu đề:`;
         const updatedThread = await this.threadModel.findByIdAndUpdate(
           threadId,
           { name: generatedTitle },
-          { new: true }
+          { new: true },
         );
 
         if (!updatedThread) {
-          console.warn(`Could not update thread ${threadId} with generated title`);
+          console.warn(
+            `Could not update thread ${threadId} with generated title`,
+          );
         }
       }
     } catch (error) {
@@ -572,7 +605,10 @@ Tiêu đề:`;
     const thread = await this.threadModel.findById(threadId);
 
     if (!thread) {
-      throw new CustomNotFoundException(`Thread with ID ${threadId} not found`, 'threadNotFound');
+      throw new CustomNotFoundException(
+        `Thread with ID ${threadId} not found`,
+        'threadNotFound',
+      );
     }
 
     // Convert to string for comparison if needed
@@ -583,20 +619,26 @@ Tiêu đề:`;
   }
 
   /* ================= PRODUCT RECOMMENDATION START HERE ===================== */
-  async getProductRecommendations(threadId: string, userId: string): Promise<string[]> {
+  async getProductRecommendations(
+    threadId: string,
+    userId: string,
+  ): Promise<string[]> {
     validateObjectId(threadId, 'thread');
 
     // Check if thread exists and user owns it
     const thread = await this.threadModel.findById(threadId);
     if (!thread) {
-      throw new CustomNotFoundException(`Không tìm thấy đoạn hội thoại với ID ${threadId}`, 'threadNotFound');
+      throw new CustomNotFoundException(
+        `Không tìm thấy đoạn hội thoại với ID ${threadId}`,
+        'threadNotFound',
+      );
     }
 
     const isOwner = await this.isThreadOwner(threadId, userId);
     if (!isOwner) {
       throw new CustomBadRequestException(
         'Bạn không có quyền truy cập vào đoạn hội thoại này',
-        'threadPermissionDenied'
+        'threadPermissionDenied',
       );
     }
 
@@ -606,57 +648,54 @@ Tiêu đề:`;
     if (!products || products.length === 0) {
       throw new CustomBadRequestException(
         'Không có sản phẩm nào trong hệ thống',
-        'noProductsFound'
+        'noProductsFound',
       );
     }
 
     // Format products for OpenAI
-    const productsInfo = products.map(product => ({
+    const productsInfo = products.map((product) => ({
       id: product._id.toString(),
       name: product.name,
       brand: product.brand,
       description: product.description || '',
       categories: product.categories || [],
       benefits: product.benefits || [],
-      price: product.price || 0
+      price: product.price || 0,
     }));
 
     // Send message to thread with products data
-    await this.openai.beta.threads.messages.create(
-      thread.openaiThreadId,
-      {
-        role: 'user',
-        content: `Dựa vào kết quả phân tích da và các cuộc trò chuyện trước đó, vui lòng gợi ý các sản phẩm phù hợp nhất từ danh sách sau. Chỉ trả về ID của các sản phẩm được gợi ý, tối đa 5 sản phẩm, định dạng JSON: ["id1", "id2", "id3"]. Danh sách sản phẩm: ${JSON.stringify(productsInfo)}`
-      }
-    );
+    await this.openai.beta.threads.messages.create(thread.openaiThreadId, {
+      role: 'user',
+      content: `Dựa vào kết quả phân tích da và các cuộc trò chuyện trước đó, vui lòng gợi ý các sản phẩm phù hợp nhất từ danh sách sau. Chỉ trả về ID của các sản phẩm được gợi ý, tối đa 5 sản phẩm, định dạng JSON: ["id1", "id2", "id3"]. Danh sách sản phẩm: ${JSON.stringify(productsInfo)}`,
+    });
 
     // Create a run to process the message
     const run = await this.openai.beta.threads.runs.create(
       thread.openaiThreadId,
       {
-        assistant_id: this.assistantId
-      }
+        assistant_id: this.assistantId,
+      },
     );
 
     // Poll for completion
     let runStatus = await this.openai.beta.threads.runs.retrieve(
       thread.openaiThreadId,
-      run.id
+      run.id,
     );
 
     // Wait for the run to complete
     while (runStatus.status !== 'completed' && runStatus.status !== 'failed') {
       // Wait for 1 second before checking again
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       runStatus = await this.openai.beta.threads.runs.retrieve(
         thread.openaiThreadId,
-        run.id
+        run.id,
       );
 
       if (runStatus.status === 'failed') {
         throw new CustomBadRequestException(
           'Không thể xử lý yêu cầu gợi ý sản phẩm',
-          'productRecommendationFailed'
+          'productRecommendationFailed',
         );
       }
     }
@@ -664,7 +703,7 @@ Tiêu đề:`;
     // Get the assistant's response
     const messages = await this.openai.beta.threads.messages.list(
       thread.openaiThreadId,
-      { order: 'desc', limit: 1 }
+      { order: 'desc', limit: 1 },
     );
 
     // Extract the product IDs from the response
@@ -672,7 +711,7 @@ Tiêu đề:`;
     if (!assistantMessage || assistantMessage.role !== 'assistant') {
       throw new CustomBadRequestException(
         'Không nhận được phản hồi từ AI',
-        'noAssistantResponse'
+        'noAssistantResponse',
       );
     }
 
@@ -712,7 +751,7 @@ Tiêu đề:`;
       console.error('Error parsing product recommendations:', error);
       throw new CustomBadRequestException(
         'Không thể phân tích phản hồi gợi ý sản phẩm',
-        'invalidRecommendationFormat'
+        'invalidRecommendationFormat',
       );
     }
   }

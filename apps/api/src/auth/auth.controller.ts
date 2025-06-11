@@ -12,7 +12,13 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { ApiBearerAuth, ApiTags, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiTags,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { EmailDto } from './dto/email.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
@@ -27,11 +33,14 @@ export class AuthController {
   constructor(
     private authService: AuthService,
     private configService: ConfigService,
-  ) { }
+  ) {}
 
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })
-  @ApiResponse({ status: 201, description: 'Registration initiated. Verification email sent' })
+  @ApiResponse({
+    status: 201,
+    description: 'Registration initiated. Verification email sent',
+  })
   async register(
     @Body() registerDto: RegisterDto,
   ): Promise<{ success: boolean; message: string; email: string }> {
@@ -113,9 +122,16 @@ export class AuthController {
 
   @Get('verify-email')
   @ApiOperation({ summary: 'Verify user email with token' })
-  @ApiQuery({ name: 'token', required: true, description: 'Email verification token' })
+  @ApiQuery({
+    name: 'token',
+    required: true,
+    description: 'Email verification token',
+  })
   @ApiResponse({ status: 200, description: 'Email verified successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid or expired verification token' })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid or expired verification token',
+  })
   async verifyEmail(@Query('token') token: string) {
     return this.authService.verifyEmail(token);
   }

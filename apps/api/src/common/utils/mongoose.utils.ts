@@ -20,7 +20,7 @@ export const validateObjectId = (id: string, entityName = 'entity'): void => {
   if (!isValidObjectId(id)) {
     throw new CustomBadRequestException(
       `Invalid ${entityName} ID format: ${id}`,
-      'invalidIdFormat'
+      'invalidIdFormat',
     );
   }
 };

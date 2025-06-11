@@ -6,7 +6,7 @@ import { ApiKey } from './schema/api-key.schema';
 import { CreateApiKeyDto } from './dto/create-api-key.dto';
 import {
   CustomUnauthorizedException,
-  CustomNotFoundException
+  CustomNotFoundException,
 } from '@api/common/exceptions/custom-exceptions';
 import { validateObjectId } from '@api/common/utils/mongoose.utils';
 
@@ -60,7 +60,10 @@ export class ApiKeyService {
     );
 
     if (!apiKey) {
-      throw new CustomUnauthorizedException('Invalid or expired API key', 'invalidApiKey');
+      throw new CustomUnauthorizedException(
+        'Invalid or expired API key',
+        'invalidApiKey',
+      );
     }
 
     return apiKey;
@@ -93,7 +96,10 @@ export class ApiKeyService {
     );
 
     if (!oldApiKey) {
-      throw new CustomNotFoundException('API key not found or inactive', 'apiKeyNotFound');
+      throw new CustomNotFoundException(
+        'API key not found or inactive',
+        'apiKeyNotFound',
+      );
     }
 
     // Create new key with same settings

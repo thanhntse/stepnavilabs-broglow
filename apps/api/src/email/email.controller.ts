@@ -1,17 +1,44 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { EmailService } from './email.service';
-import { EmailOptions, EmailResponse, CreateEmailTemplateDto, UpdateEmailTemplateDto } from './interfaces/email.interface';
-import { ApiOperation, ApiResponse, ApiTags, ApiProperty, ApiPropertyOptional, ApiParam } from '@nestjs/swagger';
-import { EmailTemplate, EmailTemplateType } from './schema/email-template.schema';
+import {
+  EmailOptions,
+  EmailResponse,
+  CreateEmailTemplateDto,
+  UpdateEmailTemplateDto,
+} from './interfaces/email.interface';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiProperty,
+  ApiPropertyOptional,
+  ApiParam,
+} from '@nestjs/swagger';
+import {
+  EmailTemplate,
+  EmailTemplateType,
+} from './schema/email-template.schema';
 
 class EmailResponseDto implements EmailResponse {
   @ApiProperty({ description: 'Whether the email was sent successfully' })
   success: boolean;
 
-  @ApiPropertyOptional({ description: 'The message ID if the email was sent successfully' })
+  @ApiPropertyOptional({
+    description: 'The message ID if the email was sent successfully',
+  })
   messageId?: string;
 
-  @ApiPropertyOptional({ description: 'The error message if the email was not sent successfully' })
+  @ApiPropertyOptional({
+    description: 'The error message if the email was not sent successfully',
+  })
   error?: any;
 }
 
@@ -25,7 +52,7 @@ export class EmailController {
   @ApiResponse({
     status: 200,
     description: 'Email sent successfully',
-    type: EmailResponseDto
+    type: EmailResponseDto,
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -39,7 +66,7 @@ export class EmailController {
   @ApiResponse({
     status: 200,
     description: 'List of all email templates',
-    type: [EmailTemplate]
+    type: [EmailTemplate],
   })
   async getAllTemplates(): Promise<EmailTemplate[]> {
     return this.emailService.getAllTemplates();
@@ -47,14 +74,20 @@ export class EmailController {
 
   @Get('templates/:type')
   @ApiOperation({ summary: 'Get email template by type' })
-  @ApiParam({ name: 'type', enum: EmailTemplateType, description: 'The email template type' })
+  @ApiParam({
+    name: 'type',
+    enum: EmailTemplateType,
+    description: 'The email template type',
+  })
   @ApiResponse({
     status: 200,
     description: 'The email template',
-    type: EmailTemplate
+    type: EmailTemplate,
   })
   @ApiResponse({ status: 404, description: 'Template not found' })
-  async getTemplateByType(@Param('type') type: EmailTemplateType): Promise<EmailTemplate> {
+  async getTemplateByType(
+    @Param('type') type: EmailTemplateType,
+  ): Promise<EmailTemplate> {
     const template = await this.emailService.getTemplateByType(type);
     if (!template) {
       throw new Error(`Template with type ${type} not found`);
@@ -67,10 +100,12 @@ export class EmailController {
   @ApiResponse({
     status: 201,
     description: 'The created email template',
-    type: EmailTemplate
+    type: EmailTemplate,
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
-  async createTemplate(@Body() createTemplateDto: CreateEmailTemplateDto): Promise<EmailTemplate> {
+  async createTemplate(
+    @Body() createTemplateDto: CreateEmailTemplateDto,
+  ): Promise<EmailTemplate> {
     return this.emailService.createTemplate(createTemplateDto);
   }
 
@@ -80,14 +115,17 @@ export class EmailController {
   @ApiResponse({
     status: 200,
     description: 'The updated email template',
-    type: EmailTemplate
+    type: EmailTemplate,
   })
   @ApiResponse({ status: 404, description: 'Template not found' })
   async updateTemplate(
     @Param('id') id: string,
-    @Body() updateTemplateDto: UpdateEmailTemplateDto
+    @Body() updateTemplateDto: UpdateEmailTemplateDto,
   ): Promise<EmailTemplate> {
-    const updated = await this.emailService.updateTemplate(id, updateTemplateDto);
+    const updated = await this.emailService.updateTemplate(
+      id,
+      updateTemplateDto,
+    );
     if (!updated) {
       throw new Error(`Template with ID ${id} not found`);
     }
@@ -100,7 +138,7 @@ export class EmailController {
   @ApiResponse({
     status: 200,
     description: 'Whether the template was deleted successfully',
-    type: Boolean
+    type: Boolean,
   })
   @ApiResponse({ status: 404, description: 'Template not found' })
   async deleteTemplate(@Param('id') id: string): Promise<boolean> {

@@ -32,7 +32,7 @@ export class AILimitInterceptor implements NestInterceptor {
     if (!allowed) {
       throw new CustomForbiddenException(
         'You have used all your free credits today. Please try again tomorrow or upgrade your plan.',
-        'dailyLimitExceeded'
+        'dailyLimitExceeded',
       );
     }
 

@@ -1,6 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { QuestionType } from '../schema/skin-question.schema';
 
 export class QuestionOptionDto {
@@ -52,7 +61,10 @@ export class CreateSkinQuestionDto {
   @IsOptional()
   isActive?: boolean;
 
-  @ApiProperty({ description: 'Whether the question is required', default: false })
+  @ApiProperty({
+    description: 'Whether the question is required',
+    default: false,
+  })
   @IsBoolean()
   @IsOptional()
   isRequired?: boolean;

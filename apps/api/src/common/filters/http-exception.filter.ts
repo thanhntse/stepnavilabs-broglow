@@ -31,12 +31,16 @@ export class GlobalExceptionFilter implements ExceptionFilter {
           if (Array.isArray(exceptionObj.message)) {
             // Handle validation errors which typically return an array of messages
             errorMessage = {
-              key: exceptionObj.messageKey || this.generateErrorKey(status, exceptionObj.error),
+              key:
+                exceptionObj.messageKey ||
+                this.generateErrorKey(status, exceptionObj.error),
               content: exceptionObj.message[0],
             };
           } else {
             errorMessage = {
-              key: exceptionObj.messageKey || this.generateErrorKey(status, exceptionObj.error),
+              key:
+                exceptionObj.messageKey ||
+                this.generateErrorKey(status, exceptionObj.error),
               content: exceptionObj.message,
             };
           }
@@ -87,7 +91,11 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         .toLowerCase()
         .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());
 
-      return baseKey + errorKeySuffix.charAt(0).toUpperCase() + errorKeySuffix.slice(1);
+      return (
+        baseKey +
+        errorKeySuffix.charAt(0).toUpperCase() +
+        errorKeySuffix.slice(1)
+      );
     }
 
     return baseKey;

@@ -41,7 +41,10 @@ export class RoleService {
       .exec();
 
     if (!role) {
-      throw new CustomNotFoundException(`Role with ID "${id}" not found`, 'roleNotFound');
+      throw new CustomNotFoundException(
+        `Role with ID "${id}" not found`,
+        'roleNotFound',
+      );
     }
 
     return role;
@@ -54,7 +57,10 @@ export class RoleService {
       .exec();
 
     if (!role) {
-      throw new CustomNotFoundException(`Role with name "${name}" not found`, 'roleNotFound');
+      throw new CustomNotFoundException(
+        `Role with name "${name}" not found`,
+        'roleNotFound',
+      );
     }
 
     return role;
@@ -92,10 +98,15 @@ export class RoleService {
       .findById(roleId)
       .populate('permissions')
       .exec();
-    if (!role) throw new CustomNotFoundException('Role not found', 'roleNotFound');
+    if (!role)
+      throw new CustomNotFoundException('Role not found', 'roleNotFound');
 
     const permission = await this.permissionService.findOne(permissionId);
-    if (!permission) throw new CustomNotFoundException('Permission not found', 'permissionNotFound');
+    if (!permission)
+      throw new CustomNotFoundException(
+        'Permission not found',
+        'permissionNotFound',
+      );
 
     role.permissions.push(permission);
     return role.save();
@@ -112,7 +123,8 @@ export class RoleService {
       .findById(roleId)
       .populate('permissions')
       .exec();
-    if (!role) throw new CustomNotFoundException('Role not found', 'roleNotFound');
+    if (!role)
+      throw new CustomNotFoundException('Role not found', 'roleNotFound');
 
     role.permissions = role.permissions.filter((p) => p.id !== permissionId);
     return role.save();

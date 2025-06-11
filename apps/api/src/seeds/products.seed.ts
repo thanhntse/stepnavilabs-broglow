@@ -10,8 +10,8 @@ const brands = [
   'Neutrogena',
   'Eucerin',
   'The Ordinary',
-  'L\'Oreal',
-  'Innisfree'
+  "L'Oreal",
+  'Innisfree',
 ];
 
 // Danh sách các loại sản phẩm theo danh mục
@@ -24,7 +24,7 @@ const productTypes: Record<string, string[]> = {
     'Sữa rửa mặt cho da nhạy cảm',
     'Gel rửa mặt kiểm soát dầu',
     'Sữa rửa mặt cấp ẩm',
-    'Sữa rửa mặt làm sáng da'
+    'Sữa rửa mặt làm sáng da',
   ],
   'Kem chống nắng': [
     'Kem chống nắng không gây nhờn',
@@ -34,7 +34,7 @@ const productTypes: Record<string, string[]> = {
     'Kem chống nắng hóa học',
     'Kem chống nắng cho da dầu',
     'Kem chống nắng cho da nhạy cảm',
-    'Kem chống nắng nâng tone'
+    'Kem chống nắng nâng tone',
   ],
   'Tẩy trang': [
     'Nước tẩy trang Micellar',
@@ -44,9 +44,9 @@ const productTypes: Record<string, string[]> = {
     'Gel tẩy trang',
     'Nước tẩy trang cho da dầu',
     'Nước tẩy trang cho da nhạy cảm',
-    'Nước tẩy trang cho da mụn'
+    'Nước tẩy trang cho da mụn',
   ],
-  'Serum': [
+  Serum: [
     'Serum Vitamin C',
     'Serum Hyaluronic Acid',
     'Serum Niacinamide',
@@ -54,7 +54,7 @@ const productTypes: Record<string, string[]> = {
     'Serum chống lão hóa',
     'Serum trị mụn',
     'Serum làm sáng da',
-    'Serum dưỡng ẩm sâu'
+    'Serum dưỡng ẩm sâu',
   ],
   'Kem dưỡng': [
     'Kem dưỡng ẩm cho da dầu',
@@ -64,7 +64,7 @@ const productTypes: Record<string, string[]> = {
     'Kem dưỡng ban ngày',
     'Kem dưỡng chống lão hóa',
     'Kem dưỡng làm sáng da',
-    'Kem dưỡng phục hồi da'
+    'Kem dưỡng phục hồi da',
   ],
   'Trị mụn': [
     'Kem trị mụn đầu đen',
@@ -74,8 +74,8 @@ const productTypes: Record<string, string[]> = {
     'Kem trị mụn chuyên sâu',
     'Serum trị mụn',
     'Mặt nạ trị mụn',
-    'Kem trị thâm mụn'
-  ]
+    'Kem trị thâm mụn',
+  ],
 };
 
 // Các công dụng theo danh mục sản phẩm
@@ -88,7 +88,7 @@ const benefitsByCategory: Record<string, string[]> = {
     'Duy trì độ ẩm',
     'Làm dịu da',
     'Tẩy tế bào chết nhẹ nhàng',
-    'Loại bỏ tạp chất'
+    'Loại bỏ tạp chất',
   ],
   'Kem chống nắng': [
     'Bảo vệ da khỏi tia UV',
@@ -98,7 +98,7 @@ const benefitsByCategory: Record<string, string[]> = {
     'Bảo vệ toàn diện',
     'Không gây nhờn rít',
     'Không để lại vệt trắng',
-    'Chống thấm nước'
+    'Chống thấm nước',
   ],
   'Tẩy trang': [
     'Làm sạch lớp trang điểm',
@@ -108,9 +108,9 @@ const benefitsByCategory: Record<string, string[]> = {
     'Không cần rửa lại',
     'Dịu nhẹ với da',
     'Loại bỏ lớp trang điểm không trôi',
-    'Không làm bít lỗ chân lông'
+    'Không làm bít lỗ chân lông',
   ],
-  'Serum': [
+  Serum: [
     'Cung cấp dưỡng chất đậm đặc',
     'Thẩm thấu nhanh',
     'Cải thiện kết cấu da',
@@ -118,7 +118,7 @@ const benefitsByCategory: Record<string, string[]> = {
     'Giảm nếp nhăn',
     'Tăng cường độ đàn hồi',
     'Chống oxy hóa',
-    'Cải thiện tông màu da'
+    'Cải thiện tông màu da',
   ],
   'Kem dưỡng': [
     'Dưỡng ẩm sâu',
@@ -128,7 +128,7 @@ const benefitsByCategory: Record<string, string[]> = {
     'Cung cấp dưỡng chất',
     'Làm mềm da',
     'Bảo vệ da khỏi tác nhân môi trường',
-    'Nuôi dưỡng da ban đêm'
+    'Nuôi dưỡng da ban đêm',
   ],
   'Trị mụn': [
     'Giảm viêm',
@@ -138,22 +138,22 @@ const benefitsByCategory: Record<string, string[]> = {
     'Làm mờ vết thâm mụn',
     'Làm xẹp mụn nhanh chóng',
     'Giảm đỏ',
-    'Làm thông thoáng lỗ chân lông'
-  ]
+    'Làm thông thoáng lỗ chân lông',
+  ],
 };
 
 // Giá cơ bản theo thương hiệu
 const priceByBrand: Record<string, number> = {
   'La Roche-Posay': 450000,
-  'CeraVe': 350000,
-  'Bioderma': 400000,
-  'Vichy': 500000,
-  'Avène': 420000,
-  'Neutrogena': 280000,
-  'Eucerin': 380000,
+  CeraVe: 350000,
+  Bioderma: 400000,
+  Vichy: 500000,
+  Avène: 420000,
+  Neutrogena: 280000,
+  Eucerin: 380000,
   'The Ordinary': 250000,
-  'L\'Oreal': 220000,
-  'Innisfree': 200000
+  "L'Oreal": 220000,
+  Innisfree: 200000,
 };
 
 // Điều chỉnh giá theo loại sản phẩm
@@ -161,9 +161,9 @@ const priceAdjustByCategory: Record<string, number> = {
   'Sữa rửa mặt': -30000,
   'Kem chống nắng': 100000,
   'Tẩy trang': -50000,
-  'Serum': 150000,
+  Serum: 150000,
   'Kem dưỡng': 0,
-  'Trị mụn': 50000
+  'Trị mụn': 50000,
 };
 
 // Danh sách URL Shopee (mẫu)
@@ -172,17 +172,19 @@ const shopeeUrlTemplates = [
   'https://shopee.vn/skin-care-item-i.42587123.786345912',
   'https://shopee.vn/beauty-product-i.58612340.912375684',
   'https://shopee.vn/cosmetic-item-i.23491758.647281935',
-  'https://shopee.vn/facial-care-i.85621379.359147862'
+  'https://shopee.vn/facial-care-i.85621379.359147862',
 ];
 
 // Hàm tạo shopee URL giả
 function generateShopeeUrl(name: string, brand: string): string {
-  const template = shopeeUrlTemplates[Math.floor(Math.random() * shopeeUrlTemplates.length)];
+  const template =
+    shopeeUrlTemplates[Math.floor(Math.random() * shopeeUrlTemplates.length)];
   const slug = name.toLowerCase().replace(/ /g, '-');
   const randomId = Math.floor(10000000 + Math.random() * 90000000);
   const randomProductId = Math.floor(100000000 + Math.random() * 900000000);
 
-  return template.replace('product-name', slug)
+  return template
+    .replace('product-name', slug)
     .replace(/i\.\d+\.\d+/, `i.${randomId}.${randomProductId}`);
 }
 
@@ -207,7 +209,10 @@ function generateMockProducts(count: number = 100) {
     // Chọn ngẫu nhiên thương hiệu, danh mục và loại sản phẩm
     const brand = brands[Math.floor(Math.random() * brands.length)];
     const category = categories[Math.floor(Math.random() * categories.length)];
-    const productType = productTypes[category][Math.floor(Math.random() * productTypes[category].length)];
+    const productType =
+      productTypes[category][
+        Math.floor(Math.random() * productTypes[category].length)
+      ];
 
     // Tạo tên sản phẩm
     const name = `${productType} ${brand}`;
@@ -244,13 +249,17 @@ function generateMockProducts(count: number = 100) {
   return products;
 }
 
-export async function seedProducts(productsCollection: Collection): Promise<void> {
+export async function seedProducts(
+  productsCollection: Collection,
+): Promise<void> {
   console.log('Seeding products...');
 
   // Kiểm tra xem đã có sản phẩm trong cơ sở dữ liệu chưa
   const existingCount = await productsCollection.countDocuments();
   if (existingCount > 0) {
-    console.log(`Đã có ${existingCount} sản phẩm trong cơ sở dữ liệu. Bỏ qua seed.`);
+    console.log(
+      `Đã có ${existingCount} sản phẩm trong cơ sở dữ liệu. Bỏ qua seed.`,
+    );
     return;
   }
 

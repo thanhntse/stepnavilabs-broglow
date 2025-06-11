@@ -16,14 +16,24 @@ import { OpenAiService } from './openai.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
 import { Readable } from 'stream';
-import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiOperation,
+  ApiResponse,
+  ApiSecurity,
+  ApiTags,
+} from '@nestjs/swagger';
 import { MessageDto } from './dto/message.dto';
 import { AILimitInterceptor } from './interceptors/ai-limit.interceptor';
 import { AuthGuard } from '@nestjs/passport';
 import { User } from '@api/auth/decorators/user.decorator';
 import { UserDocument } from '@api/users/schema/user.schema';
 import { CreateThreadDto } from './dto/create-thread.dto';
-import { CustomBadRequestException, CustomNotFoundException } from '@api/common/exceptions/custom-exceptions';
+import {
+  CustomBadRequestException,
+  CustomNotFoundException,
+} from '@api/common/exceptions/custom-exceptions';
 import { PoliciesGuard } from '@api/casl/guards/policies.guard';
 import { diskStorage } from 'multer';
 import { v4 as uuid } from 'uuid';
@@ -38,7 +48,7 @@ import { FilesService } from '@api/files/files.service';
 export class OpenAiController {
   constructor(
     private readonly openAiService: OpenAiService,
-    private readonly filesService: FilesService
+    private readonly filesService: FilesService,
   ) {}
 
   @Get('file/:openaiFileId')
@@ -99,7 +109,7 @@ export class OpenAiController {
       }
       throw new CustomBadRequestException(
         error.message || 'Failed to check thread ownership',
-        'checkOwnershipFailed'
+        'checkOwnershipFailed',
       );
     }
   }
@@ -107,14 +117,14 @@ export class OpenAiController {
   @Delete('thread/:threadId')
   async deleteThread(
     @Param('threadId') threadId: string,
-    @User() user: UserDocument
+    @User() user: UserDocument,
   ) {
     // Kiểm tra quyền sở hữu thread
     const isOwner = await this.openAiService.isThreadOwner(threadId, user.id);
     if (!isOwner) {
       throw new CustomBadRequestException(
         'You do not have permission to delete this thread',
-        'threadPermissionDenied'
+        'threadPermissionDenied',
       );
     }
 
@@ -136,7 +146,7 @@ export class OpenAiController {
     if (!isOwner) {
       throw new CustomBadRequestException(
         'You do not have permission to send messages to this thread',
-        'threadPermissionDenied'
+        'threadPermissionDenied',
       );
     }
 
@@ -168,7 +178,7 @@ export class OpenAiController {
     } catch (error) {
       throw new CustomBadRequestException(
         error.message || 'Failed to fetch messages',
-        'fetchMessagesFailed'
+        'fetchMessagesFailed',
       );
     }
   }
@@ -187,7 +197,7 @@ export class OpenAiController {
     if (!isOwner) {
       throw new CustomBadRequestException(
         'You do not have permission to submit tool outputs for this thread',
-        'threadPermissionDenied'
+        'threadPermissionDenied',
       );
     }
 
@@ -214,12 +224,12 @@ export class OpenAiController {
           cb(null, uniqueName);
         },
       }),
-      limits: { fileSize: 5 * 1024 * 1024 }
-    })
+      limits: { fileSize: 5 * 1024 * 1024 },
+    }),
   )
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
-    @User() user: UserDocument
+    @User() user: UserDocument,
   ) {
     if (!file) {
       throw new CustomBadRequestException('No file provided', 'fileMissing');
@@ -232,7 +242,7 @@ export class OpenAiController {
     await this.filesService.createWithOpenAIFileId(
       file,
       openaiResult.openaiFileId,
-      user.id
+      user.id,
     );
 
     // Return both the OpenAI file ID and local file info
@@ -248,12 +258,17 @@ export class OpenAiController {
 
   /* ================= PRODUCT RECOMMENDATION START HERE ===================== */
   @Post('thread/:threadId/recommend-products')
-  @ApiOperation({ summary: 'Get product recommendations based on skin scan results' })
-  @ApiResponse({ status: 200, description: 'Returns array of recommended product IDs' })
+  @ApiOperation({
+    summary: 'Get product recommendations based on skin scan results',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns array of recommended product IDs',
+  })
   @UseInterceptors(AILimitInterceptor)
   async getProductRecommendations(
     @Param('threadId') threadId: string,
-    @User() user: UserDocument
+    @User() user: UserDocument,
   ) {
     try {
       // Check if user owns the thread
@@ -261,26 +276,27 @@ export class OpenAiController {
       if (!isOwner) {
         throw new CustomBadRequestException(
           'Bạn không có quyền truy cập vào đoạn hội thoại này',
-          'threadPermissionDenied'
+          'threadPermissionDenied',
         );
       }
 
-      const recommendedProductIds = await this.openAiService.getProductRecommendations(
-        threadId,
-        user.id
-      );
+      const recommendedProductIds =
+        await this.openAiService.getProductRecommendations(threadId, user.id);
 
       return {
         success: true,
-        recommendedProducts: recommendedProductIds
+        recommendedProducts: recommendedProductIds,
       };
     } catch (error) {
-      if (error instanceof CustomNotFoundException || error instanceof CustomBadRequestException) {
+      if (
+        error instanceof CustomNotFoundException ||
+        error instanceof CustomBadRequestException
+      ) {
         throw error;
       }
       throw new CustomBadRequestException(
         error.message || 'Không thể lấy gợi ý sản phẩm',
-        'productRecommendationFailed'
+        'productRecommendationFailed',
       );
     }
   }

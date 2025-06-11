@@ -5,7 +5,11 @@ import { User } from '@api/users/schema/user.schema';
 export type SkinProfileDocument = HydratedDocument<SkinProfile>;
 
 export class Answer {
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'SkinQuestion', required: true })
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'SkinQuestion',
+    required: true,
+  })
   questionId: Types.ObjectId;
 
   @Prop({ type: MongooseSchema.Types.Mixed, required: true })
@@ -17,7 +21,17 @@ export class SkinProfile {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
   userId: User;
 
-  @Prop({ type: [{ questionId: { type: MongooseSchema.Types.ObjectId, ref: 'SkinQuestion' }, answer: {} }] })
+  @Prop({
+    type: [
+      {
+        questionId: {
+          type: MongooseSchema.Types.ObjectId,
+          ref: 'SkinQuestion',
+        },
+        answer: {},
+      },
+    ],
+  })
   answers: Answer[];
 
   @Prop()

@@ -6,7 +6,10 @@ import * as Handlebars from 'handlebars';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { EmailOptions, EmailResponse } from './interfaces/email.interface';
-import { EmailTemplate, EmailTemplateType } from './schema/email-template.schema';
+import {
+  EmailTemplate,
+  EmailTemplateType,
+} from './schema/email-template.schema';
 
 @Injectable()
 export class EmailService {
@@ -16,7 +19,8 @@ export class EmailService {
 
   constructor(
     private configService: ConfigService,
-    @InjectModel(EmailTemplate.name) private emailTemplateModel: Model<EmailTemplate>
+    @InjectModel(EmailTemplate.name)
+    private emailTemplateModel: Model<EmailTemplate>,
   ) {
     const senderEmail = this.configService.get<string>('EMAIL_SENDER');
     if (!senderEmail) {
@@ -29,7 +33,9 @@ export class EmailService {
     const emailPort = this.configService.get<number>('EMAIL_PORT');
 
     if (!emailPassword || !emailHost || !emailPort) {
-      throw new Error('Email credentials are not properly configured in environment variables');
+      throw new Error(
+        'Email credentials are not properly configured in environment variables',
+      );
     }
 
     this.transporter = nodemailer.createTransport({
@@ -78,11 +84,13 @@ export class EmailService {
         subject,
         ...(html && { html }),
         ...(text && { text }),
-        ...(attachments && { attachments: attachments.map(attachment => ({
-          filename: attachment.filename,
-          content: attachment.content,
-          contentType: attachment.contentType,
-        }))})
+        ...(attachments && {
+          attachments: attachments.map((attachment) => ({
+            filename: attachment.filename,
+            content: attachment.content,
+            contentType: attachment.contentType,
+          })),
+        }),
       };
 
       // Send email
@@ -93,7 +101,10 @@ export class EmailService {
         messageId: info.messageId,
       };
     } catch (error) {
-      this.logger.error(`Failed to send raw email: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to send raw email: ${error.message}`,
+        error.stack,
+      );
       return {
         success: false,
         error,
@@ -101,18 +112,26 @@ export class EmailService {
     }
   }
 
-  private async sendHandlebarsTemplateEmail(options: EmailOptions): Promise<EmailResponse> {
+  private async sendHandlebarsTemplateEmail(
+    options: EmailOptions,
+  ): Promise<EmailResponse> {
     try {
       const { to, cc, bcc, templateType, templateData } = options;
 
       if (!templateType) {
-        throw new Error('Template type is required for Handlebars template emails');
+        throw new Error(
+          'Template type is required for Handlebars template emails',
+        );
       }
 
       // Get template from database
-      const template = await this.emailTemplateModel.findOne({ type: templateType });
+      const template = await this.emailTemplateModel.findOne({
+        type: templateType,
+      });
       if (!template) {
-        throw new Error(`Template with type ${templateType} not found in the database`);
+        throw new Error(
+          `Template with type ${templateType} not found in the database`,
+        );
       }
 
       // Compile the Handlebars template
@@ -136,7 +155,10 @@ export class EmailService {
         attachments: options.attachments,
       });
     } catch (error) {
-      this.logger.error(`Failed to send Handlebars template email: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to send Handlebars template email: ${error.message}`,
+        error.stack,
+      );
       return {
         success: false,
         error,
@@ -144,17 +166,26 @@ export class EmailService {
     }
   }
 
-  async getTemplateByType(type: EmailTemplateType): Promise<EmailTemplate | null> {
+  async getTemplateByType(
+    type: EmailTemplateType,
+  ): Promise<EmailTemplate | null> {
     return this.emailTemplateModel.findOne({ type });
   }
 
-  async createTemplate(template: Partial<EmailTemplate>): Promise<EmailTemplate> {
+  async createTemplate(
+    template: Partial<EmailTemplate>,
+  ): Promise<EmailTemplate> {
     const newTemplate = new this.emailTemplateModel(template);
     return newTemplate.save();
   }
 
-  async updateTemplate(id: string, template: Partial<EmailTemplate>): Promise<EmailTemplate | null> {
-    return this.emailTemplateModel.findByIdAndUpdate(id, template, { new: true });
+  async updateTemplate(
+    id: string,
+    template: Partial<EmailTemplate>,
+  ): Promise<EmailTemplate | null> {
+    return this.emailTemplateModel.findByIdAndUpdate(id, template, {
+      new: true,
+    });
   }
 
   async deleteTemplate(id: string): Promise<boolean> {

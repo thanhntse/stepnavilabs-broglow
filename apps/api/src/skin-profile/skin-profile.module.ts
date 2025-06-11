@@ -2,7 +2,10 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { SkinProfileController } from './skin-profile.controller';
 import { SkinProfileService } from './skin-profile.service';
-import { SkinQuestion, SkinQuestionSchema } from './schema/skin-question.schema';
+import {
+  SkinQuestion,
+  SkinQuestionSchema,
+} from './schema/skin-question.schema';
 import { SkinProfile, SkinProfileSchema } from './schema/skin-profile.schema';
 import { CaslModule } from '@api/casl/casl.module';
 

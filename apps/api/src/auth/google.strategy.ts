@@ -72,8 +72,10 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
           lastName: lastName,
           email: profile.emails[0].value,
           appName: this.configService.get('APP_NAME') || 'BroGlow',
-          loginUrl: this.configService.get('PUBLIC_URL') ? `${this.configService.get('PUBLIC_URL')}/login` : '/login',
-        }
+          loginUrl: this.configService.get('PUBLIC_URL')
+            ? `${this.configService.get('PUBLIC_URL')}/login`
+            : '/login',
+        },
       });
     }
 

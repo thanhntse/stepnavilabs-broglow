@@ -29,10 +29,17 @@ export class SkinQuestion {
   @Prop()
   description?: string;
 
-  @Prop({ required: true, enum: QuestionType, default: QuestionType.SINGLE_CHOICE })
+  @Prop({
+    required: true,
+    enum: QuestionType,
+    default: QuestionType.SINGLE_CHOICE,
+  })
   type: QuestionType;
 
-  @Prop({ type: [{ value: String, label: String, description: String }], default: [] })
+  @Prop({
+    type: [{ value: String, label: String, description: String }],
+    default: [],
+  })
   options: QuestionOption[];
 
   @Prop({ default: 0 })

@@ -1,7 +1,9 @@
 import { Collection } from 'mongodb';
 import { EmailTemplateType } from '../email/schema/email-template.schema';
 
-export const seedEmailTemplates = async (emailTemplateCollection: Collection) => {
+export const seedEmailTemplates = async (
+  emailTemplateCollection: Collection,
+) => {
   // Delete all existing templates
   await emailTemplateCollection.deleteMany({});
 

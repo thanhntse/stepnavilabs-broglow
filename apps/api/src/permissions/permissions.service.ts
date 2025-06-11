@@ -26,7 +26,10 @@ export class PermissionService {
     validateObjectId(id, 'permission');
     const permission = await this.permissionModel.findById(id).exec();
     if (!permission) {
-      throw new CustomNotFoundException(`Permission with ID "${id}" not found`, 'permissionNotFound');
+      throw new CustomNotFoundException(
+        `Permission with ID "${id}" not found`,
+        'permissionNotFound',
+      );
     }
     return permission;
   }
@@ -40,7 +43,10 @@ export class PermissionService {
       .findByIdAndUpdate(id, updatePermissionDto, { new: true })
       .exec();
     if (!permission) {
-      throw new CustomNotFoundException(`Permission with ID "${id}" not found`, 'permissionNotFound');
+      throw new CustomNotFoundException(
+        `Permission with ID "${id}" not found`,
+        'permissionNotFound',
+      );
     }
     return permission;
   }
@@ -49,7 +55,10 @@ export class PermissionService {
     validateObjectId(id, 'permission');
     const result = await this.permissionModel.findByIdAndDelete(id).exec();
     if (!result) {
-      throw new CustomNotFoundException(`Permission with ID "${id}" not found`, 'permissionNotFound');
+      throw new CustomNotFoundException(
+        `Permission with ID "${id}" not found`,
+        'permissionNotFound',
+      );
     }
   }
 

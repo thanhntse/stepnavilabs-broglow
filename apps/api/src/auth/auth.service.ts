@@ -29,8 +29,7 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto) {
-    const { firstName, lastName, email, password } =
-      registerDto;
+    const { firstName, lastName, email, password } = registerDto;
 
     // Validate input
     if (!firstName || !lastName || !email || !password) {
@@ -83,17 +82,20 @@ export class AuthService {
         verificationCode: verificationToken,
         expirationMinutes: 1440, // 24 hours
         appName: this.configService.get('APP_NAME') || 'BroGlow',
-      }
+      },
     });
 
     return {
       success: true,
-      message: 'Registration initiated. Please check your email to verify your account.',
-      email
+      message:
+        'Registration initiated. Please check your email to verify your account.',
+      email,
     };
   }
 
-  async verifyEmail(token: string): Promise<{ success: boolean; message: string }> {
+  async verifyEmail(
+    token: string,
+  ): Promise<{ success: boolean; message: string }> {
     // Find user with the verification token
     const user = await this.userModel.findOne({ verificationToken: token });
 
@@ -118,8 +120,10 @@ export class AuthService {
         lastName: user.lastName,
         email: user.email,
         appName: this.configService.get('APP_NAME') || 'BroGlow',
-        loginUrl: this.configService.get('PUBLIC_URL') ? `${this.configService.get('PUBLIC_URL')}/login` : '/login',
-      }
+        loginUrl: this.configService.get('PUBLIC_URL')
+          ? `${this.configService.get('PUBLIC_URL')}/login`
+          : '/login',
+      },
     });
 
     return {
@@ -278,7 +282,7 @@ export class AuthService {
         otp,
         expirationMinutes: 5,
         appName: this.configService.get('APP_NAME') || 'BroGlow',
-      }
+      },
     });
 
     return { message: 'OTP sent to your email' };
@@ -315,8 +319,9 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         appName: this.configService.get('APP_NAME') || 'BroGlow',
-        supportEmail: this.configService.get('SUPPORT_EMAIL') || 'support@BroGlow.co',
-      }
+        supportEmail:
+          this.configService.get('SUPPORT_EMAIL') || 'support@BroGlow.co',
+      },
     });
 
     return { message: 'Password reset successfully' };

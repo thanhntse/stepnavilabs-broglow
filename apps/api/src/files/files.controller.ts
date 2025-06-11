@@ -73,12 +73,12 @@ export class FilesController {
           cb(null, uniqueName);
         },
       }),
-      limits: { fileSize: 5 * 1024 * 1024 }
+      limits: { fileSize: 5 * 1024 * 1024 },
     }),
   )
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
-    @User() user: UserDocument
+    @User() user: UserDocument,
   ) {
     return this.filesService.create(file, user.id);
   }
@@ -114,12 +114,12 @@ export class FilesController {
           cb(null, uniqueName);
         },
       }),
-      limits: { fileSize: 5 * 1024 * 1024 }
+      limits: { fileSize: 5 * 1024 * 1024 },
     }),
   )
   async uploadFiles(
     @UploadedFiles() files: Array<Express.Multer.File>,
-    @User() user: UserDocument
+    @User() user: UserDocument,
   ) {
     return this.filesService.createMany(files, user.id);
   }
@@ -154,7 +154,10 @@ export class FilesController {
   @ApiParam({ name: 'id', description: 'File ID' })
   @ApiResponse({ status: 200, description: 'File stream' })
   @ApiResponse({ status: 404, description: 'File not found' })
-  async downloadFile(@Param('id') id: string, @Res({ passthrough: true }) res: Response) {
+  async downloadFile(
+    @Param('id') id: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const file = await this.filesService.findOne(id);
 
     if (!fs.existsSync(file.path)) {

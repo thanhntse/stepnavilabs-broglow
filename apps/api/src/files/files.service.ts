@@ -30,7 +30,7 @@ export class FilesService {
       mimetype: file.mimetype,
       size: file.size,
       path: file.path,
-      owner: owner
+      owner: owner,
     });
     return createdFile.save();
   }
@@ -38,7 +38,7 @@ export class FilesService {
   async createWithOpenAIFileId(
     file: Express.Multer.File,
     openaiFileId: string,
-    owner?: string
+    owner?: string,
   ): Promise<File> {
     const createdFile = new this.fileModel({
       openaiFileId,
@@ -46,37 +46,44 @@ export class FilesService {
       mimetype: file.mimetype,
       size: file.size,
       path: file.path,
-      owner: owner
+      owner: owner,
     });
     return createdFile.save();
   }
 
-  async updateFileWithMessage(fileId: string, messageId: string): Promise<File> {
+  async updateFileWithMessage(
+    fileId: string,
+    messageId: string,
+  ): Promise<File> {
     validateObjectId(fileId, 'file');
     validateObjectId(messageId, 'message');
 
-    const file = await this.fileModel.findByIdAndUpdate(
-      fileId,
-      { message: messageId },
-      { new: true }
-    ).exec();
+    const file = await this.fileModel
+      .findByIdAndUpdate(fileId, { message: messageId }, { new: true })
+      .exec();
 
     if (!file) {
-      throw new CustomNotFoundException(`File with ID ${fileId} not found`, 'fileNotFound');
+      throw new CustomNotFoundException(
+        `File with ID ${fileId} not found`,
+        'fileNotFound',
+      );
     }
 
     return file;
   }
 
-  async createMany(files: Express.Multer.File[], owner?: string): Promise<File[]> {
+  async createMany(
+    files: Express.Multer.File[],
+    owner?: string,
+  ): Promise<File[]> {
     const createdFiles = await Promise.all(
-      files.map(file => {
+      files.map((file) => {
         const newFile = new this.fileModel({
           filename: file.filename,
           mimetype: file.mimetype,
           size: file.size,
           path: file.path,
-          owner: owner
+          owner: owner,
         });
         return newFile.save();
       }),
@@ -102,7 +109,10 @@ export class FilesService {
     validateObjectId(id, 'file');
     const file = await this.fileModel.findById(id).exec();
     if (!file) {
-      throw new CustomNotFoundException(`File with ID ${id} not found`, 'fileNotFound');
+      throw new CustomNotFoundException(
+        `File with ID ${id} not found`,
+        'fileNotFound',
+      );
     }
     return file;
   }

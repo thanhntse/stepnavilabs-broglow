@@ -1,10 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsUrl, IsNumber, IsOptional, IsBoolean, IsArray } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsUrl,
+  IsNumber,
+  IsOptional,
+  IsBoolean,
+  IsArray,
+} from 'class-validator';
 
 export class CreateProductDto {
   @ApiProperty({
     description: 'The name of the product',
-    example: 'Kem chống nắng nâng tone cho da dầu La Roche-Posay Anthelios XL SPF50',
+    example:
+      'Kem chống nắng nâng tone cho da dầu La Roche-Posay Anthelios XL SPF50',
   })
   @IsString()
   @IsNotEmpty()

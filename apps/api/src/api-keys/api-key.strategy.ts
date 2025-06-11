@@ -1,15 +1,11 @@
-import {
-  Injectable,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ApiKeyService } from './api-key.service';
 import { HeaderAPIKeyStrategy } from 'passport-headerapikey';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from '@api/users/schema/user.schema';
-import {
-  CustomUnauthorizedException
-} from '@api/common/exceptions/custom-exceptions';
+import { CustomUnauthorizedException } from '@api/common/exceptions/custom-exceptions';
 import { isValidObjectId } from '@api/common/utils/mongoose.utils';
 
 @Injectable()
@@ -35,7 +31,10 @@ export class ApiKeyStrategy extends PassportStrategy(
 
         if (!isValidObjectId(validKey.owner)) {
           return done(
-            new CustomUnauthorizedException('Invalid user ID format', 'invalidUserId'),
+            new CustomUnauthorizedException(
+              'Invalid user ID format',
+              'invalidUserId',
+            ),
             false,
           );
         }
@@ -47,7 +46,10 @@ export class ApiKeyStrategy extends PassportStrategy(
           );
 
         if (!user) {
-          throw new CustomUnauthorizedException('User not found', 'userNotFound');
+          throw new CustomUnauthorizedException(
+            'User not found',
+            'userNotFound',
+          );
         }
 
         return done(null, user, next);
