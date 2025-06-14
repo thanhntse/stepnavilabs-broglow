@@ -397,23 +397,23 @@ ${skinProfileInfo.answers.map((a) => `Hỏi: ${a.question}\nTrả lời: ${a.ans
         ];
       }
 
-      if (files.length > 0) {
-        const fileObjects = files.map((file) => ({
-          type: 'image_file',
-          image_file: {
-            file_id: file.openaiFileId,
-          },
-        }));
+      // if (files.length > 0) {
+      //   const fileObjects = files.map((file) => ({
+      //     type: 'image_file',
+      //     image_file: {
+      //       file_id: file.openaiFileId,
+      //     },
+      //   }));
 
-        if (Array.isArray(messageContent)) {
-          messageContent = [...messageContent, ...fileObjects];
-        } else {
-          messageContent = [
-            { type: 'text', text: { value: message.content } },
-            ...fileObjects,
-          ];
-        }
-      }
+      //   if (Array.isArray(messageContent)) {
+      //     messageContent = [...messageContent, ...fileObjects];
+      //   } else {
+      //     messageContent = [
+      //       { type: 'text', text: { value: message.content } },
+      //       ...fileObjects,
+      //     ];
+      //   }
+      // }
 
       formattedMessages.push({
         id: message._id,
