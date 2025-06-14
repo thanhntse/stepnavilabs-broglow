@@ -62,7 +62,8 @@ export class AuthService {
       email,
       password: hashedPassword,
       roles: userRole ? [userRole] : [],
-      isEmailVerified: false,
+      isEmailVerified: true,
+      // isEmailVerified: false,
       verificationToken,
     });
     await user.save();
