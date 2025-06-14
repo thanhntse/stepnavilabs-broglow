@@ -75,6 +75,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
           loginUrl: this.configService.get('PUBLIC_URL')
             ? `${this.configService.get('PUBLIC_URL')}/login`
             : '/login',
+          currentYear: new Date().getFullYear(),
         },
       });
     }

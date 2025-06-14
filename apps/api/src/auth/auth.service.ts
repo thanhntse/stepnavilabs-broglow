@@ -73,16 +73,33 @@ export class AuthService {
     const verificationUrl = `${publicUrl}/verify-email?token=${verificationToken}`;
 
     // Send verification email
+    // await this.emailService.sendEmail({
+    //   to: email,
+    //   templateType: EmailTemplateType.VERIFY_EMAIL,
+    //   templateData: {
+    //     firstName,
+    //     lastName,
+    //     verificationLink: verificationUrl,
+    //     verificationCode: verificationToken,
+    //     expirationMinutes: 1440, // 24 hours
+    //     appName: this.configService.get('APP_NAME') || 'BroGlow',
+    //     currentYear: new Date().getFullYear(),
+    //   },
+    // });
+
+    // Send welcome email
     await this.emailService.sendEmail({
-      to: email,
-      templateType: EmailTemplateType.VERIFY_EMAIL,
+      to: user.email,
+      templateType: EmailTemplateType.WELCOME,
       templateData: {
-        firstName,
-        lastName,
-        verificationLink: verificationUrl,
-        verificationCode: verificationToken,
-        expirationMinutes: 1440, // 24 hours
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
         appName: this.configService.get('APP_NAME') || 'BroGlow',
+        loginUrl: this.configService.get('PUBLIC_URL')
+          ? `${this.configService.get('PUBLIC_URL')}/login`
+          : '/login',
+        currentYear: new Date().getFullYear(),
       },
     });
 
@@ -124,6 +141,7 @@ export class AuthService {
         loginUrl: this.configService.get('PUBLIC_URL')
           ? `${this.configService.get('PUBLIC_URL')}/login`
           : '/login',
+        currentYear: new Date().getFullYear(),
       },
     });
 
@@ -283,6 +301,7 @@ export class AuthService {
         otp,
         expirationMinutes: 5,
         appName: this.configService.get('APP_NAME') || 'BroGlow',
+        currentYear: new Date().getFullYear(),
       },
     });
 
@@ -322,6 +341,7 @@ export class AuthService {
         appName: this.configService.get('APP_NAME') || 'BroGlow',
         supportEmail:
           this.configService.get('SUPPORT_EMAIL') || 'support@BroGlow.co',
+        currentYear: new Date().getFullYear(),
       },
     });
 
