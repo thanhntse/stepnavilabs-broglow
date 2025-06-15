@@ -16,12 +16,34 @@ export class ProductsService {
     return createdProduct.save();
   }
 
-  async findAll(): Promise<Product[]> {
-    return this.productModel.find().exec();
+  async findAll(page = 1, limit = 10): Promise<{ data: Product[]; total: number; page: number; limit: number }> {
+    const skip = (page - 1) * limit;
+    const [data, total] = await Promise.all([
+      this.productModel.find().skip(skip).limit(limit).exec(),
+      this.productModel.countDocuments(),
+    ]);
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+    };
   }
 
-  async findByBrand(brand: string): Promise<Product[]> {
-    return this.productModel.find({ brand }).exec();
+  async findByBrand(brand: string, page = 1, limit = 10): Promise<{ data: Product[]; total: number; page: number; limit: number }> {
+    const skip = (page - 1) * limit;
+    const [data, total] = await Promise.all([
+      this.productModel.find({ brand }).skip(skip).limit(limit).exec(),
+      this.productModel.countDocuments({ brand }),
+    ]);
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+    };
   }
 
   async findOne(id: string): Promise<Product> {
@@ -52,5 +74,10 @@ export class ProductsService {
     if (result.deletedCount === 0) {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
+  }
+
+  async clearAll(): Promise<{ deletedCount: number }> {
+    const result = await this.productModel.deleteMany({}).exec();
+    return { deletedCount: result.deletedCount };
   }
 }

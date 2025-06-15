@@ -12,7 +12,7 @@ import {
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 
 @ApiTags('products')
 @Controller('products')
@@ -31,20 +31,33 @@ export class ProductsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all products' })
-  @ApiResponse({ status: 200, description: 'Return all products.' })
-  findAll() {
-    return this.productsService.findAll();
+  @ApiOperation({ summary: 'Get all products with pagination' })
+  @ApiResponse({ status: 200, description: 'Return paginated products.' })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (starts from 1)' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Number of items per page (default: 10, max: 100)' })
+  findAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
+    limit = Math.min(limit, 100);
+    return this.productsService.findAll(page, limit);
   }
 
   @Get('brand/:brand')
-  @ApiOperation({ summary: 'Get products by brand' })
+  @ApiOperation({ summary: 'Get products by brand with pagination' })
   @ApiResponse({
     status: 200,
-    description: 'Return products for a specific brand.',
+    description: 'Return paginated products for a specific brand.',
   })
-  findByBrand(@Param('brand') brand: string) {
-    return this.productsService.findByBrand(brand);
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (starts from 1)' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Number of items per page (default: 10, max: 100)' })
+  findByBrand(
+    @Param('brand') brand: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
+    limit = Math.min(limit, 100);
+    return this.productsService.findByBrand(brand, page, limit);
   }
 
   @Get(':id')
@@ -75,5 +88,15 @@ export class ProductsController {
   @ApiResponse({ status: 404, description: 'Product not found.' })
   remove(@Param('id') id: string) {
     return this.productsService.remove(id);
+  }
+
+  @Delete()
+  @ApiOperation({ summary: 'Clear all products from database' })
+  @ApiResponse({
+    status: 200,
+    description: 'All products have been successfully deleted.',
+  })
+  clearAll() {
+    return this.productsService.clearAll();
   }
 }
