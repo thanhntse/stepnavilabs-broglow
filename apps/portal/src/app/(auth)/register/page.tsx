@@ -107,10 +107,10 @@ const RegisterPage = () => {
     }
   };
 
-  const handleLoginGoogle = async (e: React.FormEvent) => {
-    e.preventDefault();
-    AuthService.loginGoogle();
-  };
+  // const handleLoginGoogle = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   AuthService.loginGoogle();
+  // };
 
   return (
     <>

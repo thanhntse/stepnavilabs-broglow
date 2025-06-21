@@ -539,20 +539,20 @@ export default function ChatPage() {
     }
   };
 
-  // Sửa lại hàm xử lý thay đổi phong thái, bỏ phần hiển thị toast
-  const handleToneChange = (value: string | null) => {
-    // Cập nhật phong thái mới
-    setSelectedTone(value);
+  // // Sửa lại hàm xử lý thay đổi phong thái, bỏ phần hiển thị toast
+  // const handleToneChange = (value: string | null) => {
+  //   // Cập nhật phong thái mới
+  //   setSelectedTone(value);
 
-    // Lưu ngay vào localStorage
-    if (threadId) {
-      if (value) {
-        localStorage.setItem(`thread_${threadId}_tone`, value);
-      } else {
-        localStorage.removeItem(`thread_${threadId}_tone`);
-      }
-    }
-  };
+  //   // Lưu ngay vào localStorage
+  //   if (threadId) {
+  //     if (value) {
+  //       localStorage.setItem(`thread_${threadId}_tone`, value);
+  //     } else {
+  //       localStorage.removeItem(`thread_${threadId}_tone`);
+  //     }
+  //   }
+  // };
 
   // Tải tone từ localStorage khi component được load
   useEffect(() => {

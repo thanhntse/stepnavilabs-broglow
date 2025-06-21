@@ -95,10 +95,10 @@ const LoginPage = () => {
     }
   };
 
-  const handleLoginGoogle = async (e: React.FormEvent) => {
-    e.preventDefault();
-    AuthService.loginGoogle();
-  };
+  // const handleLoginGoogle = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   AuthService.loginGoogle();
+  // };
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
