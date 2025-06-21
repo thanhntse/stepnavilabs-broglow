@@ -5,7 +5,7 @@ import { UserProvider } from "@/context/profile-context";
 import type { Metadata } from "next";
 import "./globals.css";
 import "primereact/resources/primereact.min.css";
-import "primereact/resources/themes/lara-light-green/theme.css";
+import "primereact/resources/themes/lara-light-blue/theme.css";
 import { RouteGuard } from "./(auth)/components/route-guard";
 
 export const metadata: Metadata = {

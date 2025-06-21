@@ -1,10 +1,8 @@
 "use client";
 
-import CopyButton from "@/components/copy-button";
 import Header from "@/components/header";
 import { useImageContext } from "@/context/image-context";
 import { useLanguage } from "@/context/language-context";
-import { ConversationTone } from "@/enums/tone.enum";
 import { AIService } from "@/services/AI-service";
 import { Warning } from "@phosphor-icons/react";
 import {
@@ -20,11 +18,11 @@ import { AssistantStream } from "openai/lib/AssistantStream";
 // @ts-expect-error - OpenAI SDK type definitions are not complete
 import { AssistantStreamEvent } from "openai/resources/beta/assistants/assistants";
 import { RequiredActionFunctionToolCall } from "openai/resources/beta/threads/runs/runs";
-import { InputText } from "primereact/inputtext";
-import { Dropdown } from "primereact/dropdown";
 import { useEffect, useRef, useState } from "react";
 import Markdown from "react-markdown";
-import FullScreenPreview from "../components/fullscreen-chat-preview";
+import ProductRecommendations from "../components/product-recommendations";
+import { InputText } from "primereact/inputtext";
+import { Button } from "primereact/button";
 
 type MessageProps = {
   role: "user" | "assistant" | "code";
@@ -44,7 +42,7 @@ const UserMessage = ({ text, images }: { text: string; images?: string[] }) => {
   return (
     <div className="flex flex-col gap-2 mb-6">
       <div className="text-sm font-semibold ml-auto">{t("chat.you")}</div>
-      <div className="p-3 bg-orange-light self-end rounded-2xl rounded-tr max-w-[90vw] sm:max-w-2xl ml-auto w-fit">
+      <div className="p-3 bg-primary-blue/10 self-end rounded-2xl rounded-tr max-w-[90vw] sm:max-w-2xl ml-auto w-fit">
         <div className="whitespace-pre-line text-sm text-black">{text}</div>
         {images && images.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-2 max-w-full">
@@ -91,13 +89,13 @@ const AssistantMessage = ({
     <div className="flex flex-col gap-2 mb-6">
       <div className="flex items-center gap-2">
         <div className="w-6 h-6 p-1.5 rounded-full bg-white border border-gray-200 text-center">
-          <Image src="/logo-icon.svg" width={14} height={14} alt="logo-icon" />
+          <Image src="/broglow-app-logo.png" width={14} height={14} alt="logo-icon" />
         </div>
         <span className="text-sm font-semibold">{t("chat.ai")}</span>
       </div>
       <div
         onClick={handlePreviewClick}
-        className={`p-3 ${isActive ? "bg-orange-light" : "bg-white"} self-start rounded-xl max-w-2xl border border-gray-300 cursor-pointer hover:bg-orange-light`}
+        className={`p-3 ${isActive ? "bg-primary-blue/10" : "bg-white"} self-start rounded-xl max-w-2xl border border-gray-300 cursor-pointer hover:bg-primary-blue/10`}
       >
         <Markdown>{text}</Markdown>
       </div>
@@ -125,7 +123,7 @@ const TypingIndicator = () => {
     <div className="flex flex-col gap-2 mb-6">
       <div className="flex items-center gap-2">
         <div className="w-6 h-6 p-1.5 rounded-full bg-white border border-gray-200 text-center">
-          <Image src="/logo-icon.svg" width={14} height={14} alt="logo-icon" />
+          <Image src="/broglow-app-logo.png" width={14} height={14} alt="logo-icon" />
         </div>
         <span className="text-sm font-semibold">{t("chat.ai")}</span>
       </div>
@@ -188,22 +186,17 @@ export default function ChatPage() {
   const [isTyping, setIsTyping] = useState(false);
   const [isOwner, setIsOwner] = useState<boolean>(true);
 
+  // Product recommendation states
+  const [recommendedProducts, setRecommendedProducts] = useState<any[]>([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
+  const [hasCheckedRecommendations, setHasCheckedRecommendations] = useState(false);
+  const [showRecommendButton, setShowRecommendButton] = useState(false);
+
   // State cho tone (phong thái)
   const [selectedTone, setSelectedTone] = useState<string | null>(null);
 
-  // Danh sách phong thái AI từ enum ConversationTone
-  const tones = [
-    { label: t("aiTones.youngtive"), value: ConversationTone.YOUNGTIVE },
-    { label: t("aiTones.professional"), value: ConversationTone.PROFESSIONAL },
-    { label: t("aiTones.friendly"), value: ConversationTone.FRIENDLY },
-    { label: t("aiTones.concise"), value: ConversationTone.DIRECT },
-    { label: t("aiTones.detailed"), value: ConversationTone.ANALYTICAL },
-  ];
-
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const [showFullScreenPreview, setShowFullScreenPreview] = useState(false);
 
   // Define the functionCallHandler inside the component
   const functionCallHandler = (
@@ -289,7 +282,32 @@ export default function ChatPage() {
     return formattedMessages;
   };
 
-  // Create or load thread
+  // Add a function to fetch product recommendations
+  const fetchProductRecommendations = async (threadId: string) => {
+    if (!threadId || !isOwner) return;
+
+    try {
+      setIsLoadingProducts(true);
+      const productIds = await AIService.getProductRecommendations(threadId);
+
+      if (productIds && productIds.length > 0) {
+        const productsData = await Promise.all(
+          productIds.map(id => AIService.getProductById(id))
+        );
+
+        // Filter out any null results
+        const validProducts = productsData.filter(product => product !== null);
+        setRecommendedProducts(validProducts);
+      }
+    } catch (error) {
+      console.error("Failed to fetch product recommendations:", error);
+    } finally {
+      setIsLoadingProducts(false);
+      setHasCheckedRecommendations(true);
+    }
+  };
+
+  // Update the useEffect that handles thread loading
   useEffect(() => {
     // Fetch message history
     const fetchMessageHistory = async (threadId: string) => {
@@ -309,6 +327,12 @@ export default function ChatPage() {
 
           if (lastAssistantMessage && lastAssistantMessage.text) {
             setPreviewContent(lastAssistantMessage.text);
+          }
+
+          // Show recommendation button if there are assistant messages
+          const hasAssistantMessages = formattedMessages.some(msg => msg.role === "assistant");
+          if (hasAssistantMessages) {
+            setShowRecommendButton(true);
           }
         } else {
           console.error("Invalid response format:", response.data);
@@ -353,6 +377,13 @@ export default function ChatPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  // Handle recommendation button click
+  const handleLoadRecommendations = () => {
+    if (threadId && !hasCheckedRecommendations && !isLoadingProducts) {
+      fetchProductRecommendations(threadId);
+    }
+  };
 
   // Upload file utility
   const uploadFile = async (file: File): Promise<string> => {
@@ -436,6 +467,8 @@ export default function ChatPage() {
   const handleRunCompleted = () => {
     setInputDisabled(false);
     setIsTyping(false);
+    // Show recommendation button after AI has responded
+    setShowRecommendButton(true);
   };
 
   const handleReadableStream = (stream: AssistantStream) => {
@@ -636,61 +669,53 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen overflow-hidden bg-gradient-to-b from-primary-blue/5 to-white">
       <div className="hidden lg:block">
-        <Header variant="default" updatePromptCount={updatePromptCount} />
+        <Header variant="default" logoSrc="/broglow-logo.png" updatePromptCount={updatePromptCount} />
       </div>
+      {/* <div className="lg:hidden flex items-center justify-between px-4 py-2 bg-white shadow-sm">
+        <Image
+          src="/broglow-logo.png"
+          width={120}
+          height={24}
+          alt="Logo"
+          className="cursor-pointer"
+          onClick={() => router.push("/")}
+        />
+        <div className="flex items-center gap-2">
+          <Dropdown
+            value={selectedTone}
+            onChange={(e) => handleToneChange(e.value)}
+            options={tones}
+            placeholder={t("home.aiToneDefault")}
+            className="!w-36 bg-white text-gray-700 rounded-lg"
+            showClear
+            pt={{
+              root: { className: "!border !border-gray-300 !h-8" },
+              input: {
+                className:
+                  "!text-gray-700 !text-sm !py-1.5 !pl-3 !w-full",
+              },
+              panel: {
+                className: "!border !border-gray-300 !rounded-lg",
+              },
+              item: { className: "!hover:bg-orange-light !text-sm" },
+              trigger: { className: "!text-gray-600 !w-10" },
+              clearIcon: {
+                className:
+                  "!text-gray-500 !hover:text-primary-orange !w-4 !h-4",
+              },
+            }}
+          />
+        </div>
+      </div> */}
 
       <section className="flex flex-col lg:flex-row lg:gap-6 max-w-7xl w-full mx-auto lg:py-5 flex-grow overflow-y-auto">
         {/* Chat container */}
-        <div className="flex flex-col h-screen lg:h-auto lg:w-2/3">
+        <div className="flex flex-col h-screen lg:h-auto w-full">
           {/* Mobile header - shown only on mobile */}
           <div className="lg:hidden">
             <Header variant="default" updatePromptCount={updatePromptCount} />
-
-            {/* Dropdown phong thái mobile */}
-            <div className="px-4 py-2 flex items-center justify-between bg-primary-pastel border-b border-gray-200">
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 p-1.5 rounded-full bg-white border border-gray-200 text-center">
-                  <Image
-                    src="/logo-icon.svg"
-                    width={14}
-                    height={14}
-                    alt="logo-icon"
-                  />
-                </div>
-                <span className="text-base font-semibold">
-                  {t("chat.ai")}{" "}
-                  <sup className="text-[0.5em] align-super">TM</sup>
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Dropdown
-                  value={selectedTone}
-                  onChange={(e) => handleToneChange(e.value)}
-                  options={tones}
-                  placeholder={t("home.aiToneDefault")}
-                  className="!w-36 bg-white text-gray-700 rounded-lg"
-                  showClear
-                  pt={{
-                    root: { className: "!border !border-gray-300 !h-8" },
-                    input: {
-                      className:
-                        "!text-gray-700 !text-sm !py-1.5 !pl-3 !w-full",
-                    },
-                    panel: {
-                      className: "!border !border-gray-300 !rounded-lg",
-                    },
-                    item: { className: "!hover:bg-orange-light !text-sm" },
-                    trigger: { className: "!text-gray-600 !w-10" },
-                    clearIcon: {
-                      className:
-                        "!text-gray-500 !hover:text-primary-orange !w-4 !h-4",
-                    },
-                  }}
-                />
-              </div>
-            </div>
           </div>
 
           <div className="hidden lg:flex flex-col bg-primary-pastel rounded-t-lg border border-gray-300 border-b-0">
@@ -698,7 +723,7 @@ export default function ChatPage() {
               <div className="flex items-center gap-6">
                 <div className="w-6 h-6 p-1.5 rounded-full bg-white border border-gray-300 text-center">
                   <Image
-                    src="/logo-icon.svg"
+                    src="/broglow-app-logo.png"
                     width={14}
                     height={14}
                     alt="logo-icon"
@@ -711,7 +736,7 @@ export default function ChatPage() {
               </div>
 
               {/* Dropdown phong thái desktop */}
-              <div className="flex items-center gap-3">
+              {/* <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-gray-700">
                     {t("home.aiToneSelector")}:
@@ -742,7 +767,7 @@ export default function ChatPage() {
                     }}
                   />
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -750,7 +775,7 @@ export default function ChatPage() {
           <div className="flex-grow overflow-y-auto p-3 lg:p-6 lg:border-l lg:border-r lg:border-gray-300">
             {isLoading ? (
               <div className="flex justify-center items-center h-full">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-orange"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-blue"></div>
               </div>
             ) : messages.length === 0 ? (
               <div className="flex justify-center items-center h-full text-gray-500">
@@ -806,7 +831,45 @@ export default function ChatPage() {
                     }
                   />
                 ))}
+
+                {/* Display typing indicator if AI is typing */}
                 {isTyping && <TypingIndicator />}
+
+                {/* Show recommendation button or recommendations */}
+                {!isTyping && (
+                  <>
+                    {showRecommendButton && isOwner && !hasCheckedRecommendations && !isLoadingProducts && (
+                      <div className="flex justify-center my-6">
+                        <Button
+                          onClick={handleLoadRecommendations}
+                          className="px-5 py-2.5 bg-primary-blue text-white rounded-lg hover:bg-primary-blue/90 transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg"
+                          icon={<Eye size={20} weight="bold" className="text-white" />}
+                          label={t("chat.viewProductRecommendations") || "View Product Recommendations"}
+                          pt={{
+                            root: { className: "font-medium" },
+                            label: { className: "text-sm" }
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    {/* Show product recommendations after loading */}
+                    {recommendedProducts.length > 0 && (
+                      <ProductRecommendations
+                        products={recommendedProducts}
+                        isLoading={false}
+                      />
+                    )}
+
+                    {isLoadingProducts && (
+                      <ProductRecommendations
+                        products={[]}
+                        isLoading={true}
+                      />
+                    )}
+                  </>
+                )}
+
                 <div ref={messagesEndRef} />
               </>
             )}
@@ -883,14 +946,13 @@ export default function ChatPage() {
                       (!userInput.trim() && attachedImages.length === 0) ||
                       !isOwner
                     }
-                    className={`p-3.5 rounded-full ${
-                      !inputDisabled &&
-                      !isLoading &&
-                      isOwner &&
-                      (userInput.trim() || attachedImages.length > 0)
-                        ? "text-primary-orange cursor-pointer hover:bg-orange-50"
+                    className={`p-3.5 rounded-full ${!inputDisabled &&
+                        !isLoading &&
+                        isOwner &&
+                        (userInput.trim() || attachedImages.length > 0)
+                        ? "text-primary-blue cursor-pointer hover:bg-primary-blue/10"
                         : "text-gray-300 cursor-not-allowed"
-                    }`}
+                      }`}
                   >
                     <PaperPlaneRight
                       size={20}
@@ -901,57 +963,9 @@ export default function ChatPage() {
                 </div>
               </div>
             </form>
-            <div className="lg:hidden p-3 bg-gray-100">
-              <button
-                onClick={() => setShowFullScreenPreview(true)}
-                className="flex items-center justify-center w-full gap-2 font-semibold text-primary-dark px-4 py-2 rounded-full bg-white hover:bg-primary-orange hover:text-white ease-in-out duration-200 cursor-pointer"
-              >
-                {t("common.preview")} <Eye weight="fill" />
-              </button>
-            </div>
-          </div>
-        </div>
-        {/* Preview section */}
-        <div className="hidden h-full w-1/3 lg:flex flex-col gap-6">
-          <div className="h-fit bg-gray-100 rounded-lg p-1">
-            {/* Preview header */}
-            <div className="flex justify-between items-center px-4 py-2 w-full">
-              <div className="font-semibold">{t("common.preview")}</div>
-              <div className="flex gap-3">
-                <CopyButton content={previewContent} />
-                {/* <ShareButton content={previewContent} /> */}
-              </div>
-            </div>
-            {/* Preview content */}
-            <div className="w-full h-[60vh] p-4 bg-white overflow-y-auto text-primary-dark leading-6">
-              <Markdown>{previewContent}</Markdown>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-6 justify-center text-sm font-semibold">
-              <div>{t("common.home")}</div>
-              <div>{t("common.BroGlow")}</div>
-            </div>
-            <div className="text-xs text-gray-200 flex flex-col items-center gap-1.5">
-              {t("common.poweredBy")}
-              <Image
-                src="/logo-overlay.svg"
-                width={77}
-                height={14}
-                alt="Logo"
-              />
-            </div>
           </div>
         </div>
       </section>
-      {/* Full screen preview */}
-      {showFullScreenPreview && (
-        <FullScreenPreview
-          content={previewContent}
-          onClose={() => setShowFullScreenPreview(false)}
-        />
-      )}
     </div>
   );
 }

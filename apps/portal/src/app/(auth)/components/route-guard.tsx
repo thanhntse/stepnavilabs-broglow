@@ -1,8 +1,9 @@
 "use client";
 
-import { protectedRoutes, publicOnlyRoutes } from "@/utils/auth-routes";
+import { DEFAULT_AUTH_ROUTE, DEFAULT_PUBLIC_ROUTE, protectedRoutes, publicOnlyRoutes } from "@/utils/auth-routes";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { TokenStorage } from "@/lib/token-storage";
 
 export function RouteGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -11,13 +12,26 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
 
   const authCheck = useCallback(
     (path: string) => {
-      const token = localStorage.getItem("token");
+      const token = TokenStorage.getTokens()?.token;
       const isAuthenticated = !!token;
 
-      if (protectedRoutes.some((route) => path.startsWith(route))) {
+      // Handle root route for authenticated users
+      if (path === "/" && isAuthenticated) {
+        setAuthorized(false);
+        router.push(DEFAULT_AUTH_ROUTE);
+        return;
+      }
+
+      if (protectedRoutes.some((route) => {
+        // Handle exact match for '/'
+        if (route === '/' && path === '/') return true;
+        // Handle others with startsWith
+        if (route !== '/' && path.startsWith(route)) return true;
+        return false;
+      })) {
         if (!isAuthenticated) {
           setAuthorized(false);
-          router.push(`/login?returnUrl=${encodeURIComponent(path)}`);
+          router.push(`${DEFAULT_PUBLIC_ROUTE}?returnUrl=${encodeURIComponent(path)}`);
           return;
         }
       }
@@ -25,7 +39,7 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
       if (publicOnlyRoutes.some((route) => path.startsWith(route))) {
         if (isAuthenticated) {
           setAuthorized(false);
-          router.push("/");
+          router.push(DEFAULT_AUTH_ROUTE);
           return;
         }
       }

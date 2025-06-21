@@ -224,4 +224,45 @@ export class AIService {
       return false;
     }
   }
+
+  /**
+   * Get product recommendations based on skin scan results
+   * @param threadId ID of the thread
+   * @returns Promise with recommended product IDs
+   */
+  static async getProductRecommendations(threadId: string): Promise<string[]> {
+    try {
+      const response = await apiClient.post<any>(`/openai/thread/${threadId}/recommend-products`);
+      return response.data?.recommendedProducts || [];
+    } catch (error) {
+      console.error("Error getting product recommendations:", error);
+      return [];
+    }
+  }
+
+  /**
+   * Get product details by ID
+   * @param productId ID of the product
+   * @returns Promise with product details
+   */
+  static async getProductById(productId: string): Promise<any> {
+    try {
+      const response = await apiClient.get<any>(`/products/${productId}`);
+
+      // Ensure the product has a valid image URL
+      if (response.data && response.data.imageUrl) {
+        // If the image URL is relative (doesn't start with http or https),
+        // prepend the API URL to make it absolute
+        if (!response.data.imageUrl.startsWith('http')) {
+          const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+          response.data.imageUrl = `${baseUrl}${response.data.imageUrl.startsWith('/') ? '' : '/'}${response.data.imageUrl}`;
+        }
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error(`Error getting product ${productId}:`, error);
+      return null;
+    }
+  }
 }

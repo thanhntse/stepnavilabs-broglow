@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary-green: #004643;
-  --color-primary-orange: #f77d19;
-  --color-primary-dark: #1c1c1c;
-  --color-primary-pastel: #f5f5dc;
-  --color-orange-light: rgba(247, 125, 25, 0.14);
+  --color-primary-blue: #0C4DA2;
+  --color-primary-darkblue: #083A7D;
+  --color-primary-lightblue: #2E7DD1;
+  --color-primary-pastel: #EBF2FC;
+  --color-blue-light: rgba(12, 77, 162, 0.14);
 
   @keyframes shake {
     0%,

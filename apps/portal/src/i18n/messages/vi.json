@@ -26,7 +26,7 @@
     "loginWithGoogle": "Đăng nhập với Google",
     "registerWithGoogle": "Đăng ký với Google",
     "or": "hoặc",
-    "copyright": "© 2025 BroGlow™. All rights reserved.",
+    "copyright": "© 2025 STEPNAVI Labs™. All rights reserved.",
     "poweredBy": "Power by",
     "BroGlow": "BroGlow AI",
     "loading": "Đang tải...",
@@ -129,7 +129,8 @@
     "loading": "Đang tải...",
     "aiWarning": "Cảnh báo giới hạn AI",
     "imagePlaceholder": "Ảnh",
-    "sendMessage": "Gửi tin nhắn"
+    "sendMessage": "Gửi tin nhắn",
+    "viewProductRecommendations": "Xem sản phẩm gợi ý"
   },
   "recentPosts": {
     "title": "Tin đăng tạo gần đây",
@@ -139,7 +140,13 @@
   },
   "thread": {
     "noTitle": "Tin",
-    "noDescription": "Không có mô tả"
+    "noDescription": "Không có mô tả",
+    "recentConversations": "Cuộc trò chuyện gần đây",
+    "startNewConversation": "Bắt đầu cuộc trò chuyện mới",
+    "noConversationsYet": "Không có cuộc trò chuyện nào",
+    "startChat": "Bắt đầu trò chuyện",
+    "uploadImages": "Tải ảnh lên",
+    "startFirstChat": "Bắt đầu cuộc trò chuyện của bạn"
   },
   "aiTones": {
     "youngtive": "Trẻ trung",
@@ -150,5 +157,11 @@
     "changed": "Đã thay đổi phong thái thành",
     "switchTo": "Chuyển sang phong thái",
     "toneApplied": "Đã áp dụng phong thái"
+  },
+  "products": {
+    "recommendedForYou": "Sản phẩm được đề xuất",
+    "recommendationsLoading": "Đang tải sản phẩm đề xuất...",
+    "buyNow": "Mua ngay",
+    "noRecommendations": "Không có sản phẩm đề xuất"
   }
 }

@@ -10,14 +10,12 @@ import { Toast } from "primereact/toast";
 import { classNames } from "primereact/utils";
 import React, { useEffect, useRef, useState } from "react";
 import { AuthService } from "../../../services/auth-service";
-import Turnstile from "react-turnstile";
 
 const LoginPage = () => {
   const [emailOrPhone, setEmailOrPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const code = searchParams.get("code");
@@ -28,7 +26,6 @@ const LoginPage = () => {
   const [errors, setErrors] = useState({
     emailOrPhone: false,
     password: false,
-    turnstile: false,
     invalidCredentials: false, // For server-side validation
   });
 
@@ -38,7 +35,7 @@ const LoginPage = () => {
     const exchangeCodeForToken = async () => {
       try {
         await AuthService.redirectGoogleLogin(code);
-        router.push("/");
+        router.push("/thread");
       } catch (error) {
         console.error("Lỗi xác thực:", error);
       }
@@ -66,22 +63,22 @@ const LoginPage = () => {
     const newErrors = {
       emailOrPhone: !validateField("emailOrPhone", emailOrPhone),
       password: !validateField("password", password),
-      turnstile: !turnstileToken,
       invalidCredentials: false, // Reset server-side error
     };
 
     setErrors(newErrors);
 
     // Check if there are any validation errors
-    if (newErrors.emailOrPhone || newErrors.password || newErrors.turnstile) {
+    if (newErrors.emailOrPhone || newErrors.password) {
       return;
     }
 
     setLoading(true);
 
     try {
-      await AuthService.login(emailOrPhone, password, turnstileToken as string);
-      router.push("/");
+      // Modified to remove turnstileToken
+      await AuthService.login(emailOrPhone, password, "");
+      router.push(AuthService.getDefaultAuthRoute());
 
       toastRef.current?.show({
         severity: "success",
@@ -110,62 +107,17 @@ const LoginPage = () => {
   return (
     <>
       <Toast ref={toastRef} position="top-right" />
-      <div className="flex h-screen overflow-hidden bg-gradient-to-br from-primary-pastel to-white">
-        <div className="hidden lg:flex flex-col flex-1 items-center justify-center relative">
-          <div className="absolute top-4 left-4">
-            <Image
-              src="/logo.svg"
-              width={120}
-              height={22}
-              alt="BroGlow Logo"
-              className="cursor-pointer"
-              onClick={() => router.push("/")}
-            />
-          </div>
-
-          <div className="relative w-[500px] h-[500px]">
-            <Image
-              src="/dummy-img-login.png"
-              fill
-              objectFit="contain"
-              alt="Login illustration"
-              priority
-            />
-          </div>
-
-          {/* Card "Profit" */}
-          <div className="absolute top-24 left-24 bg-white shadow-lg p-4 rounded-xl transition-all duration-300 hover:shadow-xl">
-            <p className="text-sm text-gray-500 mb-1">Profit (Last Month)</p>
-            <p className="text-xl font-bold">
-              624k{" "}
-              <span className="text-green-500 text-sm font-medium">+2.2%</span>
-            </p>
-          </div>
-
-          {/* Card "Order" */}
-          <div className="absolute top-56 left-40 bg-white shadow-lg p-4 rounded-xl transition-all duration-300 hover:shadow-xl">
-            <p className="text-sm text-gray-500 mb-1">Order</p>
-            <p className="text-xl font-bold">
-              124k{" "}
-              <span className="text-green-500 text-sm font-medium">+2.4%</span>
-            </p>
-          </div>
-
-          <div className="absolute bottom-4 left-4 text-sm text-gray-500">
-            {t("common.copyright")}
-          </div>
-        </div>
-
-        <div className="w-full lg:w-1/2 xl:w-2/5 p-2 lg:p-4 flex flex-col justify-center overflow-y-auto">
+      <div className="flex h-screen overflow-hidden bg-gradient-to-br from-primary-blue/20 to-white">
+        <div className="w-full p-2 lg:p-4 flex flex-col justify-center overflow-y-auto">
           <div className="mx-auto w-full max-w-md bg-white p-4 md:p-6 rounded-2xl shadow-lg">
-            <div className="lg:hidden mb-4 flex justify-center">
+            <div className="mb-4 flex justify-center">
               <Image
-                src="/logo.svg"
-                width={120}
-                height={22}
+                src="/broglow-logo.png"
+                width={200}
+                height={90}
                 alt="BroGlow Logo"
                 className="cursor-pointer"
-                onClick={() => router.push("/")}
+                onClick={() => router.push("/thread")}
               />
             </div>
 
@@ -174,7 +126,7 @@ const LoginPage = () => {
             </h1>
             <p className="text-gray-500 text-sm mb-4">{t("common.loginToContinue")}</p>
 
-            <Button
+            {/* <Button
               label={t("common.loginWithGoogle")}
               icon={
                 <svg
@@ -213,7 +165,7 @@ const LoginPage = () => {
                 {t("common.or")}
               </span>
               <hr className="flex-grow border-t border-gray-200" />
-            </div>
+            </div> */}
 
             {/* Display server-side error */}
             {errors.invalidCredentials && (
@@ -246,7 +198,7 @@ const LoginPage = () => {
                       }));
                     }}
                     className={classNames(
-                      "w-full h-10 pl-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-orange/30 focus:border-primary-orange",
+                      "w-full h-10 pl-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-blue/30 focus:border-primary-blue",
                       { "p-invalid": errors.emailOrPhone }
                     )}
                     placeholder={t("form.enterEmail")}
@@ -265,12 +217,6 @@ const LoginPage = () => {
                   >
                     {t("form.password")}
                   </label>
-                  {/* <Link
-                    href="/forgot-password"
-                    className="text-xs text-primary-orange hover:text-primary-dark"
-                  >
-                    {t("common.passwordForgot")}
-                  </Link> */}
                 </div>
                 <div className="relative">
                   <InputText
@@ -286,7 +232,7 @@ const LoginPage = () => {
                       }));
                     }}
                     className={classNames(
-                      "w-full h-10 pl-3 pr-10 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-orange/30 focus:border-primary-orange",
+                      "w-full h-10 pl-3 pr-10 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-blue/30 focus:border-primary-blue",
                       { "p-invalid": errors.password }
                     )}
                     placeholder={t("form.enterPassword")}
@@ -309,35 +255,11 @@ const LoginPage = () => {
                 )}
               </div>
 
-              <div className="flex flex-col gap-1 mt-2">
-                <Turnstile
-                  sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY as string}
-                  onVerify={(token: string) => {
-                    setTurnstileToken(token);
-                    setErrors((prev) => ({ ...prev, turnstile: false }));
-                  }}
-                  onError={() => {
-                    setTurnstileToken(null);
-                    setErrors((prev) => ({ ...prev, turnstile: true }));
-                  }}
-                  onExpire={() => {
-                    setTurnstileToken(null);
-                    setErrors((prev) => ({ ...prev, turnstile: true }));
-                  }}
-                  className="mx-auto scale-90 origin-center"
-                />
-                {errors.turnstile && (
-                  <small className="p-error text-xs text-center">
-                    {t("form.captchaRequired")}
-                  </small>
-                )}
-              </div>
-
               <Button
                 label={loading ? t("form.loading") : t("common.login")}
-                className="w-full bg-primary-orange hover:bg-primary-dark text-white font-semibold h-10 px-4 rounded-lg mt-2 transition-colors"
+                className="w-full bg-primary-blue hover:bg-primary-darkblue text-white font-semibold h-10 px-4 rounded-lg mt-2 transition-colors"
                 type="submit"
-                disabled={loading || !turnstileToken}
+                disabled={loading}
                 icon={loading ? "pi pi-spin pi-spinner" : undefined}
               />
             </form>
@@ -346,14 +268,14 @@ const LoginPage = () => {
               {t("common.dontHaveAccount")}{" "}
               <Link
                 href="/register"
-                className="text-primary-orange font-medium hover:underline"
+                className="text-primary-blue font-medium hover:underline"
               >
                 {t("common.registerNow")}
               </Link>
             </div>
           </div>
 
-          <div className="lg:hidden text-center mt-2 text-xs text-gray-500">
+          <div className="text-center mt-2 text-xs text-gray-500">
             {t("common.copyright")}
           </div>
         </div>

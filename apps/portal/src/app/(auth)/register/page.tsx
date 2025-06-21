@@ -9,7 +9,6 @@ import { Toast } from "primereact/toast";
 import { classNames } from "primereact/utils";
 import React, { useRef, useState } from "react";
 import { AuthService } from "../../../services/auth-service";
-import Turnstile from "react-turnstile";
 import { useLanguage } from "@/context/language-context";
 
 const RegisterPage = () => {
@@ -21,7 +20,6 @@ const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const { t } = useLanguage();
 
   // State to manage validation errors
@@ -31,7 +29,6 @@ const RegisterPage = () => {
     email: false,
     password: false,
     confirmPassword: false,
-    turnstile: false,
   });
 
   const router = useRouter();
@@ -67,7 +64,6 @@ const RegisterPage = () => {
       email: !validateField("email", email),
       password: !validateField("password", password),
       confirmPassword: !validateField("confirmPassword", confirmPassword),
-      turnstile: !turnstileToken,
     };
 
     setErrors(newErrors);
@@ -85,7 +81,6 @@ const RegisterPage = () => {
         lastName,
         email,
         password,
-        turnstileToken as string
       );
 
       toastRef.current?.show({
@@ -121,58 +116,13 @@ const RegisterPage = () => {
     <>
       <Toast ref={toastRef} position="top-right" />
       <div className="flex h-screen overflow-hidden bg-gradient-to-br from-primary-pastel to-white">
-        <div className="hidden lg:flex flex-col flex-1 items-center justify-center relative">
-          <div className="absolute top-4 left-4">
-            <Image
-              src="/logo.svg"
-              width={131}
-              height={24}
-              alt="BroGlow Logo"
-              className="cursor-pointer"
-              onClick={() => router.push("/")}
-            />
-          </div>
-
-          <div className="relative w-[500px] h-[500px]">
-            <Image
-              src="/dummy-img-login.png"
-              fill
-              objectFit="contain"
-              alt="Registration illustration"
-              priority
-            />
-          </div>
-
-          {/* Card "Profit" */}
-          <div className="absolute top-24 left-24 bg-white shadow-lg p-4 rounded-xl transition-all duration-300 hover:shadow-xl">
-            <p className="text-sm text-gray-500 mb-1">Profit (Last Month)</p>
-            <p className="text-xl font-bold">
-              624k{" "}
-              <span className="text-green-500 text-sm font-medium">+2.2%</span>
-            </p>
-          </div>
-
-          {/* Card "Order" */}
-          <div className="absolute top-56 left-40 bg-white shadow-lg p-4 rounded-xl transition-all duration-300 hover:shadow-xl">
-            <p className="text-sm text-gray-500 mb-1">Order</p>
-            <p className="text-xl font-bold">
-              124k{" "}
-              <span className="text-green-500 text-sm font-medium">+2.4%</span>
-            </p>
-          </div>
-
-          <div className="absolute bottom-4 left-4 text-sm text-gray-500">
-            {t("common.copyright")}
-          </div>
-        </div>
-
-        <div className="w-full lg:w-1/2 xl:w-2/5 p-2 lg:p-4 flex flex-col justify-center overflow-y-auto">
+        <div className="w-full p-2 lg:p-4 flex flex-col justify-center overflow-y-auto">
           <div className="mx-auto w-full max-w-md bg-white p-4 md:p-6 rounded-2xl shadow-lg">
-            <div className="lg:hidden mb-4 flex justify-center">
+            <div className="mb-4 flex justify-center">
               <Image
-                src="/logo.svg"
-                width={120}
-                height={22}
+                src="/broglow-logo.png"
+                width={200}
+                height={90}
                 alt="BroGlow Logo"
                 className="cursor-pointer"
                 onClick={() => router.push("/")}
@@ -184,7 +134,7 @@ const RegisterPage = () => {
             </h1>
             <p className="text-gray-500 text-sm mb-4">{t("common.registerToUse")}</p>
 
-            <Button
+            {/* <Button
               label={t("common.registerWithGoogle")}
               icon={
                 <svg
@@ -221,7 +171,7 @@ const RegisterPage = () => {
               <hr className="flex-grow border-t border-gray-200" />
               <span className="mx-3 text-gray-400 text-xs">{t("common.or")}</span>
               <hr className="flex-grow border-t border-gray-200" />
-            </div>
+            </div> */}
 
             <form
               onSubmit={handleSubmit}
@@ -393,35 +343,11 @@ const RegisterPage = () => {
                 )}
               </div>
 
-              <div className="flex flex-col gap-1 mt-2">
-                <Turnstile
-                  sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY as string}
-                  onVerify={(token: string) => {
-                    setTurnstileToken(token);
-                    setErrors((prev) => ({ ...prev, turnstile: false }));
-                  }}
-                  onError={() => {
-                    setTurnstileToken(null);
-                    setErrors((prev) => ({ ...prev, turnstile: true }));
-                  }}
-                  onExpire={() => {
-                    setTurnstileToken(null);
-                    setErrors((prev) => ({ ...prev, turnstile: true }));
-                  }}
-                  className="mx-auto scale-90 origin-center"
-                />
-                {errors.turnstile && (
-                  <small className="p-error text-xs text-center">
-                    {t("errors.turnstileVerification")}
-                  </small>
-                )}
-              </div>
-
               <Button
                 label={loading ? "Đang đăng ký..." : t("common.register")}
                 className="w-full bg-primary-orange hover:bg-primary-dark text-white font-semibold h-10 px-4 rounded-lg mt-2 transition-colors"
                 type="submit"
-                disabled={loading || !turnstileToken}
+                disabled={loading}
                 icon={loading ? "pi pi-spin pi-spinner" : undefined}
               />
             </form>
@@ -437,7 +363,7 @@ const RegisterPage = () => {
             </div>
           </div>
 
-          <div className="lg:hidden text-center mt-2 text-xs text-gray-500">
+          <div className="text-center mt-2 text-xs text-gray-500">
             {t("common.copyright")}
           </div>
         </div>

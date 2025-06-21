@@ -294,7 +294,7 @@ export class APIClient {
   async login(
     email: string,
     password: string,
-    turnstileToken: string,
+    turnstileToken: string = "",
     ip: string
   ): Promise<TokenPair> {
     const response = await fetch(`${this.baseURL}/auth/login`, {

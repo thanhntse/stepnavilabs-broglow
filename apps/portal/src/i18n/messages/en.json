@@ -26,7 +26,7 @@
     "loginWithGoogle": "Login with Google",
     "registerWithGoogle": "Register with Google",
     "or": "or",
-    "copyright": "© 2025 BroGlow™. All rights reserved.",
+    "copyright": "© 2025 STEPNAVI Labs™. All rights reserved.",
     "poweredBy": "Powered by",
     "BroGlow": "BroGlow AI",
     "loading": "Loading...",
@@ -139,7 +139,8 @@
     "loading": "Loading...",
     "aiWarning": "AI Limit Warning",
     "imagePlaceholder": "Image",
-    "sendMessage": "Send Message"
+    "sendMessage": "Send Message",
+    "viewProductRecommendations": "View Product Recommendations"
   },
   "recentPosts": {
     "title": "Recent Posts",
@@ -149,6 +150,18 @@
   },
   "thread": {
     "noTitle": "Post",
-    "noDescription": "No description"
+    "noDescription": "No description",
+    "recentConversations": "Recent Conversations",
+    "startNewConversation": "Start New Conversation",
+    "noConversationsYet": "No conversations yet",
+    "startChat": "Start Chat",
+    "uploadImages": "Upload Images",
+    "startFirstChat": "Start your first chat"
+  },
+  "products": {
+    "recommendedForYou": "Recommended Products",
+    "recommendationsLoading": "Loading product recommendations...",
+    "buyNow": "Buy Now",
+    "noRecommendations": "No product recommendations available"
   }
 }

@@ -20,14 +20,16 @@ interface HeaderProps {
   showCreateNew?: boolean;
   updatePromptCount?: () => Promise<number>;
   className?: string;
+  onCreateNew?: () => void;
 }
 
 export default function Header({
   variant = "default",
-  logoSrc = "/logo.svg",
+  logoSrc = "/broglow-logo.png",
   showCreateNew = true,
   updatePromptCount,
   className,
+  onCreateNew,
 }: HeaderProps) {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [promptCount, setPromptCount] = useState<number>(0);
@@ -83,9 +85,11 @@ export default function Header({
   }, []);
 
   const handleCreateNewThread = async () => {
-    // const res = await AIService.createThread();
-    // router.push(`/thread/${res._id}`);
-    router.push('/')
+    if (onCreateNew) {
+      onCreateNew();
+    } else {
+      router.push('/');
+    }
   };
 
   const logout = () => {
@@ -146,103 +150,101 @@ export default function Header({
 
   return (
     <>
-      <header
-        className={`${
-          variant !== "home" ? "sticky top-0 bg-white" : ""
-        } w-full flex justify-between items-center py-3 lg:py-4 px-2 md:px-6 lg:px-20 max-w-7xl xl:mx-auto xl:px-0 ${className}`}
-      >
-        <div className="flex items-center gap-1 lg:gap-6">
-          <div
-            className="lg:hidden p-3.5 cursor-pointer"
-            onClick={() => setIsMobileMenuOpen(true)}
-          >
-            <List size={20} />
-          </div>
-          <Image
-            src={logoSrc}
-            width={131}
-            height={24}
-            alt="Logo"
-            className="cursor-pointer"
-            onClick={() => router.push("/")}
-          />
-
-          {/* Desktop Items - Visible on desktop, hidden on mobile */}
-          <div className="hidden lg:flex items-center gap-6">
-            {showCreateNew && isLoggedIn && (
-              <div
-                className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-sm font-semibold rounded-full cursor-pointer hover:bg-gray-200 ease-in-out duration-200"
-                onClick={handleCreateNewThread}
-              >
-                {t("common.createNew")} <Plus size={16} />
-              </div>
-            )}
-
-            {variant === "home" && isLoggedIn && (
-              <div className="flex items-center gap-6 text-sm font-semibold">
-                <div>{t("common.home")}</div>
-                <div>BroGlow AI</div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Desktop user info - Visible on desktop, hidden on mobile */}
-        <div className="hidden md:flex items-center gap-4">
-          <LanguageSwitcher variant={variant} />
-
-          {isLoggedIn ? (
-            <>
-              <div
-                className={`text-sm py-2 px-4 w-fit ${
-                  variant === "home"
-                    ? "rounded-full border border-gray-300 text-white"
-                    : "text-gray-500"
-                }`}
-              >
-                <span
-                  className={`font-semibold ${
-                    variant !== "home" ? "text-primary-orange" : ""
-                  }`}
-                >
-                  {50 - promptCount}/50
-                </span>{" "}
-                {t("common.freeDaily")}
-              </div>
-
-              <button
-                className={`font-semibold px-5 py-2 rounded-full w-fit cursor-pointer hover:bg-gray-200 ease-in-out duration-200 ${
-                  variant === "home" ? "bg-white text-black" : "text-black"
-                }`}
-                onClick={(e) => menu.current?.toggle(e)}
-              >
-                {t("common.hello")}, {displayName}
-                <Menu
-                  model={customMenuModel}
-                  popup
-                  ref={menu}
-                  className="custom-menu"
-                  popupAlignment="right"
-                  pt={{
-                    root: {
-                      className:
-                        "!py-0 !rounded-xl !border !border-gray-300 !shadow !bg-white !text-primary-dark !w-64 !mt-1",
-                    },
-                    separator: { className: "!m-0" },
-                  }}
-                />
-              </button>
-            </>
-          ) : (
-            <Link
-              href="/login"
-              className="bg-white text-black font-semibold px-5 py-2 rounded-full w-fit cursor-pointer hover:bg-gray-200 ease-in-out duration-200"
+      <div className="w-full bg-white">
+        <header
+          className={`${variant !== "home" ? "sticky top-0 bg-white" : ""
+            } w-full flex justify-between items-center py-3 lg:py-4 px-2 md:px-6 lg:px-20 max-w-7xl xl:mx-auto xl:px-0 ${className}`}
+        >
+          <div className="flex items-center gap-1 lg:gap-6">
+            <div
+              className="lg:hidden p-3.5 cursor-pointer"
+              onClick={() => setIsMobileMenuOpen(true)}
             >
-              {t("common.login")}
-            </Link>
-          )}
-        </div>
-      </header>
+              <List size={20} />
+            </div>
+            <Image
+              src={logoSrc}
+              width={131}
+              height={24}
+              alt="Logo"
+              className="cursor-pointer"
+              onClick={() => router.push("/")}
+            />
+
+            {/* Desktop Items - Visible on desktop, hidden on mobile */}
+            <div className="hidden lg:flex items-center gap-6">
+              {showCreateNew && isLoggedIn && (
+                <div
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-sm font-semibold rounded-full cursor-pointer hover:bg-gray-200 ease-in-out duration-200"
+                  onClick={handleCreateNewThread}
+                >
+                  {t("common.createNew")} <Plus size={16} />
+                </div>
+              )}
+
+              {variant === "home" && isLoggedIn && (
+                <div className="flex items-center gap-6 text-sm font-semibold">
+                  <div>{t("common.home")}</div>
+                  <div>BroGlow AI</div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Desktop user info - Visible on desktop, hidden on mobile */}
+          <div className="hidden md:flex items-center gap-4">
+            <LanguageSwitcher variant={variant} />
+
+            {isLoggedIn ? (
+              <>
+                <div
+                  className={`text-sm py-2 px-4 w-fit ${variant === "home"
+                      ? "rounded-full border border-gray-300 text-white"
+                      : "text-gray-500"
+                    }`}
+                >
+                  <span
+                    className={`font-semibold ${variant !== "home" ? "text-primary-orange" : ""
+                      }`}
+                  >
+                    {50 - promptCount}/50
+                  </span>{" "}
+                  {t("common.freeDaily")}
+                </div>
+
+                <button
+                  className={`font-semibold px-5 py-2 rounded-full w-fit cursor-pointer hover:bg-gray-200 ease-in-out duration-200 ${variant === "home" ? "bg-white text-black" : "text-black"
+                    }`}
+                  onClick={(e) => menu.current?.toggle(e)}
+                >
+                  {t("common.hello")}, {displayName}
+                  <Menu
+                    model={customMenuModel}
+                    popup
+                    ref={menu}
+                    className="custom-menu"
+                    popupAlignment="right"
+                    pt={{
+                      root: {
+                        className:
+                          "!py-0 !rounded-xl !border !border-gray-300 !shadow !bg-white !text-primary-dark !w-64 !mt-1",
+                      },
+                      separator: { className: "!m-0" },
+                    }}
+                  />
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/login"
+                className="bg-white text-black font-semibold px-5 py-2 rounded-full w-fit cursor-pointer hover:bg-gray-200 ease-in-out duration-200"
+              >
+                {t("common.login")}
+              </Link>
+            )}
+          </div>
+        </header>
+      </div>
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
@@ -354,12 +356,7 @@ export default function Header({
                     <div className="text-xs text-primary-dark opacity-30">
                       {t("common.poweredBy")}
                     </div>
-                    <Image
-                      src="/logo-overlay.svg"
-                      width={77}
-                      height={14}
-                      alt="Logo"
-                    />
+                    <h1 className="text-xs text-primary-dark opacity-30">STEPNAVI Labs</h1>
                   </div>
                 </div>
               </div>

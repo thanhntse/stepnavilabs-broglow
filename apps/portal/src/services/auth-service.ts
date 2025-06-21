@@ -1,5 +1,6 @@
 import { User } from "@/data/types";
 import { apiClient } from "@/lib/instance";
+import { DEFAULT_AUTH_ROUTE } from "@/utils/auth-routes";
 
 export class AuthService {
   static async register(
@@ -7,7 +8,7 @@ export class AuthService {
     lastName: string,
     email: string,
     password: string,
-    turnstileToken: string
+    turnstileToken: string = ""
   ): Promise<{ success: boolean; message: string; email: string }> {
     const ip = await this.getClientIP();
     const response = await apiClient.register(
@@ -29,7 +30,7 @@ export class AuthService {
   static async login(
     email: string,
     password: string,
-    turnstileToken: string
+    turnstileToken: string = ""
   ): Promise<void> {
     const ip = await this.getClientIP();
     await apiClient.login(email, password, turnstileToken, ip);
@@ -55,6 +56,10 @@ export class AuthService {
       console.error("Error getting user profile:", error);
       throw error;
     }
+  }
+
+  static getDefaultAuthRoute(): string {
+    return DEFAULT_AUTH_ROUTE;
   }
 
   private static async getClientIP(): Promise<string> {
