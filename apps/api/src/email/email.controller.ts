@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { EmailService } from './email.service';
 import {
@@ -21,11 +22,17 @@ import {
   ApiProperty,
   ApiPropertyOptional,
   ApiParam,
+  ApiSecurity,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import {
   EmailTemplate,
   EmailTemplateType,
 } from './schema/email-template.schema';
+import { AuthGuard } from '@nestjs/passport';
+import { Roles } from '@api/casl/decorators/roles.decorator';
+import { RolesGuard } from '@api/casl/guards/roles.guard';
+import { Role as RoleEnum } from '@api/roles/enums/role.enum';
 
 class EmailResponseDto implements EmailResponse {
   @ApiProperty({ description: 'Whether the email was sent successfully' })
@@ -44,6 +51,9 @@ class EmailResponseDto implements EmailResponse {
 
 @ApiTags('email')
 @Controller('email')
+@ApiBearerAuth('JWT-auth')
+@ApiSecurity('API-Key-auth')
+@UseGuards(AuthGuard(['api-key', 'jwt']), RolesGuard)
 export class EmailController {
   constructor(private readonly emailService: EmailService) {}
 
@@ -57,6 +67,7 @@ export class EmailController {
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
+  @Roles(RoleEnum.ADMIN)
   async sendEmail(@Body() emailOptions: EmailOptions): Promise<EmailResponse> {
     return this.emailService.sendEmail(emailOptions);
   }
@@ -68,6 +79,7 @@ export class EmailController {
     description: 'List of all email templates',
     type: [EmailTemplate],
   })
+  @Roles(RoleEnum.ADMIN)
   async getAllTemplates(): Promise<EmailTemplate[]> {
     return this.emailService.getAllTemplates();
   }
@@ -85,6 +97,7 @@ export class EmailController {
     type: EmailTemplate,
   })
   @ApiResponse({ status: 404, description: 'Template not found' })
+  @Roles(RoleEnum.ADMIN)
   async getTemplateByType(
     @Param('type') type: EmailTemplateType,
   ): Promise<EmailTemplate> {
@@ -103,6 +116,7 @@ export class EmailController {
     type: EmailTemplate,
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
+  @Roles(RoleEnum.ADMIN)
   async createTemplate(
     @Body() createTemplateDto: CreateEmailTemplateDto,
   ): Promise<EmailTemplate> {
@@ -118,6 +132,7 @@ export class EmailController {
     type: EmailTemplate,
   })
   @ApiResponse({ status: 404, description: 'Template not found' })
+  @Roles(RoleEnum.ADMIN)
   async updateTemplate(
     @Param('id') id: string,
     @Body() updateTemplateDto: UpdateEmailTemplateDto,
@@ -141,6 +156,7 @@ export class EmailController {
     type: Boolean,
   })
   @ApiResponse({ status: 404, description: 'Template not found' })
+  @Roles(RoleEnum.ADMIN)
   async deleteTemplate(@Param('id') id: string): Promise<boolean> {
     return this.emailService.deleteTemplate(id);
   }

@@ -7,6 +7,8 @@ import {
   EmailTemplate,
   EmailTemplateSchema,
 } from './schema/email-template.schema';
+import { CaslModule } from '@api/casl/casl.module';
+import { RoleModule } from '@api/roles/role.module';
 
 @Module({
   imports: [
@@ -14,6 +16,8 @@ import {
     MongooseModule.forFeature([
       { name: EmailTemplate.name, schema: EmailTemplateSchema },
     ]),
+    CaslModule,
+    RoleModule,
   ],
   providers: [EmailService],
   controllers: [EmailController],

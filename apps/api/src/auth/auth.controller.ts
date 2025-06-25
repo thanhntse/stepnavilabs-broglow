@@ -25,7 +25,6 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { RegisterDto } from './dto/register.dto';
 import { AuthUserDto } from './dto/auth-user.dto';
-import { Request as ExpressRequest } from 'express';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -99,14 +98,20 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
-  @ApiOperation({ summary: 'Initiate Google OAuth login' })
+  @ApiOperation({
+    summary: '[UNDER DEVELOPMENT] Initiate Google OAuth login',
+    description: 'This endpoint is currently under development',
+  })
   async googleLogin() {
     return { message: 'Redirecting to Google...' };
   }
 
   @Get('google/redirect')
   @UseGuards(AuthGuard('google'))
-  @ApiOperation({ summary: 'Google OAuth callback handler' })
+  @ApiOperation({
+    summary: '[UNDER DEVELOPMENT] Google OAuth callback handler',
+    description: 'This endpoint is currently under development',
+  })
   async googleAuthRedirect(@Req() req: any, @Res() res: any) {
     return res.redirect(
       `${this.configService.get<string>('PUBLIC_URL')}/login?code=${req.user.accessToken}`,
@@ -114,14 +119,20 @@ export class AuthController {
   }
 
   @Post('google/token')
-  @ApiOperation({ summary: 'Exchange Google auth code for tokens' })
+  @ApiOperation({
+    summary: '[UNDER DEVELOPMENT] Exchange Google auth code for tokens',
+    description: 'This endpoint is currently under development',
+  })
   @ApiResponse({ status: 200, description: 'Tokens generated' })
   async exchangeCodeForToken(@Body('code') code: string) {
     return await this.authService.exchangeGoogleCodeForToken(code);
   }
 
   @Get('verify-email')
-  @ApiOperation({ summary: 'Verify user email with token' })
+  @ApiOperation({
+    summary: '[UNDER DEVELOPMENT] Verify user email with token',
+    description: 'This endpoint is currently under development',
+  })
   @ApiQuery({
     name: 'token',
     required: true,
