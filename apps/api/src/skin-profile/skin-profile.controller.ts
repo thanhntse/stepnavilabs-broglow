@@ -7,15 +7,27 @@ import {
   Delete,
   Put,
   Request,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiBearerAuth,
+  ApiSecurity,
+} from '@nestjs/swagger';
 import { SkinProfileService } from './skin-profile.service';
 import { CreateSkinQuestionDto } from './dto/create-skin-question.dto';
 import { UpdateSkinQuestionDto } from './dto/update-skin-question.dto';
 import { SubmitSkinProfileDto } from './dto/submit-skin-profile.dto';
+import { PoliciesGuard } from '@api/casl/guards/policies.guard';
+import { AuthGuard } from '@nestjs/passport';
 
-@ApiTags('Skin Profile')
+@ApiTags('skin-profile')
 @Controller('skin-profile')
+@UseGuards(AuthGuard(['api-key', 'jwt']), PoliciesGuard)
+@ApiSecurity('API-Key-auth')
+@ApiBearerAuth('JWT-auth')
 export class SkinProfileController {
   constructor(private readonly skinProfileService: SkinProfileService) {}
 

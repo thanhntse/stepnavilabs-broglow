@@ -18,6 +18,7 @@ import { v4 as uuid } from 'uuid';
 import { EmailModule } from './email/email.module';
 import { ProductsModule } from './products/products.module';
 import { SkinProfileModule } from './skin-profile/skin-profile.module';
+import { BlogModule } from './blog/blog.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { SkinProfileModule } from './skin-profile/skin-profile.module';
     EmailModule,
     ProductsModule,
     SkinProfileModule,
+    BlogModule,
   ],
   controllers: [AppController],
   providers: [AppService],
