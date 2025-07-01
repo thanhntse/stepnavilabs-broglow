@@ -8,6 +8,7 @@ import {
   Put,
   Request,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import {
   ApiOperation,
@@ -15,8 +16,9 @@ import {
   ApiTags,
   ApiBearerAuth,
   ApiSecurity,
+  ApiQuery,
 } from '@nestjs/swagger';
-import { SkinProfileService } from './skin-profile.service';
+import { SkinProfileService, PaginationParams } from './skin-profile.service';
 import { CreateSkinQuestionDto } from './dto/create-skin-question.dto';
 import { UpdateSkinQuestionDto } from './dto/update-skin-question.dto';
 import { SubmitSkinProfileDto } from './dto/submit-skin-profile.dto';
@@ -40,10 +42,45 @@ export class SkinProfileController {
   }
 
   @Get('questions')
-  @ApiOperation({ summary: 'Get all skin profile questions' })
-  @ApiResponse({ status: 200, description: 'Return all active questions' })
-  findAllQuestions() {
-    return this.skinProfileService.findAllQuestions();
+  @ApiOperation({ summary: 'Get all skin profile questions with pagination' })
+  @ApiResponse({ status: 200, description: 'Return paginated questions' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number (starts from 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Number of items per page',
+  })
+  @ApiQuery({
+    name: 'sortBy',
+    required: false,
+    type: String,
+    description: 'Field to sort by (e.g. order, question)',
+  })
+  @ApiQuery({
+    name: 'sortOrder',
+    required: false,
+    enum: ['asc', 'desc'],
+    description: 'Sort order (asc or desc)',
+  })
+  findAllQuestions(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: 'asc' | 'desc',
+  ) {
+    const paginationParams: PaginationParams = {
+      page: page ? +page : undefined,
+      limit: limit ? +limit : undefined,
+      sortBy,
+      sortOrder,
+    };
+    return this.skinProfileService.findAllQuestions(paginationParams);
   }
 
   @Get('questions/:id')

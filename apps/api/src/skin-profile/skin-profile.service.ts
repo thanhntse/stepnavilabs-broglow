@@ -11,6 +11,23 @@ import { CreateSkinQuestionDto } from './dto/create-skin-question.dto';
 import { UpdateSkinQuestionDto } from './dto/update-skin-question.dto';
 import { SubmitSkinProfileDto } from './dto/submit-skin-profile.dto';
 
+export interface PaginationParams {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface PaginatedResult<T> {
+  data: T[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
 @Injectable()
 export class SkinProfileService {
   constructor(
@@ -27,11 +44,40 @@ export class SkinProfileService {
     return createdQuestion.save();
   }
 
-  async findAllQuestions() {
-    return this.skinQuestionModel
-      .find({ isActive: true })
-      .sort({ order: 1 })
-      .exec();
+  async findAllQuestions(
+    params: PaginationParams = {},
+  ): Promise<PaginatedResult<SkinQuestion>> {
+    const {
+      page = 1,
+      limit = 10,
+      sortBy = 'order',
+      sortOrder = 'asc',
+    } = params;
+
+    const skip = (page - 1) * limit;
+    const sortOptions = { [sortBy]: sortOrder === 'asc' ? 1 : -1 };
+
+    const [questions, total] = await Promise.all([
+      this.skinQuestionModel
+        .find({ isActive: true })
+        .sort(sortOptions as any)
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      this.skinQuestionModel.countDocuments({ isActive: true }).exec(),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data: questions,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages,
+      },
+    };
   }
 
   async findQuestionById(id: string): Promise<SkinQuestion> {
