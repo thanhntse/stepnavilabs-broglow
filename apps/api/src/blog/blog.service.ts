@@ -265,10 +265,68 @@ export class BlogService {
   }
 
   // Share-related methods
-  async shareBlog(blogId: string): Promise<Blog> {
+  async shareBlog(
+    blogId: string,
+  ): Promise<{ message: string; shareUrl: string }> {
     const blog = await this.findOne(blogId);
     blog.sharesCount += 1;
     await blog.save();
-    return this.findOne(blogId);
+    return {
+      message: 'Blog shared successfully',
+      shareUrl: `https://example.com/blog/${blogId}`,
+    };
+  }
+
+  async getMyBlogs(
+    userId: string,
+    params: PaginationParams = {},
+  ): Promise<PaginatedResult<Blog>> {
+    const {
+      page = 1,
+      limit = 10,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = params;
+
+    const skip = (page - 1) * limit;
+    const sortOptions = { [sortBy]: sortOrder === 'asc' ? 1 : -1 };
+
+    const [blogs, total] = await Promise.all([
+      this.blogModel
+        .find({ author: userId })
+        .sort(sortOptions as any)
+        .skip(skip)
+        .limit(limit)
+        .populate('author', 'name email')
+        .populate('likedBy', 'name email')
+        .populate({
+          path: 'comments',
+          populate: {
+            path: 'author',
+            select: 'name email',
+          },
+        })
+        .populate({
+          path: 'comments',
+          populate: {
+            path: 'likedBy',
+            select: 'name email',
+          },
+        })
+        .exec(),
+      this.blogModel.countDocuments({ author: userId }).exec(),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data: blogs,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages,
+      },
+    };
   }
 }

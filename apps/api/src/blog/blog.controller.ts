@@ -11,6 +11,7 @@ import {
   HttpCode,
   HttpStatus,
   Query,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { BlogService, PaginationParams } from './blog.service';
 import { CreateBlogDto } from './dto/create-blog.dto';
@@ -88,6 +89,60 @@ export class BlogController {
     return this.blogService.findAll(paginationParams);
   }
 
+  // My Blogs - Moved before parameterized routes
+  @Get('my-blogs')
+  @ApiBearerAuth('JWT-auth')
+  @ApiSecurity('API-Key-auth')
+  @UseGuards(AuthGuard(['api-key', 'jwt']), PoliciesGuard)
+  @ApiOperation({ summary: 'Get all blogs created by the authenticated user' })
+  @ApiResponse({
+    status: 200,
+    description: 'The blogs have been successfully retrieved.',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number (starts from 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Number of items per page',
+  })
+  @ApiQuery({
+    name: 'sortBy',
+    required: false,
+    type: String,
+    description: 'Field to sort by (e.g. createdAt, title)',
+  })
+  @ApiQuery({
+    name: 'sortOrder',
+    required: false,
+    enum: ['asc', 'desc'],
+    description: 'Sort order (asc or desc)',
+  })
+  getMyBlogs(
+    @Request() req: any,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: 'asc' | 'desc',
+  ) {
+    const paginationParams: PaginationParams = {
+      page: page ? +page : undefined,
+      limit: limit ? +limit : undefined,
+      sortBy,
+      sortOrder,
+    };
+    if (!req.user) {
+      throw new UnauthorizedException('User not authenticated');
+    }
+    return this.blogService.getMyBlogs(req.user.id, paginationParams);
+  }
+
+  // Remaining parameterized routes
   @Get(':id')
   @ApiOperation({ summary: 'Get a specific blog post by ID' })
   @ApiResponse({ status: 200, description: 'Return the blog post.' })
