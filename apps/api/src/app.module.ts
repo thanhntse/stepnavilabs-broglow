@@ -20,6 +20,7 @@ import { ProductsModule } from './products/products.module';
 import { SkinProfileModule } from './skin-profile/skin-profile.module';
 import { BlogModule } from './blog/blog.module';
 import { RoutineQuestionModule } from './routine-suggestion/routine-question.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { RoutineQuestionModule } from './routine-suggestion/routine-question.mod
     SkinProfileModule,
     BlogModule,
     RoutineQuestionModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
