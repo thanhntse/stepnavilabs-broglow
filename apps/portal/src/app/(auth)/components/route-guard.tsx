@@ -4,6 +4,7 @@ import { DEFAULT_AUTH_ROUTE, DEFAULT_PUBLIC_ROUTE, protectedRoutes, publicOnlyRo
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { TokenStorage } from "@/lib/token-storage";
+import { AuthService } from "@/services/auth-service";
 
 export function RouteGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -11,7 +12,7 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
   const [authorized, setAuthorized] = useState(false);
 
   const authCheck = useCallback(
-    (path: string) => {
+    async (path: string) => {
       const token = TokenStorage.getTokens()?.token;
       const isAuthenticated = !!token;
 
@@ -32,6 +33,15 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
         if (!isAuthenticated) {
           setAuthorized(false);
           router.push(`${DEFAULT_PUBLIC_ROUTE}?returnUrl=${encodeURIComponent(path)}`);
+          return;
+        }
+
+        // Check for admin role
+        const isAdmin = await AuthService.isAdmin();
+        if (!isAdmin) {
+          setAuthorized(false);
+          TokenStorage.clearTokens(); // Clear tokens if not admin
+          router.push(`${DEFAULT_PUBLIC_ROUTE}?message=unauthorized`);
           return;
         }
       }

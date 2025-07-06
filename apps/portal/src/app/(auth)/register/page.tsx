@@ -83,16 +83,7 @@ const RegisterPage = () => {
         password,
       );
 
-      toastRef.current?.show({
-        severity: "success",
-        summary: "Thành công",
-        detail: "Chúng tôi đã gửi email xác thực cho bạn. Vui lòng kiểm tra hộp thư và nhấp vào liên kết để kích hoạt tài khoản!",
-        life: 5000,
-      });
-
-      setTimeout(() => {
-        router.push("/");
-      }, 5000);
+      router.push("/register/success");
     } catch (error: unknown) {
       console.error("Registration failed:", error);
       toastRef.current?.show({

@@ -76,8 +76,22 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      // Modified to remove turnstileToken
       await AuthService.login(emailOrPhone, password, "");
+
+      // Check if user is admin
+      const isAdmin = await AuthService.isAdmin();
+      if (!isAdmin) {
+        // Clear tokens and show error
+        AuthService.logout();
+        toastRef.current?.show({
+          severity: "error",
+          summary: "Không có quyền truy cập",
+          detail: "Chỉ tài khoản admin mới được phép đăng nhập vào hệ thống.",
+          life: 3000,
+        });
+        return;
+      }
+
       router.push(AuthService.getDefaultAuthRoute());
 
       toastRef.current?.show({
@@ -86,7 +100,7 @@ const LoginPage = () => {
         detail: t("common.loginSuccess"),
         life: 3000,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.log("Login failed: ", error);
       // Set server-side validation error
       setErrors((prev) => ({ ...prev, invalidCredentials: true }));

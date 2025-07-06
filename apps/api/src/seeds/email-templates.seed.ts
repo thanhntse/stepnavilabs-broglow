@@ -249,12 +249,347 @@ export const seedEmailTemplates = async (
     description: 'Email sent to confirm password has been changed',
   };
 
+  // App Launch Notification template
+  const appLaunchTemplate = {
+    name: 'App Launch Notification',
+    type: EmailTemplateType.APP_LAUNCH,
+    subject:
+      '🎉 Chỉ 3 ngày nữa: App BroGlow chính thức ra mắt – Sẵn sàng để bùng nổ trải nghiệm làm đẹp?',
+    htmlContent: `
+      <!doctype html>
+      <html>
+        <head>
+          <meta charset="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <title>THÔNG BÁO LAUNCHING</title>
+          <style>
+            .bg-container {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+              color: #333;
+              line-height: 1.6;
+              background: #f1f0f0;
+              padding: 24px;
+              margin: 0;
+            }
+            .container {
+              display: table;
+              margin: 0 auto;
+              width: 100%;
+            }
+            .content {
+              display: table;
+              max-width: 640px;
+              margin: 0 auto;
+              width: 100%;
+            }
+            .content-body {
+              display: block;
+              background-color: #fff;
+              border-radius: 20px;
+              padding: 42px;
+            }
+            .content-body p {
+              color: #4d4948;
+              margin-top: 16px;
+              margin-bottom: 0px;
+              padding: 0px;
+              font-family: inherit;
+              font-size: 16px;
+              font-style: normal;
+              font-weight: 400;
+              line-height: 150%;
+              letter-spacing: -0.096px;
+            }
+            .content-help {
+              display: block;
+              margin-top: 24px;
+              padding: 42px;
+              background-color: #02AAEB;
+              border-radius: 20px;
+              color: #fff;
+            }
+            .content-help p {
+              font-family: inherit;
+              font-size: 16px;
+              line-height: 150%;
+            }
+            .support-button {
+              border-radius: 999px;
+              background: #fff;
+              color: #1584F2;
+              cursor: pointer;
+              display: inline-block;
+              padding: 16px 24px;
+              text-align: center;
+              font-size: 16px;
+              font-weight: 600;
+              line-height: 100%;
+              letter-spacing: -0.16px;
+              text-decoration: none;
+              font-family: inherit;
+            }
+            .feature-list {
+              margin-top: 24px;
+            }
+            .feature-item {
+              margin-bottom: 16px;
+              display: flex;
+              align-items: flex-start;
+              font-family: inherit;
+              font-size: 16px;
+            }
+            .feature-icon {
+              color: #1584F2;
+              margin-right: 10px;
+              font-weight: bold;
+            }
+            .countdown {
+              display: block;
+              margin-top: 24px;
+              padding: 16px;
+              background-color: #f0f8ff;
+              border-radius: 8px;
+              color: #1584F2;
+              font-weight: 600;
+              text-align: center;
+              font-family: inherit;
+              font-size: 16px;
+            }
+            .cta-button {
+              border-radius: 999px;
+              background: linear-gradient(to right, #02AAEB, #1584F2);
+              color: white !important;
+              cursor: pointer;
+              display: inline-block;
+              padding: 16px 24px;
+              text-align: center;
+              font-size: 16px;
+              font-weight: 600;
+              line-height: 100%;
+              letter-spacing: -0.16px;
+              text-decoration: none;
+              font-family: inherit;
+            }
+            h1 {
+              color: #1584F2;
+              font-size: 24px;
+              font-weight: 700;
+              margin-top: 0;
+              margin-bottom: 24px;
+              text-align: center;
+              font-family: inherit;
+            }
+            h2 {
+              color: #1584F2;
+              font-size: 20px;
+              font-weight: 600;
+              margin-top: 32px;
+              margin-bottom: 16px;
+              font-family: inherit;
+            }
+            .broglow-logo {
+              margin-bottom: 32px;
+              width: 100%;
+              text-align: center;
+            }
+            .broglow-logo img {
+              padding-right: 20px;
+              max-width: 100%;
+              height: auto;
+            }
+            .footer-text {
+              font-size: 12px;
+              text-align: left;
+              color: #888;
+              margin-top: 24px;
+              font-family: inherit;
+            }
+            .footer-text a {
+              color: #1584F2;
+              text-decoration: none;
+            }
+            .help-container {
+              display: table;
+              width: 100%;
+            }
+            .help-title {
+              display: table-cell;
+              width: 50%;
+              vertical-align: middle;
+            }
+            .help-button {
+              display: table-cell;
+              width: 50%;
+              text-align: right;
+              vertical-align: middle;
+            }
+
+            /* Responsive styles */
+            @media only screen and (max-width: 640px) {
+              .bg-container {
+                padding: 12px;
+              }
+              .content-body {
+                padding: 24px;
+                border-radius: 12px;
+              }
+              .content-help {
+                padding: 24px;
+                border-radius: 12px;
+              }
+              h1 {
+                font-size: 22px;
+              }
+              h2 {
+                font-size: 18px;
+              }
+              .help-container {
+                display: block;
+              }
+              .help-title, .help-button {
+                display: block;
+                width: 100%;
+                text-align: center;
+              }
+              .help-button {
+                margin-top: 16px;
+              }
+              .support-button {
+                padding: 12px 20px;
+                font-size: 14px;
+              }
+              .cta-button {
+                padding: 12px 20px;
+                font-size: 14px;
+              }
+            }
+          </style>
+        </head>
+        <body>
+        <div class="bg-container">
+          <div class="container">
+            <div class="content">
+              <div class="content-body">
+                <div style="margin-bottom: 32px" class="broglow-logo">
+                  <img src="https://stepnavilabs-broglow-production.up.railway.app/uploads/50fc6831-dc72-420c-853d-9747f49030ba.png" alt="BroGlow" width="150" />
+                </div>
+                <h1>THÔNG BÁO LAUNCHING</h1>
+                <div>
+                  <p>
+                    <strong>Gửi {{fullName}},</strong>
+                  </p>
+                  <p>Bạn đã sẵn sàng để nâng tầm trải nghiệm làm đẹp chưa?</p>
+                  <p>
+                    Chúng tôi rất vui mừng thông báo rằng <strong>ứng dụng chính thức của BroGlow sẽ chính thức được ra mắt trong vòng 3 ngày tới!</strong> Và vì bạn đã từng đăng ký trên website của chúng tôi, bạn sẽ là một trong những người đầu tiên được trải nghiệm app – hoàn toàn miễn phí và với rất nhiều ưu đãi đặc biệt.
+                  </p>
+
+                  <h2>✨ Vì sao bạn nên tải ngay App BroGlow?</h2>
+
+                  <div class="feature-list">
+                    <div class="feature-item">
+                      <div class="feature-icon">•</div>
+                      <div>Cá nhân hóa trải nghiệm làm đẹp với AI Beauty Matching</div>
+                    </div>
+                    <div class="feature-item">
+                      <div class="feature-icon">•</div>
+                      <div>Nhận ưu đãi đặc biệt chỉ dành riêng cho người dùng app</div>
+                    </div>
+                    <div class="feature-item">
+                      <div class="feature-icon">•</div>
+                      <div>Theo dõi lịch trình chăm da, nhắc hẹn và cập nhật xu hướng mới nhất dễ dàng</div>
+                    </div>
+                  </div>
+
+                  <div class="countdown">
+                    ⏳ Chỉ còn 3 ngày nữa, app sẽ có mặt trên App Store & Google Play!
+                  </div>
+
+                  <p>👉 Hãy là người đầu tiên nhận thông báo cài đặt và nhận phần quà độc quyền.</p>
+
+                  <p style="text-align: center; margin-top: 24px;">
+                    <a href="https://stepnavilabs-broglow-portal.vercel.app/register" class="cta-button">Đăng ký để nhận link tải ngay khi ra mắt</a>
+                  </p>
+
+                  <p>Cảm ơn bạn đã đồng hành cùng BroGlow ngay từ những ngày đầu.</p>
+                  <p>Chúng tôi tin rằng bạn sẽ yêu thích trải nghiệm hoàn toàn mới trên app của BroGlow – nhanh hơn, đẹp hơn, và cá nhân hóa hơn bao giờ hết.</p>
+                  <p>Hẹn gặp bạn trên ứng dụng!</p>
+                  <p>
+                    Thân ái,<br />
+                    Đội ngũ BroGlow
+                  </p>
+                  <p class="footer-text">
+                    Made with 🫶 by
+                    <a href="https://stepnavilabs-broglow-portal.vercel.app/">BroGlow.com</a>
+                  </p>
+                </div>
+              </div>
+              <div class="content-help">
+                <div class="help-container">
+                  <div class="help-title">
+                    <h2 style="margin: 0; padding: 0; color: #fff;">Cần hỗ trợ?</h2>
+                  </div>
+                  <div class="help-button">
+                    <a href="https://stepnavilabs-broglow-portal.vercel.app/support" class="support-button">Hỗ trợ</a>
+                  </div>
+                </div>
+                <div style="margin-top: 32px">
+                  <p style="color: #fff; margin-top: 0">
+                    Trải nghiệm làm đẹp được cá nhân hóa với BroGlow AI, ưu đãi độc quyền và nhiều tính năng hấp dẫn khác đang chờ bạn khám phá.
+                  </p>
+                  <p style="color: #fff; margin-top: 8px">
+                    Vui lòng không trả lời email này. Đây là tin nhắn tự động từ địa chỉ không nhận phản hồi. Để được hỗ trợ, vui lòng nhấp vào nút Hỗ trợ ở trên hoặc gửi email cho chúng tôi tại support@broglow.com.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        </body>
+      </html>
+    `,
+    textContent: `
+      THÔNG BÁO LAUNCHING
+
+      Gửi {{fullName}},
+
+      Bạn đã sẵn sàng để nâng tầm trải nghiệm làm đẹp chưa?
+
+      Chúng tôi rất vui mừng thông báo rằng ứng dụng chính thức của BroGlow sẽ chính thức được ra mắt trong vòng 3 ngày tới! Và vì bạn đã từng đăng ký trên website của chúng tôi, bạn sẽ là một trong những người đầu tiên được trải nghiệm app – hoàn toàn miễn phí và với rất nhiều ưu đãi đặc biệt.
+
+      ✨ Vì sao bạn nên tải ngay App BroGlow?
+
+      • Cá nhân hóa trải nghiệm làm đẹp với AI Beauty Matching
+      • Nhận ưu đãi đặc biệt chỉ dành riêng cho người dùng app
+      • Theo dõi lịch trình chăm da, nhắc hẹn và cập nhật xu hướng mới nhất dễ dàng
+
+      ⏳ Chỉ còn 3 ngày nữa, app sẽ có mặt trên App Store & Google Play!
+
+      👉 Hãy là người đầu tiên nhận thông báo cài đặt và nhận phần quà độc quyền.
+
+      Đăng ký để nhận link tải ngay khi ra mắt: https://stepnavilabs-broglow-portal.vercel.app/register
+
+      Cảm ơn bạn đã đồng hành cùng BroGlow ngay từ những ngày đầu.
+      Chúng tôi tin rằng bạn sẽ yêu thích trải nghiệm hoàn toàn mới trên app của BroGlow – nhanh hơn, đẹp hơn, và cá nhân hóa hơn bao giờ hết.
+
+      Hẹn gặp bạn trên ứng dụng!
+
+      Thân ái,
+      Đội ngũ BroGlow
+
+      © {{currentYear}} BroGlow. All rights reserved.
+
+      Cần hỗ trợ? Vui lòng truy cập https://stepnavilabs-broglow-portal.vercel.app/support hoặc liên hệ support@broglow.com
+    `,
+    description: 'Email sent to notify users about app launch',
+  };
+
   // Insert all templates
   await emailTemplateCollection.insertMany([
     welcomeTemplate,
     verifyEmailTemplate,
     forgotPasswordTemplate,
     passwordChangeTemplate,
+    appLaunchTemplate,
   ]);
 
   console.log('Email templates seeded successfully');

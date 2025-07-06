@@ -58,6 +58,16 @@ export class AuthService {
     }
   }
 
+  static async isAdmin(): Promise<boolean> {
+    try {
+      const profile = await this.getUserProfile();
+      return profile.roles.some(role => role.name === "admin");
+    } catch (error) {
+      console.error("Error checking admin role:", error);
+      return false;
+    }
+  }
+
   static getDefaultAuthRoute(): string {
     return DEFAULT_AUTH_ROUTE;
   }

@@ -15,6 +15,11 @@ export interface TokenPair {
   refreshToken: string;
 }
 
+export interface Role {
+  id: number;
+  name: string;
+}
+
 export interface User {
   id: number;
   firstName: string;
@@ -22,4 +27,5 @@ export interface User {
   email: string;
   createdAt: string;
   updatedAt: string;
+  roles: Role[];
 }
