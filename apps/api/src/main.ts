@@ -10,6 +10,9 @@ import { join } from 'path';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Get email service from the app context
+  // const emailService = app.get(EmailService);
+
   const mongoUri =
     process.env.MONGODB_URI || 'mongodb://localhost:27017/broglow';
   await seed(mongoUri);

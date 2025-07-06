@@ -95,6 +95,9 @@ export async function seed(mongoUri: string): Promise<void> {
     // Seed products
     await seedProducts(productsCollection);
 
+    // Seed users from email list
+    // await seedUsers(usersCollection, rolesCollection, emailService);
+
     console.log('Seeding completed');
   } finally {
     await client.close();

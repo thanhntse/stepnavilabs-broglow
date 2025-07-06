@@ -19,6 +19,7 @@ import { EmailModule } from './email/email.module';
 import { ProductsModule } from './products/products.module';
 import { SkinProfileModule } from './skin-profile/skin-profile.module';
 import { BlogModule } from './blog/blog.module';
+import { RoutineQuestionModule } from './routine-suggestion/routine-question.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { BlogModule } from './blog/blog.module';
     ProductsModule,
     SkinProfileModule,
     BlogModule,
+    RoutineQuestionModule,
   ],
   controllers: [AppController],
   providers: [AppService],
