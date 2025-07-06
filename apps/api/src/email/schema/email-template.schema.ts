@@ -7,6 +7,7 @@ export enum EmailTemplateType {
   FORGOT_PASSWORD = 'forgot_password',
   CHANGE_PASSWORD = 'change_password',
   APP_LAUNCH = 'app_launch',
+  WEBSITE_LAUNCH = 'website_launch',
 }
 
 @Schema({ collection: 'email_templates', timestamps: true })

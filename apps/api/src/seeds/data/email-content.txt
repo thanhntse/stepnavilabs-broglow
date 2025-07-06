@@ -1,24 +1,30 @@
-THÔNG BÁO LAUNCHING
-Subject: 🎉 Chỉ 3 ngày nữa: App BroGlow chính thức ra mắt – Sẵn sàng để bùng nổ trải nghiệm làm đẹp?
-Gửi [Tên người dùng],
- Bạn đã sẵn sàng để nâng tầm trải nghiệm làm đẹp chưa?
-Chúng tôi rất vui mừng thông báo rằng ứng dụng chính thức của BroGlow sẽ chính thức được ra mắt trong vòng 3 ngày tới! Và vì bạn đã từng đăng ký trên website của chúng tôi, bạn sẽ là một trong những người đầu tiên được trải nghiệm app – hoàn toàn miễn phí và với rất nhiều ưu đãi đặc biệt.
-✨ Vì sao bạn nên tải ngay App BroGlow?
-Cá nhân hóa trải nghiệm làm đẹp với AI Beauty Matching
+Subject Line:
+ BroGlow sắp ra mắt chính thức – Phiên bản mới đầy đủ tính năng đang đến gần!
+
+Header (H1):
+BroGlow chính thức ra mắt phiên bản đầy đủ – Sẵn sàng bứt phá làn da nam giới!
+Body Content:
+Cảm ơn bạn đã đăng ký và đồng hành cùng BroGlow trong giai đoạn phát triển đầu tiên!
+Chúng tôi rất vui được thông báo:
+👉Ngày 15/07, phiên bản website đầy đủ tính năng như app sẽ chính thức được ra mắt tại stepnavilabs-broglow-portal.vercel.app
+👉Ngày 20/07, ứng dụng BroGlow sẽ chính thức có mặt trên CH Play và App Store – bạn sẽ có thể tải về dễ dàng để trải nghiệm:
+Quét gương mặt bằng AI, phân tích da chuyên sâu
 
 
-Nhận ưu đãi đặc biệt chỉ dành riêng cho người dùng app
+Nhận routine skincare cá nhân hóa mỗi ngày
 
 
-Theo dõi lịch trình chăm da, nhắc hẹn và cập nhật xu hướng mới nhất dễ dàng
+Gợi ý sản phẩm phù hợp – tiết kiệm thời gian và tiền bạc
 
 
-⏳ Chỉ còn 3 ngày nữa, app sẽ có mặt trên App Store & Google Play!
-👉 Hãy là người đầu tiên nhận thông báo cài đặt và nhận phần quà độc quyền.
-[Đăng ký để nhận link tải ngay khi ra mắt]
-Cảm ơn bạn đã đồng hành cùng BroGlow ngay từ những ngày đầu.
-Chúng tôi tin rằng bạn sẽ yêu thích trải nghiệm hoàn toàn mới trên app của BroGlow – nhanh hơn, đẹp hơn, và cá nhân hóa hơn bao giờ hết.
-Hẹn gặp bạn trên ứng dụng!
- Thân ái,
- Đội ngũ BroGlow
+Nhận nhắc nhở, theo dõi tiến trình làn da
+
+
+BroGlow – Quét da, quét mọi rào cản
+CTA Button:
+ 👉 Nhấn để xem bản demo & nhận thông báo khi app chính thức lên store
+Truy cập website
+
+Footer:
+Bạn nhận được email này vì đã đăng ký thông tin trên website BroGlow. Cảm ơn bạn đã đồng hành cùng chúng tôi!
 
