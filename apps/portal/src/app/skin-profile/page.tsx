@@ -33,7 +33,7 @@ export default function SkinProfilePage() {
       setQuestions(response.data.filter(q => q.isActive));
     } catch (error) {
       console.error("Error loading questions:", error);
-      showError({ detail: "Failed to load questions" });
+      showError({ detail: t("errors.failedToLoadQuestions") });
     } finally {
       setIsLoading(false);
     }
@@ -82,10 +82,10 @@ export default function SkinProfilePage() {
       const profile = await SkinProfileService.submitSkinProfile(submitData);
       setUserProfile(profile);
       setShowResults(true);
-      showSuccess({ detail: "Skin profile submitted successfully" });
+      showSuccess({ detail: t("errors.skinProfileSubmitted") });
     } catch (error) {
       console.error("Error submitting skin profile:", error);
-      showError({ detail: "Failed to submit skin profile" });
+      showError({ detail: t("errors.failedToSubmitSkinProfile") });
     } finally {
       setIsSubmitting(false);
     }
@@ -98,10 +98,10 @@ export default function SkinProfilePage() {
       setShowResults(false);
       setAnswers([]);
       setCurrentQuestionIndex(0);
-      showSuccess({ detail: "Skin profile deleted successfully" });
+      showSuccess({ detail: t("errors.skinProfileDeleted") });
     } catch (error) {
       console.error("Error deleting skin profile:", error);
-      showError({ detail: "Failed to delete skin profile" });
+      showError({ detail: t("errors.failedToDeleteSkinProfile") });
     }
   };
 
@@ -125,7 +125,7 @@ export default function SkinProfilePage() {
     return (
       <>
         <div className="min-h-[calc(100vh-100px)] bg-gray-50">
-          <div className="max-w-4xl mx-auto px-4 py-8">
+          <div className="max-w-7xl mx-auto px-4 py-8">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
               {/* Header */}
               <div className="bg-gradient-to-r from-purple-500 to-purple-600 px-6 py-8 text-white">
@@ -144,7 +144,7 @@ export default function SkinProfilePage() {
                   {/* Skin Type */}
                   {userProfile.skinType && (
                     <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                      <h3 className="font-semibold text-blue-900 mb-2">Skin Type</h3>
+                      <h3 className="font-semibold text-blue-900 mb-2">{t("common.skinType")}</h3>
                       <p className="text-blue-700">{userProfile.skinType}</p>
                     </div>
                   )}
@@ -152,7 +152,7 @@ export default function SkinProfilePage() {
                   {/* Concerns */}
                   {userProfile.concerns && userProfile.concerns.length > 0 && (
                     <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                      <h3 className="font-semibold text-yellow-900 mb-2">Skin Concerns</h3>
+                      <h3 className="font-semibold text-yellow-900 mb-2">{t("common.skinConcerns")}</h3>
                       <div className="flex flex-wrap gap-2">
                         {userProfile.concerns.map((concern, index) => (
                           <span key={index} className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">
@@ -167,7 +167,7 @@ export default function SkinProfilePage() {
                 {/* Recommendations */}
                 {userProfile.recommendations && (
                   <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <h3 className="font-semibold text-green-900 mb-2">Recommendations</h3>
+                    <h3 className="font-semibold text-green-900 mb-2">{t("common.recommendations")}</h3>
                     <p className="text-green-700 whitespace-pre-wrap">{userProfile.recommendations}</p>
                   </div>
                 )}
@@ -183,13 +183,13 @@ export default function SkinProfilePage() {
                     className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors duration-200"
                   >
                     <Sparkle size={18} />
-                    Retake Assessment
+                    {t("common.retakeAssessment")}
                   </button>
                   <button
                     onClick={handleDeleteProfile}
                     className="flex items-center gap-2 px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200"
                   >
-                    Delete Profile
+                    {t("common.deleteProfile")}
                   </button>
                 </div>
               </div>
@@ -217,7 +217,7 @@ export default function SkinProfilePage() {
   return (
     <>
       <div className="min-h-[calc(100vh-100px)] bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
             {/* Header */}
             <div className="bg-gradient-to-r from-purple-500 to-purple-600 px-6 py-8 text-white">
@@ -234,7 +234,7 @@ export default function SkinProfilePage() {
             <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">
-                  Question {currentQuestionIndex + 1} of {questions.length}
+                  {t("common.question")} {currentQuestionIndex + 1} of {questions.length}
                 </span>
                 <div className="flex items-center gap-2">
                   {questions.map((_, index) => (
@@ -278,7 +278,7 @@ export default function SkinProfilePage() {
                         onChange={(e) => handleAnswerChange(currentQuestion._id, e.target.value)}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
                         rows={4}
-                        placeholder="Enter your answer..."
+                        placeholder={t("common.enterAnswer")}
                       />
                     )}
 

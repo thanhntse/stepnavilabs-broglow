@@ -35,7 +35,7 @@ export default function RoutinePage() {
       setQuestions(response.data.filter(q => q.isActive));
     } catch (error) {
       console.error("Error loading questions:", error);
-      showError({ detail: "Failed to load questions" });
+      showError({ detail: t("errors.failedToLoadQuestions") });
     } finally {
       setIsLoading(false);
     }
@@ -87,10 +87,10 @@ export default function RoutinePage() {
         setSuggestionText(prev => prev + chunk);
       }
 
-      showSuccess({ detail: "Routine suggestions generated successfully" });
+      showSuccess({ detail: t("errors.routineSuggestionsGenerated") });
     } catch (error) {
       console.error("Error getting routine suggestions:", error);
-      showError({ detail: "Failed to get routine suggestions" });
+      showError({ detail: t("errors.failedToGetRoutineSuggestions") });
     } finally {
       setIsSubmitting(false);
     }
@@ -124,7 +124,7 @@ export default function RoutinePage() {
     return (
       <>
         <div className="min-h-[calc(100vh-100px)] bg-gray-50">
-          <div className="max-w-4xl mx-auto px-4 py-8">
+          <div className="max-w-7xl mx-auto px-4 py-8">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
               {/* Header */}
               <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-8 text-white">
@@ -140,7 +140,7 @@ export default function RoutinePage() {
               {/* Suggestions */}
               <div className="p-6">
                 <div className="mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-4">Your Personalized Routine</h2>
+                  <h2 className="text-xl font-semibold text-gray-900 mb-4">{t("common.personalizedRoutine")}</h2>
                   <div className="bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-6">
                     <div className="prose max-w-none">
                       <pre className="whitespace-pre-wrap text-gray-800 font-sans text-sm leading-relaxed">
@@ -157,14 +157,14 @@ export default function RoutinePage() {
                     className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors duration-200"
                   >
                     <Sparkle size={18} />
-                    Continue Chat
+                    {t("common.continueChat")}
                   </button>
                   <button
                     onClick={handleRestart}
                     className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
                   >
                     <Clock size={18} />
-                    Start New Assessment
+                    {t("common.startNewAssessment")}
                   </button>
                 </div>
               </div>
@@ -192,7 +192,7 @@ export default function RoutinePage() {
   return (
     <>
       <div className="min-h-[calc(100vh-100px)] bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
             {/* Header */}
             <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-8 text-white">
@@ -209,7 +209,7 @@ export default function RoutinePage() {
             <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">
-                  Question {currentQuestionIndex + 1} of {questions.length}
+                  {t("common.question")} {currentQuestionIndex + 1} of {questions.length}
                 </span>
                 <div className="flex items-center gap-2">
                   {questions.map((_, index) => (
@@ -253,7 +253,7 @@ export default function RoutinePage() {
                         onChange={(e) => handleAnswerChange(currentQuestion._id, e.target.value)}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
                         rows={4}
-                        placeholder="Enter your answer..."
+                        placeholder={t("common.enterAnswer")}
                       />
                     )}
 

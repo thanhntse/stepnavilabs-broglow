@@ -101,7 +101,7 @@ export default function ProfilePage() {
   if (!user) {
     return (
       <>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="min-h-[calc(100vh-100px)] bg-gray-50 flex items-center justify-center">
           <div className="text-center">
             <div className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
             <p className="mt-4 text-gray-600">{t("common.loading")}</p>
@@ -272,11 +272,11 @@ export default function ProfilePage() {
 
                 {/* Account Actions */}
                 <div className="space-y-4">
-                  <h2 className="text-lg font-semibold text-gray-900">Account Actions</h2>
+                  <h2 className="text-lg font-semibold text-gray-900">{t("common.accountActions")}</h2>
 
                   <div className="space-y-4">
                     <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                      <h3 className="font-medium text-yellow-800 mb-2">Danger Zone</h3>
+                      <h3 className="font-medium text-yellow-800 mb-2">{t("common.dangerZone")}</h3>
                       <p className="text-sm text-yellow-700 mb-4">
                         {t("common.confirmDeleteDescription")}
                       </p>

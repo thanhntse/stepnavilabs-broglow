@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Button } from "primereact/button";
 import { Check, X } from "@phosphor-icons/react";
+import { useLanguage } from "@/context/language-context";
 
 export default function VerifyEmailPage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -12,6 +13,7 @@ export default function VerifyEmailPage() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const router = useRouter();
+  const { t } = useLanguage();
 
   useEffect(() => {
     const verifyEmail = async () => {
@@ -53,7 +55,7 @@ export default function VerifyEmailPage() {
 
         {isLoading && (
           <h1 className="text-2xl font-bold text-center mb-6">
-            Đang xác thực email...
+            {t("common.verifyingEmail")}
           </h1>
         )}
 
@@ -75,15 +77,15 @@ export default function VerifyEmailPage() {
                 </div>
 
                 <h1 className="text-2xl font-bold text-gray-800 mb-4">
-                  Xác thực thành công!
+                  {t("common.verificationSuccess")}
                 </h1>
 
                 <p className="text-gray-600 mb-8">
-                  Vui lòng đăng nhập để tiếp tục sử dụng dịch vụ
+                  {t("common.loginToContinueService")}
                 </p>
 
                 <Button
-                  label="Đăng nhập ngay"
+                  label={t("common.loginNow")}
                   className="w-full p-button-primary"
                   onClick={() => router.push("/login")}
                 />
@@ -98,15 +100,15 @@ export default function VerifyEmailPage() {
                 </div>
 
                 <h1 className="text-2xl font-bold text-gray-800 mb-4">
-                  Xác thực thất bại!
+                  {t("common.verificationFailed")}
                 </h1>
 
                 <p className="text-gray-600 mb-8">
-                  Vui lòng kiểm tra lại email của bạn và thử lại
+                  {t("common.checkEmailAndTryAgain")}
                 </p>
 
                 <Button
-                  label="Quay lại trang đăng nhập"
+                  label={t("common.returnToLoginPage")}
                   className="w-full p-button-primary"
                   onClick={() => router.push("/login")}
                 />
