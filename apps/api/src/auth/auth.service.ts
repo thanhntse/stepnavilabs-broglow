@@ -62,8 +62,7 @@ export class AuthService {
       email,
       password: hashedPassword,
       roles: userRole ? [userRole] : [],
-      isEmailVerified: true,
-      // isEmailVerified: false,
+      isEmailVerified: false,
       verificationToken,
     });
     await user.save();
@@ -73,32 +72,16 @@ export class AuthService {
     const verificationUrl = `${publicUrl}/verify-email?token=${verificationToken}`;
 
     // Send verification email
-    // await this.emailService.sendEmail({
-    //   to: email,
-    //   templateType: EmailTemplateType.VERIFY_EMAIL,
-    //   templateData: {
-    //     firstName,
-    //     lastName,
-    //     verificationLink: verificationUrl,
-    //     verificationCode: verificationToken,
-    //     expirationMinutes: 1440, // 24 hours
-    //     appName: this.configService.get('APP_NAME') || 'BroGlow',
-    //     currentYear: new Date().getFullYear(),
-    //   },
-    // });
-
-    // Send welcome email
     await this.emailService.sendEmail({
-      to: user.email,
-      templateType: EmailTemplateType.WELCOME,
+      to: email,
+      templateType: EmailTemplateType.VERIFY_EMAIL,
       templateData: {
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
+        firstName,
+        lastName,
+        verificationLink: verificationUrl,
+        verificationCode: verificationToken,
+        expirationMinutes: 1440, // 24 hours
         appName: this.configService.get('APP_NAME') || 'BroGlow',
-        loginUrl: this.configService.get('PUBLIC_URL')
-          ? `${this.configService.get('PUBLIC_URL')}/login`
-          : '/login',
         currentYear: new Date().getFullYear(),
       },
     });

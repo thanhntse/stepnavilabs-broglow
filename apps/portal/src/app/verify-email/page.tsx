@@ -3,13 +3,12 @@ import { AuthService } from "@/services/auth-service";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { Button } from "primereact/button";
+import { Check, X } from "@phosphor-icons/react";
 
 export default function VerifyEmailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [message, setMessage] = useState("");
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const router = useRouter();
@@ -19,7 +18,6 @@ export default function VerifyEmailPage() {
       if (!token) {
         setIsLoading(false);
         setIsSuccess(false);
-        setMessage("Token xác thực không hợp lệ. Vui lòng thử lại!");
         return;
       }
 
@@ -27,14 +25,8 @@ export default function VerifyEmailPage() {
         setIsLoading(true);
         const result = await AuthService.verifyEmail(token);
         setIsSuccess(result.success);
-        setMessage(result.message);
-      } catch (error) {
+      } catch {
         setIsSuccess(false);
-        setMessage(
-          error instanceof Error
-            ? error.message
-            : "Đã xảy ra lỗi khi xác thực email. Vui lòng thử lại!"
-        );
       } finally {
         setIsLoading(false);
       }
@@ -44,57 +36,85 @@ export default function VerifyEmailPage() {
   }, [token]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
-      <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-md">
+    <div className="flex h-screen overflow-hidden bg-gradient-to-br from-primary-pastel to-white">
+      <div className="w-full p-2 lg:p-4 flex flex-col justify-center items-center">
+        <div className="mx-auto w-full max-w-md bg-white p-8 rounded-2xl shadow-lg text-center">
         <div className="flex justify-center mb-6">
           <Image
-            src="/logo.svg"
+            src="/broglow-logo.png"
             alt="Logo"
-            width={150}
-            height={50}
+            width={200}
+            height={90}
             priority
-            className="h-auto w-auto"
+            className="cursor-pointer"
+            onClick={() => router.push("/")}
           />
         </div>
 
-        <h1 className="text-2xl font-bold text-center mb-6">
-          {isLoading ? "Đang xác thực email..." : "Xác thực email"}
-        </h1>
+        {isLoading && (
+          <h1 className="text-2xl font-bold text-center mb-6">
+            Đang xác thực email...
+          </h1>
+        )}
 
-        {isLoading ? (
+        {isLoading && (
           <div className="flex justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-orange"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-blue"></div>
           </div>
-        ) : (
+        )}
+
+        {!isLoading && (
           <div className="text-center">
             {isSuccess ? (
-              <div className="flex flex-col items-center gap-6">
-                <div className="bg-green-100 text-green-700 p-4 rounded-lg">
-                  <p className="text-lg font-semibold">Xác thực thành công!</p>
-                  <p>{message}</p>
+              <>
+                {/* Success Icon */}
+                <div className="mb-6 flex justify-center">
+                  <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
+                    <Check size={40} className="text-green-500" />
+                  </div>
                 </div>
+
+                <h1 className="text-2xl font-bold text-gray-800 mb-4">
+                  Xác thực thành công!
+                </h1>
+
+                <p className="text-gray-600 mb-8">
+                  Vui lòng đăng nhập để tiếp tục sử dụng dịch vụ
+                </p>
+
                 <Button
                   label="Đăng nhập ngay"
-                  className="bg-primary-orange border-primary-orange hover:bg-primary-orange/90 hover:border-primary-orange/90"
+                  className="w-full p-button-primary"
                   onClick={() => router.push("/login")}
                 />
-              </div>
+              </>
             ) : (
-              <div className="flex flex-col items-center gap-6">
-                <div className="bg-red-100 text-red-700 p-4 rounded-lg">
-                  <p className="text-lg font-semibold">Xác thực thất bại</p>
-                  <p>{message}</p>
+              <>
+                {/* Error Icon */}
+                <div className="mb-6 flex justify-center">
+                  <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
+                    <X size={40} className="text-red-500" />
+                  </div>
                 </div>
-                <Link
-                  href="/login"
-                  className="text-primary-orange hover:underline"
-                >
-                  Quay lại trang đăng nhập
-                </Link>
-              </div>
+
+                <h1 className="text-2xl font-bold text-gray-800 mb-4">
+                  Xác thực thất bại!
+                </h1>
+
+                <p className="text-gray-600 mb-8">
+                  Vui lòng kiểm tra lại email của bạn và thử lại
+                </p>
+
+                <Button
+                  label="Quay lại trang đăng nhập"
+                  className="w-full p-button-primary"
+                  onClick={() => router.push("/login")}
+                />
+              </>
             )}
           </div>
         )}
+        </div>
       </div>
     </div>
   );

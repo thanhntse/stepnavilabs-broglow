@@ -98,20 +98,14 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
-  @ApiOperation({
-    summary: '[UNDER DEVELOPMENT] Initiate Google OAuth login',
-    description: 'This endpoint is currently under development',
-  })
+  @ApiOperation({ summary: 'Initiate Google OAuth login' })
   async googleLogin() {
     return { message: 'Redirecting to Google...' };
   }
 
   @Get('google/redirect')
   @UseGuards(AuthGuard('google'))
-  @ApiOperation({
-    summary: '[UNDER DEVELOPMENT] Google OAuth callback handler',
-    description: 'This endpoint is currently under development',
-  })
+  @ApiOperation({ summary: 'Google OAuth callback handler' })
   async googleAuthRedirect(@Req() req: any, @Res() res: any) {
     return res.redirect(
       `${this.configService.get<string>('PUBLIC_URL')}/login?code=${req.user.accessToken}`,
@@ -119,20 +113,14 @@ export class AuthController {
   }
 
   @Post('google/token')
-  @ApiOperation({
-    summary: '[UNDER DEVELOPMENT] Exchange Google auth code for tokens',
-    description: 'This endpoint is currently under development',
-  })
+  @ApiOperation({ summary: 'Exchange Google auth code for tokens' })
   @ApiResponse({ status: 200, description: 'Tokens generated' })
   async exchangeCodeForToken(@Body('code') code: string) {
     return await this.authService.exchangeGoogleCodeForToken(code);
   }
 
   @Get('verify-email')
-  @ApiOperation({
-    summary: '[UNDER DEVELOPMENT] Verify user email with token',
-    description: 'This endpoint is currently under development',
-  })
+  @ApiOperation({ summary: 'Verify user email with token' })
   @ApiQuery({
     name: 'token',
     required: true,

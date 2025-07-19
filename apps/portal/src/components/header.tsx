@@ -207,13 +207,14 @@ export default function Header({
                     className={`font-semibold ${variant !== "home" ? "text-primary-orange" : ""
                       }`}
                   >
-                    {50 - promptCount}/50
+                    {10 - promptCount}/10
                   </span>{" "}
                   {t("common.freeDaily")}
                 </div>
 
+                <div className="flex flex-row-reverse items-center gap-1">
                 <button
-                  className={`font-semibold px-5 py-2 rounded-full w-fit cursor-pointer hover:bg-gray-200 ease-in-out duration-200 ${variant === "home" ? "bg-white text-black" : "text-black"
+                  className={`font-semibold px-3 py-2 rounded-full w-fit cursor-pointer hover:bg-gray-200 ease-in-out duration-200 ${variant === "home" ? "bg-white text-black" : "text-black"
                     }`}
                   onClick={(e) => menu.current?.toggle(e)}
                 >
@@ -233,6 +234,29 @@ export default function Header({
                     }}
                   />
                 </button>
+
+                <div className="flex items-center gap-2 cursor-pointer bg-primary-blue rounded-full p-0.5">
+                  {user?.avatar ? (
+                    <Image
+                      src={user?.avatar}
+                      alt="Avatar"
+                      width={36}
+                      height={36}
+                      className="rounded-full"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-200">
+                      {displayName.toString().split(" ").map((name: string, index: number) => {
+                        return (
+                          <span key={index} className="text-sm font-semibold">
+                            {name.charAt(0)}
+                          </span>
+                        )
+                      })}
+                    </div>
+                  )}
+                  </div>
+                </div>
               </>
             ) : (
               <Link
@@ -310,7 +334,7 @@ export default function Header({
                   <div className="flex flex-col gap-3 pb-2">
                     <div className="text-sm py-2 px-4 bg-white rounded-full w-fit">
                       <span className="font-semibold text-primary-orange">
-                        {50 - promptCount}/50
+                        {10 - promptCount}/10
                       </span>{" "}
                       {t("common.freeDaily")}
                     </div>

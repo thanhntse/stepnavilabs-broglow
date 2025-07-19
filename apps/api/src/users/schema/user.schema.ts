@@ -19,6 +19,9 @@ export class User {
   email: string;
 
   @Prop({ required: false })
+  avatar?: string;
+
+  @Prop({ required: false })
   password: string;
 
   @Prop({ type: [{ type: Object }] })
@@ -39,7 +42,7 @@ export class User {
   @Prop()
   verificationToken?: string;
 
-  @Prop({ default: 50 })
+  @Prop({ default: 10 })
   dailyPromptLimit: number;
 }
 

@@ -78,19 +78,19 @@ const LoginPage = () => {
     try {
       await AuthService.login(emailOrPhone, password, "");
 
-      // Check if user is admin
-      const isAdmin = await AuthService.isAdmin();
-      if (!isAdmin) {
-        // Clear tokens and show error
-        AuthService.logout();
-        toastRef.current?.show({
-          severity: "error",
-          summary: "Không có quyền truy cập",
-          detail: "Chỉ tài khoản admin mới được phép đăng nhập vào hệ thống.",
-          life: 3000,
-        });
-        return;
-      }
+      // // Check if user is admin
+      // const isAdmin = await AuthService.isAdmin();
+      // if (!isAdmin) {
+      //   // Clear tokens and show error
+      //   AuthService.logout();
+      //   toastRef.current?.show({
+      //     severity: "error",
+      //     summary: "Không có quyền truy cập",
+      //     detail: "Chỉ tài khoản admin mới được phép đăng nhập vào hệ thống.",
+      //     life: 3000,
+      //   });
+      //   return;
+      // }
 
       router.push(AuthService.getDefaultAuthRoute());
 
@@ -109,10 +109,10 @@ const LoginPage = () => {
     }
   };
 
-  // const handleLoginGoogle = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   AuthService.loginGoogle();
-  // };
+  const handleLoginGoogle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    AuthService.loginGoogle();
+  };
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -140,7 +140,7 @@ const LoginPage = () => {
             </h1>
             <p className="text-gray-500 text-sm mb-4">{t("common.loginToContinue")}</p>
 
-            {/* <Button
+            <Button
               label={t("common.loginWithGoogle")}
               icon={
                 <svg
@@ -179,7 +179,7 @@ const LoginPage = () => {
                 {t("common.or")}
               </span>
               <hr className="flex-grow border-t border-gray-200" />
-            </div> */}
+            </div>
 
             {/* Display server-side error */}
             {errors.invalidCredentials && (

@@ -24,13 +24,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: { sub: string }) {
     try {
       validateObjectId(payload.sub, 'user');
-    } catch (error) {
+    } catch {
       throw new CustomUnauthorizedException('Invalid user ID', 'invalidUserId');
     }
 
     const user = await this.userModel
       .findById(payload.sub)
-      .select('id firstName lastName email createdAt updatedAt')
+      .select('id firstName lastName email avatar createdAt updatedAt')
       .populate({
         path: 'roles',
         populate: {

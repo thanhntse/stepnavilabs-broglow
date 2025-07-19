@@ -8,6 +8,7 @@ import { User, UserDocument } from '@api/users/schema/user.schema';
 import { RoleService } from '@api/roles/role.service';
 import { EmailService } from '@api/email/email.service';
 import { EmailTemplateType } from '@api/email/schema/email-template.schema';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
@@ -55,10 +56,13 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         email: profile.emails[0].value,
         firstName: firstName,
         lastName: lastName,
-        password: '',
+        password: await bcrypt.hash(
+          Math.random().toString(36).substring(2, 15),
+          10,
+        ),
         roles: userRole ? [userRole] : [],
         isEmailVerified: true,
-        // avatar: profile.photos[0].value,
+        avatar: profile.photos[0].value,
         // accessToken,
       });
 
@@ -82,7 +86,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
 
     user = await this.userModel
       .findOne({ googleId: profile.id })
-      .select('id firstName lastName email createdAt updatedAt')
+      .select('id firstName lastName email avatar createdAt updatedAt')
       .populate({
         path: 'roles',
         populate: { path: 'permissions' },

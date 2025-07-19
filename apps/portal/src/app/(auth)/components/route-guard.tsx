@@ -4,7 +4,7 @@ import { DEFAULT_AUTH_ROUTE, DEFAULT_PUBLIC_ROUTE, protectedRoutes, publicOnlyRo
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { TokenStorage } from "@/lib/token-storage";
-import { AuthService } from "@/services/auth-service";
+// import { AuthService } from "@/services/auth-service";
 
 export function RouteGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -33,21 +33,21 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
         }
 
         // Check for admin role
-        try {
-          const isAdmin = await AuthService.isAdmin();
-          if (!isAdmin) {
-            setAuthorized(false);
-            TokenStorage.clearTokens(); // Clear tokens if not admin
-            router.push(`${DEFAULT_PUBLIC_ROUTE}?message=unauthorized`);
-            return;
-          }
-        } catch (error) {
-          console.error("Admin check failed:", error);
-          setAuthorized(false);
-          TokenStorage.clearTokens();
-          router.push(`${DEFAULT_PUBLIC_ROUTE}?message=unauthorized`);
-          return;
-        }
+        // try {
+        //   const isAdmin = await AuthService.isAdmin();
+        //   if (!isAdmin) {
+        //     setAuthorized(false);
+        //     TokenStorage.clearTokens(); // Clear tokens if not admin
+        //     router.push(`${DEFAULT_PUBLIC_ROUTE}?message=unauthorized`);
+        //     return;
+        //   }
+        // } catch (error) {
+        //   console.error("Admin check failed:", error);
+        //   setAuthorized(false);
+        //   TokenStorage.clearTokens();
+        //   router.push(`${DEFAULT_PUBLIC_ROUTE}?message=unauthorized`);
+        //   return;
+        // }
       }
 
       if (publicOnlyRoutes.some((route) => path.startsWith(route))) {

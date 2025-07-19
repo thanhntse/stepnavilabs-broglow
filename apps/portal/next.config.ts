@@ -10,7 +10,8 @@ const nextConfig: NextConfig = {
       'images.unsplash.com',
       'cf.shopee.vn',
       'down-vn.img.susercontent.com',
-      'shopee.vn'
+      'shopee.vn',
+      'lh3.googleusercontent.com',
     ],
   },
   // Các cấu hình khác

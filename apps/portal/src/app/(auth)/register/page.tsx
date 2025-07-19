@@ -98,10 +98,10 @@ const RegisterPage = () => {
     }
   };
 
-  // const handleLoginGoogle = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   AuthService.loginGoogle();
-  // };
+  const handleLoginGoogle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    AuthService.loginGoogle();
+  };
 
   return (
     <>
@@ -125,7 +125,7 @@ const RegisterPage = () => {
             </h1>
             <p className="text-gray-500 text-sm mb-4">{t("common.registerToUse")}</p>
 
-            {/* <Button
+            <Button
               label={t("common.registerWithGoogle")}
               icon={
                 <svg
@@ -162,7 +162,7 @@ const RegisterPage = () => {
               <hr className="flex-grow border-t border-gray-200" />
               <span className="mx-3 text-gray-400 text-xs">{t("common.or")}</span>
               <hr className="flex-grow border-t border-gray-200" />
-            </div> */}
+            </div>
 
             <form
               onSubmit={handleSubmit}
