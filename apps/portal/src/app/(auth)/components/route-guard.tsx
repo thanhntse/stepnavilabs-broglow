@@ -16,19 +16,15 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
       const token = TokenStorage.getTokens()?.token;
       const isAuthenticated = !!token;
 
-      // Handle root route for authenticated users
-      if (path === "/" && isAuthenticated) {
-        setAuthorized(false);
-        router.push(DEFAULT_AUTH_ROUTE);
+      // Handle root route - allow everyone to access landing page
+      if (path === "/") {
+        setAuthorized(true);
         return;
       }
 
       if (protectedRoutes.some((route) => {
-        // Handle exact match for '/'
-        if (route === '/' && path === '/') return true;
-        // Handle others with startsWith
-        if (route !== '/' && path.startsWith(route)) return true;
-        return false;
+        // Handle exact match and startsWith for protected routes
+        return path === route || (route !== '/' && path.startsWith(route));
       })) {
         if (!isAuthenticated) {
           setAuthorized(false);
@@ -37,10 +33,18 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
         }
 
         // Check for admin role
-        const isAdmin = await AuthService.isAdmin();
-        if (!isAdmin) {
+        try {
+          const isAdmin = await AuthService.isAdmin();
+          if (!isAdmin) {
+            setAuthorized(false);
+            TokenStorage.clearTokens(); // Clear tokens if not admin
+            router.push(`${DEFAULT_PUBLIC_ROUTE}?message=unauthorized`);
+            return;
+          }
+        } catch (error) {
+          console.error("Admin check failed:", error);
           setAuthorized(false);
-          TokenStorage.clearTokens(); // Clear tokens if not admin
+          TokenStorage.clearTokens();
           router.push(`${DEFAULT_PUBLIC_ROUTE}?message=unauthorized`);
           return;
         }
