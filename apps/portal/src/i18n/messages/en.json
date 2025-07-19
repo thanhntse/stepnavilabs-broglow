@@ -156,12 +156,16 @@
     "aiWarning": "AI Limit Warning",
     "imagePlaceholder": "Image",
     "sendMessage": "Send Message",
-    "viewProductRecommendations": "View Product Recommendations"
+    "viewProductRecommendations": "View Product Recommendations",
+    "aiAssistant": "AI Assistant",
+    "code": "Code",
+    "conversation": "conversation"
   },
   "recentPosts": {
     "title": "Recent Posts",
     "error": "Could not load post list",
     "noPosts": "You don't have any posts yet",
+    "noPostsDescription": "Start your first conversation with BroGlow AI to see your posts here.",
     "loading": "Loading posts..."
   },
   "thread": {
@@ -169,10 +173,17 @@
     "noDescription": "No description",
     "recentConversations": "Recent Conversations",
     "startNewConversation": "Start New Conversation",
-    "noConversationsYet": "No conversations yet",
     "startChat": "Start Chat",
     "uploadImages": "Upload Images",
-    "startFirstChat": "Start your first chat"
+    "startFirstChat": "Start your first chat",
+    "uploadImagesDescription": "Upload images and start chatting with BroGlow AI",
+    "chooseImages": "Choose Images",
+    "selectedImages": "Selected Images",
+    "creating": "Creating...",
+    "noConversationsYet": "No conversations yet",
+    "noConversationsYetDescription": "Start your first conversation with BroGlow AI to see your chat history here.",
+    "startFirstChatDescription": "Start your first conversation with BroGlow AI to see your chat history here.",
+    "conversation": "conversation"
   },
   "products": {
     "recommendedForYou": "Recommended Products",

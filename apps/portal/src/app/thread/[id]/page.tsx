@@ -11,6 +11,8 @@ import {
   X,
   PaperPlaneRight,
   LockSimple,
+  ChatCircle,
+  Code,
 } from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
 import { useParams } from "next/navigation";
@@ -22,7 +24,9 @@ import { useEffect, useRef, useState } from "react";
 import Markdown from "react-markdown";
 import ProductRecommendations from "../components/product-recommendations";
 import { InputText } from "primereact/inputtext";
-import { Button } from "primereact/button";
+import { useUserContext } from "@/context/profile-context";
+import { useToast } from "@/hooks/use-toast";
+import { Toast } from "primereact/toast";
 
 type MessageProps = {
   role: "user" | "assistant" | "code";
@@ -38,31 +42,65 @@ type AssistantMessageProps = {
 
 const UserMessage = ({ text, images }: { text: string; images?: string[] }) => {
   const { t } = useLanguage();
+  const { user } = useUserContext();
+
+  const displayName = user ? (
+    `${user.firstName} ${user.lastName}`.trim()
+  ) : (
+    <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
+  );
 
   return (
-    <div className="flex flex-col gap-2 mb-6">
-      <div className="text-sm font-semibold ml-auto">{t("chat.you")}</div>
-      <div className="p-3 bg-primary-blue/10 self-end rounded-2xl rounded-tr max-w-[90vw] sm:max-w-2xl ml-auto w-fit">
-        <div className="whitespace-pre-line text-sm text-black">{text}</div>
-        {images && images.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-2 max-w-full">
-            {images.map((url, index) => (
-              <div
-                key={index}
-                className="w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] md:w-[120px] md:h-[120px]"
-              >
-                <Image
-                  src={url}
-                  alt={`${t("chat.imagePlaceholder")} ${index}`}
-                  width={120}
-                  height={120}
-                  unoptimized
-                  className="object-cover rounded-md w-full h-full"
-                />
-              </div>
-            ))}
-          </div>
-        )}
+    <div className="flex flex-col gap-3 mb-8 group">
+      <div className="flex items-center justify-end gap-2">
+        <span className="text-sm font-medium text-gray-600">{t("chat.you")}</span>
+        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-primary-blue to-primary-darkblue text-white font-semibold text-sm">
+          {user?.avatar ? (
+            <Image
+              src={user?.avatar}
+              alt="User Avatar"
+              width={32}
+              height={32}
+              className="rounded-full"
+            />
+          ) : (
+            displayName.toString().split(" ").map((name: string, index: number) => (
+              <span key={index} className="text-sm">
+                {name.charAt(0)}
+              </span>
+            ))
+          )}
+        </div>
+      </div>
+      <div className="flex justify-end">
+        <div className="max-w-[85%] lg:max-w-2xl">
+          {text && (
+            <div className="bg-gradient-to-r from-primary-blue to-primary-darkblue text-white p-4 rounded-2xl rounded-br-md shadow-lg">
+              <div className="whitespace-pre-line text-sm leading-relaxed">{text}</div>
+            </div>
+          )}
+          {images && images.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-3 justify-end">
+              {images.map((url, index) => (
+                <div
+                  key={index}
+                  className="relative group/image"
+                >
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 overflow-hidden rounded-xl border-2 border-white shadow-lg">
+                    <Image
+                      src={url}
+                      alt={`${t("chat.imagePlaceholder")} ${index + 1}`}
+                      width={112}
+                      height={112}
+                      unoptimized
+                      className="object-cover w-full h-full group-hover/image:scale-105 transition-transform duration-200"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -77,41 +115,80 @@ const AssistantMessage = ({
 
   const handlePreviewClick = () => {
     if (isActive) {
-      // If already active, clear the preview
       onPreview("");
     } else {
-      // Otherwise set this message as preview
       onPreview(text);
     }
   };
 
   return (
-    <div className="flex flex-col gap-2 mb-6">
+    <div className="flex flex-col gap-3 mb-8 group">
       <div className="flex items-center gap-2">
-        <div className="w-6 h-6 p-1.5 rounded-full bg-white border border-gray-200 text-center">
-          <Image src="/broglow-app-logo.png" width={14} height={14} alt="logo-icon" />
+        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 text-white">
+          <Image
+            src="/broglow-app-logo.png"
+            alt="BroGlow app logo"
+            width={32}
+            height={32}
+            className="rounded-full"
+          />
         </div>
-        <span className="text-sm font-semibold">{t("chat.ai")}</span>
+        <span className="text-sm font-medium text-gray-700">{t("chat.ai")}</span>
       </div>
-      <div
-        onClick={handlePreviewClick}
-        className={`p-3 ${isActive ? "bg-primary-blue/10" : "bg-white"} self-start rounded-xl max-w-2xl border border-gray-300 cursor-pointer hover:bg-primary-blue/10`}
-      >
-        <Markdown>{text}</Markdown>
+      <div className="flex justify-start">
+        <div
+          onClick={handlePreviewClick}
+          className={`max-w-[85%] lg:max-w-2xl cursor-pointer transition-all duration-200 ${
+            isActive
+              ? "bg-gradient-to-r from-primary-blue/10 to-primary-darkblue/10 border-2 border-primary-blue/20"
+              : "bg-white hover:bg-gray-50 border border-gray-200"
+          } rounded-2xl rounded-bl-md shadow-lg p-4`}
+        >
+          <div className="prose prose-sm max-w-none">
+            <Markdown
+              components={{
+                p: ({ children }) => <p className="mb-3 last:mb-0 leading-relaxed">{children}</p>,
+                ul: ({ children }) => <ul className="list-disc list-inside mb-3 space-y-1">{children}</ul>,
+                ol: ({ children }) => <ol className="list-decimal list-inside mb-3 space-y-1">{children}</ol>,
+                li: ({ children }) => <li className="text-gray-700">{children}</li>,
+                strong: ({ children }) => <strong className="font-semibold text-gray-900">{children}</strong>,
+                em: ({ children }) => <em className="italic text-gray-700">{children}</em>,
+                code: ({ children }) => <code className="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono">{children}</code>,
+                pre: ({ children }) => <pre className="bg-gray-100 p-3 rounded-lg overflow-x-auto text-sm">{children}</pre>,
+              }}
+            >
+              {text}
+            </Markdown>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
 const CodeMessage = ({ text }: { text: string }) => {
+  const { t } = useLanguage();
+
   return (
-    <div className="p-4 bg-gray-200 self-start rounded-xl max-w-2xl font-mono text-black mb-6">
-      {text.split("\n").map((line, index) => (
-        <div key={index}>
-          <span className="text-gray-600">{`${index + 1}. `}</span>
-          {line}
+    <div className="flex flex-col gap-3 mb-8">
+      <div className="flex items-center gap-2">
+        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-gray-600 to-gray-700 text-white">
+          <Code size={16} weight="bold" />
         </div>
-      ))}
+        <span className="text-sm font-medium text-gray-700">{t("chat.code")}</span>
+      </div>
+      <div className="flex justify-start">
+        <div className="max-w-[85%] lg:max-w-2xl bg-gray-900 text-green-400 rounded-xl p-4 shadow-lg overflow-x-auto">
+          <pre className="text-sm font-mono">
+            {text.split("\n").map((line, index) => (
+              <div key={index} className="flex">
+                <span className="text-gray-500 mr-4 select-none">{String(index + 1).padStart(2, ' ')}</span>
+                <span>{line}</span>
+              </div>
+            ))}
+          </pre>
+        </div>
+      </div>
     </div>
   );
 };
@@ -120,18 +197,26 @@ const TypingIndicator = () => {
   const { t } = useLanguage();
 
   return (
-    <div className="flex flex-col gap-2 mb-6">
+    <div className="flex flex-col gap-3 mb-8">
       <div className="flex items-center gap-2">
-        <div className="w-6 h-6 p-1.5 rounded-full bg-white border border-gray-200 text-center">
-          <Image src="/broglow-app-logo.png" width={14} height={14} alt="logo-icon" />
+        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 text-white">
+          <Image
+            src="/broglow-app-logo.png"
+            alt="BroGlow app logo"
+            width={32}
+            height={32}
+            className="rounded-full"
+          />
         </div>
-        <span className="text-sm font-semibold">{t("chat.ai")}</span>
+        <span className="text-sm font-medium text-gray-700">{t("chat.ai")}</span>
       </div>
-      <div className="p-3 bg-white self-start rounded-xl max-w-2xl border border-gray-300">
-        <div className="flex gap-1">
-          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+      <div className="flex justify-start">
+        <div className="bg-white border border-gray-200 rounded-2xl rounded-bl-md shadow-lg p-4">
+          <div className="flex gap-2">
+            <div className="w-2 h-2 bg-primary-blue rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+            <div className="w-2 h-2 bg-primary-blue rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+            <div className="w-2 h-2 bg-primary-blue rounded-full animate-bounce"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -185,6 +270,7 @@ export default function ChatPage() {
   const [aiLimitWarning, setAiLimitWarning] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isOwner, setIsOwner] = useState<boolean>(true);
+  const toast = useToast();
 
   // Product recommendation states
   const [recommendedProducts, setRecommendedProducts] = useState<any[]>([]);
@@ -299,8 +385,22 @@ export default function ChatPage() {
         const validProducts = productsData.filter(product => product !== null);
         setRecommendedProducts(validProducts);
       }
-    } catch (error) {
-      console.error("Failed to fetch product recommendations:", error);
+    } catch (error: any) {
+      console.log("Failed to fetch product recommendations:", error);
+      if (error.statusCode === 403) {
+        setAiLimitWarning("Bạn đã đạt giới hạn sử dụng hôm nay, vui lòng nâng cấp gói để sử dụng tiếp!");
+      } else if (error.statusCode === 400) {
+        toast.showWarning(
+          {
+            summary: "Không có thông tin",
+            detail: "Bạn vui lòng quét da để mình gợi ý sản phẩm nhé!",
+          }
+        );
+      } else {
+        toast.showError(
+          error.message.content || "Lỗi khi tải sản phẩm"
+        );
+      }
     } finally {
       setIsLoadingProducts(false);
       setHasCheckedRecommendations(true);
@@ -539,21 +639,6 @@ export default function ChatPage() {
     }
   };
 
-  // // Sửa lại hàm xử lý thay đổi phong thái, bỏ phần hiển thị toast
-  // const handleToneChange = (value: string | null) => {
-  //   // Cập nhật phong thái mới
-  //   setSelectedTone(value);
-
-  //   // Lưu ngay vào localStorage
-  //   if (threadId) {
-  //     if (value) {
-  //       localStorage.setItem(`thread_${threadId}_tone`, value);
-  //     } else {
-  //       localStorage.removeItem(`thread_${threadId}_tone`);
-  //     }
-  //   }
-  // };
-
   // Tải tone từ localStorage khi component được load
   useEffect(() => {
     if (threadId) {
@@ -606,7 +691,7 @@ export default function ChatPage() {
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Lỗi từ server:", errorData);
-        if (errorData.statusCode === 403) setAiLimitWarning(errorData.message);
+        if (errorData.error.toString().includes("403")) setAiLimitWarning("Bạn đã đạt giới hạn sử dụng hôm nay, vui lòng nâng cấp gói để sử dụng tiếp!");
         throw new Error(`Server responded with ${response.status}`);
       }
 
@@ -669,141 +754,158 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-gradient-to-b from-primary-blue/5 to-white">
+    <div className="flex flex-col h-screen overflow-hidden bg-gradient-to-b from-gray-50 via-white to-gray-50">
+      <Toast ref={toast.toast} />
+      {/* Desktop Header */}
       <div className="hidden lg:block">
         <Header variant="default" logoSrc="/broglow-logo.png" updatePromptCount={updatePromptCount} />
       </div>
-      {/* <div className="lg:hidden flex items-center justify-between px-4 py-2 bg-white shadow-sm">
-        <Image
-          src="/broglow-logo.png"
-          width={120}
-          height={24}
-          alt="Logo"
-          className="cursor-pointer"
-          onClick={() => router.push("/")}
-        />
-        <div className="flex items-center gap-2">
-          <Dropdown
-            value={selectedTone}
-            onChange={(e) => handleToneChange(e.value)}
-            options={tones}
-            placeholder={t("home.aiToneDefault")}
-            className="!w-36 bg-white text-gray-700 rounded-lg"
-            showClear
-            pt={{
-              root: { className: "!border !border-gray-300 !h-8" },
-              input: {
-                className:
-                  "!text-gray-700 !text-sm !py-1.5 !pl-3 !w-full",
-              },
-              panel: {
-                className: "!border !border-gray-300 !rounded-lg",
-              },
-              item: { className: "!hover:bg-orange-light !text-sm" },
-              trigger: { className: "!text-gray-600 !w-10" },
-              clearIcon: {
-                className:
-                  "!text-gray-500 !hover:text-primary-orange !w-4 !h-4",
-              },
-            }}
-          />
-        </div>
-      </div> */}
 
-      <section className="flex flex-col lg:flex-row lg:gap-6 max-w-7xl w-full mx-auto lg:py-5 flex-grow overflow-y-auto">
+      <div className="flex flex-col lg:flex-row lg:gap-6 max-w-7xl w-full mx-auto lg:py-5 flex-grow overflow-hidden">
         {/* Chat container */}
-        <div className="flex flex-col h-screen lg:h-auto w-full">
+        <div className="flex flex-col h-screen lg:h-auto w-full bg-white lg:rounded-2xl lg:shadow-lg lg:border lg:border-gray-200">
           {/* Mobile header - shown only on mobile */}
           <div className="lg:hidden">
             <Header variant="default" updatePromptCount={updatePromptCount} />
+
+            {/* Mobile Recommendation Button */}
+            {showRecommendButton && isOwner && !hasCheckedRecommendations && !isLoadingProducts && (
+              <div className="px-4 py-3 bg-gradient-to-r from-primary-blue/5 to-primary-darkblue/5 border-b border-primary-blue/20">
+                <button
+                  onClick={handleLoadRecommendations}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary-blue to-primary-darkblue text-white text-sm font-semibold rounded-full cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-200 ease-out"
+                >
+                  <Eye size={16} weight="bold" className="text-white" />
+                  {t("chat.viewProductRecommendations") || "View Product Recommendations"}
+                </button>
+              </div>
+            )}
+
+            {/* Mobile Loading state for recommendations */}
+            {isLoadingProducts && (
+              <div className="px-4 py-3 bg-gradient-to-r from-primary-blue/5 to-primary-darkblue/5 border-b border-primary-blue/20">
+                <div className="flex items-center justify-center gap-3 px-6 py-3 bg-white rounded-xl border border-primary-blue/20 shadow-sm">
+                  <div className="animate-spin w-6 h-6 border-2 border-primary-blue border-t-transparent rounded-full"></div>
+                  <span className="text-sm text-primary-blue font-semibold">Loading recommendations...</span>
+                </div>
+              </div>
+            )}
+
+            {/* Mobile Show when recommendations are loaded */}
+            {recommendedProducts.length > 0 && (
+              <div className="px-4 py-3 bg-gradient-to-r from-green-50 to-green-100 border-b border-green-200">
+                <div className="flex items-center justify-center gap-3 px-6 py-3 bg-white rounded-xl border border-green-200 shadow-sm">
+                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm text-green-700 font-semibold">
+                    {recommendedProducts.length} recommendation{recommendedProducts.length !== 1 ? 's' : ''} available
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
-          <div className="hidden lg:flex flex-col bg-primary-pastel rounded-t-lg border border-gray-300 border-b-0">
-            <div className="px-5 py-4 flex items-center justify-between">
-              <div className="flex items-center gap-6">
-                <div className="w-6 h-6 p-1.5 rounded-full bg-white border border-gray-300 text-center">
+          {/* Desktop Chat Header */}
+          <div className="hidden lg:flex flex-col bg-gradient-to-r from-primary-blue/5 to-primary-darkblue/5 rounded-t-2xl border-b border-gray-200">
+            <div className="px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-r from-primary-blue to-primary-darkblue text-white">
                   <Image
                     src="/broglow-app-logo.png"
-                    width={14}
-                    height={14}
-                    alt="logo-icon"
+                    alt="BroGlow app logo"
+                    width={32}
+                    height={32}
+                    className="rounded-full"
                   />
                 </div>
-                <span className="text-lg font-semibold">
-                  {t("chat.ai")}{" "}
-                  <sup className="text-[0.5em] align-super">TM</sup>
-                </span>
+                <div>
+                  <h1 className="text-lg font-bold text-gray-900">
+                    {t("chat.ai")}
+                  </h1>
+                  <p className="text-sm text-gray-600">
+                    {t("chat.aiAssistant")}
+                  </p>
+                </div>
               </div>
 
-              {/* Dropdown phong thái desktop */}
-              {/* <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-700">
-                    {t("home.aiToneSelector")}:
-                  </span>
-                  <Dropdown
-                    value={selectedTone}
-                    onChange={(e) => handleToneChange(e.value)}
-                    options={tones}
-                    placeholder={t("home.aiToneDefault")}
-                    className="!w-52 bg-white rounded-lg"
-                    showClear
-                    pt={{
-                      root: { className: "!border !border-gray-300 !h-11" },
-                      input: {
-                        className: "!text-gray-700 !text-sm !font-medium",
-                      },
-                      trigger: { className: "!text-gray-600" },
-                      panel: {
-                        className: "!border !border-gray-200 !rounded-lg",
-                      },
-                      item: {
-                        className:
-                          "!hover:bg-orange-light !hover:text-gray-800",
-                      },
-                      clearIcon: {
-                        className: "!text-gray-500 !hover:text-primary-orange",
-                      },
-                    }}
-                  />
+              {/* Recommendation Button in Header */}
+              {showRecommendButton && isOwner && !hasCheckedRecommendations && !isLoadingProducts && (
+                <button
+                  onClick={handleLoadRecommendations}
+                  className="px-5 py-2.5 bg-gradient-to-r from-primary-blue to-primary-darkblue text-white rounded-xl hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center gap-2.5 shadow-lg border border-primary-blue/20 cursor-pointer"
+                >
+                  <Eye size={18} weight="bold" className="text-white" />
+                  {t("chat.viewProductRecommendations") || "View Recommendations"}
+                </button>
+              )}
+
+              {/* Loading state for recommendations */}
+              {isLoadingProducts && (
+                <div className="flex items-center gap-3 px-5 py-2.5 bg-gradient-to-r from-primary-blue/10 to-primary-darkblue/10 rounded-xl border border-primary-blue/20">
+                  <div className="animate-spin w-5 h-5 border-2 border-primary-blue border-t-transparent rounded-full"></div>
+                  <span className="text-sm text-primary-blue font-semibold">Loading...</span>
                 </div>
-              </div> */}
+              )}
+
+              {/* Show when recommendations are loaded */}
+              {recommendedProducts.length > 0 && (
+                <div className="flex items-center gap-3 px-5 py-2.5 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200 shadow-sm">
+                  <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm text-green-700 font-semibold">
+                    {recommendedProducts.length} recommendation{recommendedProducts.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Messages display */}
-          <div className="flex-grow overflow-y-auto p-3 lg:p-6 lg:border-l lg:border-r lg:border-gray-300">
+          <div className="flex-grow overflow-y-auto p-4 lg:p-6 bg-gradient-to-b from-gray-50/50 to-white">
             {isLoading ? (
               <div className="flex justify-center items-center h-full">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-blue"></div>
+                <div className="flex flex-col items-center gap-4">
+                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-blue border-t-transparent"></div>
+                  <p className="text-gray-600 font-medium"> {t("common.loading")} {t("thread.conversation")}...</p>
+                </div>
               </div>
             ) : messages.length === 0 ? (
-              <div className="flex justify-center items-center h-full text-gray-500">
-                {t("chat.startConversation")}
+              <div className="flex justify-center items-center h-full">
+                <div className="text-center">
+                  <div className="w-20 h-20 bg-gradient-to-r from-primary-blue/10 to-primary-darkblue/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <ChatCircle size={32} className="text-primary-blue" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                    {t("chat.startConversation")}
+                  </h3>
+                  <p className="text-gray-500 max-w-md">
+                    {t("thread.startFirstChatDescription")}
+                  </p>
+                </div>
               </div>
             ) : (
               <>
+                {/* Warning Messages */}
                 {!isOwner && (
-                  <div className="sticky -top-2 lg:-top-4 bg-white rounded-lg mb-4 px-4 py-3 flex gap-3 items-center shadow-sm border border-gray-200">
+                  <div className="sticky top-0 z-10 rounded-xl mb-6 px-4 py-3 flex gap-3 items-center shadow-sm border border-orange-200 bg-orange-50">
                     <LockSimple
-                      size={22}
+                      size={20}
                       weight="fill"
-                      className="text-primary-orange"
+                      className="text-orange-500"
                     />
                     <div className="flex flex-col">
                       <span className="font-semibold text-gray-800">
                         {t("chat.viewOnlyMode")}
                       </span>
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-gray-600">
                         {t("chat.noPermissionToSend")}
                       </span>
                     </div>
                   </div>
                 )}
+
                 {aiLimitWarning && aiLimitWarning.length > 0 && (
-                  <div className="sticky -top-2 lg:-top-4 bg-white rounded-lg mb-4 px-4 py-3 flex gap-3 items-center shadow-sm border border-gray-200">
+                  <div className="sticky top-0 z-10 rounded-xl mb-6 px-4 py-3 flex gap-3 items-center shadow-sm border border-amber-200 bg-amber-50">
                     <Warning
-                      size={22}
+                      size={20}
                       weight="fill"
                       className="text-amber-500"
                     />
@@ -811,161 +913,171 @@ export default function ChatPage() {
                       <span className="font-semibold text-gray-800">
                         {t("chat.aiWarning")}
                       </span>
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-gray-600">
                         {aiLimitWarning}
                       </span>
                     </div>
                   </div>
                 )}
-                {messages.map((msg, index) => (
-                  <Message
-                    key={index}
-                    role={msg.role}
-                    text={msg.text}
-                    images={msg.images}
-                    onPreview={
-                      msg.role === "assistant" ? setPreviewContent : undefined
-                    }
-                    isActive={
-                      msg.role === "assistant" && msg.text === previewContent
-                    }
-                  />
-                ))}
+
+                {/* Messages */}
+                <div className="space-y-2">
+                  {messages.map((msg, index) => (
+                    <div
+                      key={index}
+                      className="animate-fadeIn"
+                      style={{
+                        animationDelay: `${index * 100}ms`,
+                        animation: 'fadeIn 0.5s ease-out forwards',
+                        opacity: 0
+                      }}
+                    >
+                      <Message
+                        role={msg.role}
+                        text={msg.text}
+                        images={msg.images}
+                        onPreview={
+                          msg.role === "assistant" ? setPreviewContent : undefined
+                        }
+                        isActive={
+                          msg.role === "assistant" && msg.text === previewContent
+                        }
+                      />
+                    </div>
+                  ))}
+                </div>
 
                 {/* Display typing indicator if AI is typing */}
                 {isTyping && <TypingIndicator />}
 
-                {/* Show recommendation button or recommendations */}
-                {!isTyping && (
-                  <>
-                    {showRecommendButton && isOwner && !hasCheckedRecommendations && !isLoadingProducts && (
-                      <div className="flex justify-center my-6">
-                        <Button
-                          onClick={handleLoadRecommendations}
-                          className="px-5 py-2.5 bg-primary-blue text-white rounded-lg hover:bg-primary-blue/90 transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg"
-                          icon={<Eye size={20} weight="bold" className="text-white" />}
-                          label={t("chat.viewProductRecommendations") || "View Product Recommendations"}
-                          pt={{
-                            root: { className: "font-medium" },
-                            label: { className: "text-sm" }
-                          }}
-                        />
-                      </div>
-                    )}
+                {/* Show product recommendations after loading */}
+                {!isTyping && recommendedProducts.length > 0 && (
+                  <ProductRecommendations
+                    products={recommendedProducts}
+                    isLoading={false}
+                  />
+                )}
 
-                    {/* Show product recommendations after loading */}
-                    {recommendedProducts.length > 0 && (
-                      <ProductRecommendations
-                        products={recommendedProducts}
-                        isLoading={false}
-                      />
-                    )}
-
-                    {isLoadingProducts && (
-                      <ProductRecommendations
-                        products={[]}
-                        isLoading={true}
-                      />
-                    )}
-                  </>
+                {!isTyping && isLoadingProducts && (
+                  <ProductRecommendations
+                    products={[]}
+                    isLoading={true}
+                  />
                 )}
 
                 <div ref={messagesEndRef} />
               </>
             )}
           </div>
+
           {/* Message input */}
-          <div className="">
+          <div className="border-t border-gray-200 bg-white rounded-b-2xl">
             <form
               onSubmit={handleSubmit}
-              className="flex flex-col items-center rounded-b-lg lg:border border-gray-300 border-t-0 p-3 lg:px-6 lg:pb-6 relative"
+              className="p-4 lg:p-6"
             >
-              <div className="w-full rounded-lg border border-gray-300 px-4 py-2">
-                {/* Attached images preview */}
-                {attachedImages.length > 0 && (
-                  <div className="flex gap-2">
-                    {attachedImages.map((img, index) => (
-                      <div key={index} className="relative">
+              {/* Attached images preview */}
+              {attachedImages.length > 0 && (
+                <div className="flex flex-wrap gap-3 mb-4">
+                  {attachedImages.map((img, index) => (
+                    <div key={index} className="relative group">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 overflow-hidden rounded-xl border-2 border-gray-200 shadow-sm">
                         <Image
                           src={img.previewUrl}
-                          alt={`${t("chat.imagePlaceholder")} ${index}`}
-                          width={56}
-                          height={56}
-                          className="w-14 h-14 object-cover rounded-2xl"
+                          alt={`${t("chat.imagePlaceholder")} ${index + 1}`}
+                          width={80}
+                          height={80}
+                          className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-200"
                         />
-                        <button
-                          type="button"
-                          onClick={() => removeAttachedImage(index)}
-                          className="absolute top-0 right-0 bg-white text-primary-dark rounded-full shadow p-1 cursor-pointer hover:bg-gray-100 ease-in-out duration-200"
-                        >
-                          <X size={8} weight="bold" />
-                        </button>
                       </div>
-                    ))}
-                  </div>
-                )}
-                <div className="flex items-center">
-                  <InputText
-                    placeholder={
-                      isOwner
-                        ? t("chat.enterRequest")
-                        : t("chat.viewOnlyPlaceholder")
-                    }
-                    value={userInput}
-                    onChange={(e) => setUserInput(e.target.value)}
-                    className="w-full !p-2 !pr-0 !border-none !shadow-none !ring-0"
-                    disabled={inputDisabled || isLoading || !isOwner}
-                  />
-                  {/* Hidden file input */}
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    multiple
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    disabled={inputDisabled || isLoading || !isOwner}
-                    className="hidden"
-                  />
-                  <div
-                    onClick={
-                      !inputDisabled && !isLoading && isOwner
-                        ? handleImageUploadClick
-                        : undefined
-                    }
-                    className={`p-3.5 ${!inputDisabled && !isLoading && isOwner ? "text-gray-500 cursor-pointer" : "text-gray-300 cursor-not-allowed"}`}
-                  >
-                    <Camera size={20} weight="fill" className="w-5 h-5" />
-                  </div>
-                  <button
-                    type="submit"
-                    title={t("chat.sendMessage")}
-                    aria-label={t("chat.sendMessage")}
-                    disabled={
-                      inputDisabled ||
-                      isLoading ||
-                      (!userInput.trim() && attachedImages.length === 0) ||
-                      !isOwner
-                    }
-                    className={`p-3.5 rounded-full ${!inputDisabled &&
-                        !isLoading &&
-                        isOwner &&
-                        (userInput.trim() || attachedImages.length > 0)
-                        ? "text-primary-blue cursor-pointer hover:bg-primary-blue/10"
-                        : "text-gray-300 cursor-not-allowed"
-                      }`}
-                  >
-                    <PaperPlaneRight
-                      size={20}
-                      weight="fill"
-                      className="w-5 h-5"
-                    />
-                  </button>
+                      <button
+                        type="button"
+                        onClick={() => removeAttachedImage(index)}
+                        className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-red-600 transition-colors duration-200"
+                      >
+                        <X size={12} weight="bold" />
+                      </button>
+                    </div>
+                  ))}
                 </div>
+              )}
+
+              {/* Input area */}
+              <div className="flex items-center gap-3 bg-gray-50 rounded-2xl p-3 border border-gray-200 focus-within:border-primary-blue focus-within:ring-2 focus-within:ring-primary-blue/20 transition-all duration-200">
+                <InputText
+                  placeholder={
+                    isOwner
+                      ? t("chat.enterRequest")
+                      : t("chat.viewOnlyPlaceholder")
+                  }
+                  value={userInput}
+                  onChange={(e) => setUserInput(e.target.value)}
+                  className="flex-1 !p-0 !border-none !shadow-none !ring-0 !bg-transparent !text-gray-900 placeholder:text-gray-500"
+                  disabled={inputDisabled || isLoading || !isOwner}
+                />
+
+                {/* Hidden file input */}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  multiple
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  disabled={inputDisabled || isLoading || !isOwner}
+                  className="hidden"
+                />
+
+                <button
+                  type="button"
+                  onClick={
+                    !inputDisabled && !isLoading && isOwner
+                      ? handleImageUploadClick
+                      : undefined
+                  }
+                  disabled={inputDisabled || isLoading || !isOwner}
+                  className={`p-2 rounded-xl transition-all duration-200 ${
+                    !inputDisabled && !isLoading && isOwner
+                      ? "text-gray-600 hover:text-primary-blue hover:bg-primary-blue/10 cursor-pointer"
+                      : "text-gray-300 cursor-not-allowed"
+                  }`}
+                >
+                  <Camera size={20} weight="fill" />
+                </button>
+
+                <button
+                  type="submit"
+                  title={t("chat.sendMessage")}
+                  aria-label={t("chat.sendMessage")}
+                  disabled={
+                    inputDisabled ||
+                    isLoading ||
+                    (!userInput.trim() && attachedImages.length === 0) ||
+                    !isOwner
+                  }
+                  className={`p-2 rounded-xl transition-all duration-200 ${
+                    !inputDisabled &&
+                    !isLoading &&
+                    isOwner &&
+                    (userInput.trim() || attachedImages.length > 0)
+                      ? "text-primary-blue hover:bg-primary-blue/10 cursor-pointer"
+                      : "text-gray-300 cursor-not-allowed"
+                  }`}
+                >
+                  <PaperPlaneRight size={20} weight="fill" />
+                </button>
               </div>
             </form>
           </div>
         </div>
-      </section>
+      </div>
+
+      <style jsx>{`
+        @keyframes fadeIn {
+          to {
+            opacity: 1;
+          }
+        }
+      `}</style>
     </div>
   );
 }

@@ -146,12 +146,16 @@
     "aiWarning": "Cảnh báo giới hạn AI",
     "imagePlaceholder": "Ảnh",
     "sendMessage": "Gửi tin nhắn",
-    "viewProductRecommendations": "Xem sản phẩm gợi ý"
+    "viewProductRecommendations": "Xem sản phẩm gợi ý",
+    "aiAssistant": "Trợ lý AI",
+    "code": "Mã",
+    "conversation": "cuộc trò chuyện"
   },
   "recentPosts": {
     "title": "Tin đăng tạo gần đây",
     "error": "Không thể tải danh sách tin đăng",
     "noPosts": "Bạn chưa có tin đăng nào",
+    "noPostsDescription": "Bắt đầu cuộc trò chuyện đầu tiên với BroGlow AI để xem tin đăng của bạn ở đây.",
     "loading": "Đang tải tin đăng..."
   },
   "thread": {
@@ -159,10 +163,17 @@
     "noDescription": "Không có mô tả",
     "recentConversations": "Cuộc trò chuyện gần đây",
     "startNewConversation": "Bắt đầu cuộc trò chuyện mới",
-    "noConversationsYet": "Không có cuộc trò chuyện nào",
     "startChat": "Bắt đầu trò chuyện",
     "uploadImages": "Tải ảnh lên",
-    "startFirstChat": "Bắt đầu cuộc trò chuyện của bạn"
+    "startFirstChat": "Bắt đầu cuộc trò chuyện của bạn",
+    "uploadImagesDescription": "Tải ảnh lên và bắt đầu trò chuyện với BroGlow AI",
+    "chooseImages": "Chọn ảnh",
+    "selectedImages": "Ảnh đã chọn",
+    "creating": "Đang tạo...",
+    "noConversationsYet": "Không có cuộc trò chuyện nào",
+    "noConversationsYetDescription": "Bắt đầu cuộc trò chuyện đầu tiên với BroGlow AI để xem lịch sử trò chuyện của bạn.",
+    "startFirstChatDescription": "Bắt đầu cuộc trò chuyện đầu tiên với BroGlow AI để xem lịch sử trò chuyện của bạn.",
+    "conversation": "cuộc trò chuyện"
   },
   "aiTones": {
     "youngtive": "Trẻ trung",

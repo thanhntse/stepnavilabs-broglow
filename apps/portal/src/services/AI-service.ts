@@ -234,9 +234,9 @@ export class AIService {
     try {
       const response = await apiClient.post<any>(`/openai/thread/${threadId}/recommend-products`);
       return response.data?.recommendedProducts || [];
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error getting product recommendations:", error);
-      return [];
+      throw error;
     }
   }
 
