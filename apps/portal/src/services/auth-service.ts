@@ -82,4 +82,14 @@ export class AuthService {
       return "";
     }
   }
+
+  static async sendOtp(email: string): Promise<{ success: boolean; message: string }> {
+    const response = await apiClient.post<{ success: boolean; message: string }>("/auth/send-otp", { email });
+    return response.data;
+  }
+
+  static async resetPassword(email: string, otp: string, newPassword: string): Promise<{ success: boolean; message: string }> {
+    const response = await apiClient.post<{ success: boolean; message: string }>("/auth/reset-password", { email, otp, newPassword });
+    return response.data;
+  }
 }

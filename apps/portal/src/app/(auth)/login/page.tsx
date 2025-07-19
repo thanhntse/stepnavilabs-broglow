@@ -269,6 +269,14 @@ const LoginPage = () => {
                 )}
               </div>
 
+              <div className="flex flex-col gap-2 text-right">
+                <Link
+                  href="/forgot-password"
+                  className="text-primary-blue font-medium hover:underline text-sm"
+                >
+                  {t("common.forgotPassword")}
+                </Link>
+              </div>
               <Button
                 label={loading ? t("form.loading") : t("common.login")}
                 className="w-full bg-primary-blue hover:bg-primary-darkblue text-white font-semibold h-10 px-4 rounded-lg mt-2 transition-colors"

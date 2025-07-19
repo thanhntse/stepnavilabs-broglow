@@ -44,7 +44,21 @@
       "profit": "Profit (Last Month)",
       "order": "Order"
     },
-    "returnToLogin": "Return to login page"
+    "returnToLogin": "Return to login page",
+    "forgotPassword": "Forgot password?",
+    "forgotPasswordDescription": "Enter your email address to receive a password reset code.",
+    "sendOtp": "Send OTP",
+    "enterOtp": "Enter OTP",
+    "otp": "OTP",
+    "enterEmail": "Enter your email address",
+    "sendOtpFailed": "Failed to send OTP. Please try again later.",
+    "sendOtpSuccess": "OTP has been sent to your email.",
+    "confirm": "Confirm",
+    "enterNewPassword": "Enter your new password",
+    "newPassword": "New Password",
+    "passwordTooShort": "Password must be at least 8 characters long",
+    "passwordResetFailed": "Password reset failed. Please try again later.",
+    "passwordResetSuccess": "Password has been reset successfully."
   },
   "errors": {
     "requiredField": "This field is required",
@@ -55,7 +69,9 @@
     "passwordRequirements": "Password must be at least 8 characters long, including uppercase, lowercase and numbers or special characters",
     "minLength": "Must be at least 2 characters",
     "registrationError": "An error occurred during registration",
-    "turnstileVerification": "Please verify that you are not a robot"
+    "turnstileVerification": "Please verify that you are not a robot",
+    "invalidOtpOrEmail": "Invalid OTP or email",
+    "invalidOtp": "Invalid OTP"
   },
   "apiErrors": {
     "threadNotFound": "Thread not found. It may have been deleted or is unavailable.",

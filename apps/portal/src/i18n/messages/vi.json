@@ -44,7 +44,21 @@
       "profit": "Lợi nhuận (Tháng trước)",
       "order": "Đơn hàng"
     },
-    "returnToLogin": "Quay lại trang đăng nhập"
+    "returnToLogin": "Quay lại trang đăng nhập",
+    "forgotPassword": "Quên mật khẩu?",
+    "forgotPasswordDescription": "Nhập địa chỉ email để nhận mã reset mật khẩu.",
+    "sendOtp": "Gửi OTP",
+    "enterOtp": "Nhập OTP",
+    "otp": "OTP",
+    "enterEmail": "Nhập địa chỉ email",
+    "sendOtpFailed": "Gửi OTP thất bại. Vui lòng thử lại sau.",
+    "sendOtpSuccess": "OTP đã được gửi đến email của bạn.",
+    "confirm": "Xác nhận",
+    "enterNewPassword": "Nhập mật khẩu mới",
+    "newPassword": "Mật khẩu mới",
+    "passwordTooShort": "Mật khẩu phải có ít nhất 8 ký tự",
+    "passwordResetFailed": "Đặt lại mật khẩu thất bại. Vui lòng thử lại sau.",
+    "passwordResetSuccess": "Mật khẩu đã được đặt lại thành công."
   },
   "errors": {
     "requiredField": "Trường này không được để trống",
@@ -55,7 +69,9 @@
     "passwordRequirements": "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số hoặc ký tự đặc biệt",
     "minLength": "Phải có ít nhất 2 ký tự",
     "registrationError": "Đã xảy ra lỗi khi đăng ký",
-    "turnstileVerification": "Vui lòng xác minh bạn không phải là robot"
+    "turnstileVerification": "Vui lòng xác minh bạn không phải là robot",
+    "invalidOtpOrEmail": "OTP hoặc email không hợp lệ",
+    "invalidOtp": "OTP không hợp lệ"
   },
   "apiErrors": {
     "threadNotFound": "Không tìm thấy tin nhắn. Tin này có thể đã bị xóa hoặc không khả dụng.",
