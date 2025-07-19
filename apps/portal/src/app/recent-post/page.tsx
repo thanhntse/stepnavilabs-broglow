@@ -1,5 +1,4 @@
 "use client";
-import Header from "@/components/header";
 import ThreadCard from "@/components/thread-card";
 import { useLanguage } from "@/context/language-context";
 import { AIService } from "@/services/AI-service";
@@ -40,8 +39,7 @@ export default function ThreadsPage() {
 
   return (
     <>
-      <Header variant="default" />
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      <div className="min-h-[calc(100vh-100px)] bg-gradient-to-b from-gray-50 to-white">
         <section className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-8 lg:py-12">
           {/* Header Section */}
           <div className="mb-8 lg:mb-12">

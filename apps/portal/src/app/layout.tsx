@@ -6,6 +6,7 @@ import "./globals.css";
 import "primereact/resources/primereact.min.css";
 import "primereact/resources/themes/lara-light-blue/theme.css";
 import { RouteGuard } from "./(auth)/components/route-guard";
+import Header from "@/components/header";
 
 export const metadata: Metadata = {
   title: "BroGlow - AI-Powered Men's Skincare | Level Up Your Skin Game",
@@ -29,13 +30,20 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
   return (
     <html lang="en">
       <body className="custom-scrollbar">
         <UserProvider>
           <LanguageProvider>
             <ImageProvider>
-              <RouteGuard>{children}</RouteGuard>
+              <RouteGuard>
+                <Header
+                  variant="default"
+                  logoSrc="/broglow-logo.png"
+                />
+                {children}
+              </RouteGuard>
             </ImageProvider>
           </LanguageProvider>
         </UserProvider>

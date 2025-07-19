@@ -1,6 +1,5 @@
 "use client";
 
-import Header from "@/components/header";
 import { useLanguage } from "@/context/language-context";
 import { AIService } from "@/services/AI-service";
 import { useRouter } from "next/navigation";
@@ -136,14 +135,7 @@ export default function ThreadListPage() {
   return (
     <>
       <Toast ref={toastRef} position="top-right" />
-      <div className="min-h-screen bg-gradient-to-b from-primary-blue/5 via-white to-gray-50">
-        <Header
-          variant="default"
-          logoSrc="/broglow-logo.png"
-          showCreateNew={true}
-          onCreateNew={createThread}
-        />
-
+      <div className="min-h-[calc(100vh-100px)] bg-gradient-to-b from-primary-blue/5 via-white to-gray-50">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-8 lg:py-12">
           {/* Create new conversation section */}
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-12">

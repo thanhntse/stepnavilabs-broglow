@@ -1,6 +1,5 @@
 "use client";
 
-import Header from "@/components/header";
 import { useImageContext } from "@/context/image-context";
 import { useLanguage } from "@/context/language-context";
 import { AIService } from "@/services/AI-service";
@@ -300,17 +299,6 @@ export default function ChatPage() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  // Update prompt count method
-  const updatePromptCount = async () => {
-    try {
-      const prompt = await AIService.getAIUsage();
-      return prompt.data;
-    } catch (error) {
-      console.error("Failed to update prompt count:", error);
-      return 0;
-    }
-  };
 
   // Format API messages to MessageProps
   const formatAPIMessagesToProps = async (
@@ -754,20 +742,14 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-gradient-to-b from-gray-50 via-white to-gray-50">
+    <div className="flex flex-col h-[calc(100vh-100px)] overflow-hidden bg-gradient-to-b from-gray-50 via-white to-gray-50">
       <Toast ref={toast.toast} />
-      {/* Desktop Header */}
-      <div className="hidden lg:block">
-        <Header variant="default" logoSrc="/broglow-logo.png" updatePromptCount={updatePromptCount} />
-      </div>
 
       <div className="flex flex-col lg:flex-row lg:gap-6 max-w-7xl w-full mx-auto lg:py-5 flex-grow overflow-hidden">
         {/* Chat container */}
         <div className="flex flex-col h-screen lg:h-auto w-full bg-white lg:rounded-2xl lg:shadow-lg lg:border lg:border-gray-200">
           {/* Mobile header - shown only on mobile */}
           <div className="lg:hidden">
-            <Header variant="default" updatePromptCount={updatePromptCount} />
-
             {/* Mobile Recommendation Button */}
             {showRecommendButton && isOwner && !hasCheckedRecommendations && !isLoadingProducts && (
               <div className="px-4 py-3 bg-gradient-to-r from-primary-blue/5 to-primary-darkblue/5 border-b border-primary-blue/20">

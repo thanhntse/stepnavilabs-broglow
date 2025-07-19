@@ -6,10 +6,11 @@ import { useUserContext } from "@/context/profile-context";
 import { TokenStorage } from "@/lib/token-storage";
 import { AIService } from "@/services/AI-service";
 import { AuthService } from "@/services/auth-service";
-import { List, Plus, X, SignOut, Clock } from "@phosphor-icons/react/dist/ssr";
+import { DEFAULT_PUBLIC_ROUTE, publicOnlyRoutes } from "@/utils/auth-routes";
+import { List, Plus, X, SignOut, Clock, Sparkle, User } from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Menu } from "primereact/menu";
 import { MenuItem } from "primereact/menuitem";
 import { useEffect, useRef, useState } from "react";
@@ -35,8 +36,9 @@ export default function Header({
   const [promptCount, setPromptCount] = useState<number>(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-
   const router = useRouter();
+  const pathname = usePathname();
+
   const menu = useRef<Menu>(null);
   const { t } = useLanguage();
 
@@ -127,6 +129,18 @@ export default function Header({
     },
     { separator: true },
     {
+      label: t("common.profile"),
+      template: () => (
+        <div
+          onClick={() => router.push("/profile")}
+          className="py-3 px-4 cursor-pointer hover:bg-gray-50 text-primary-dark rounded-xl !w-full transition-colors duration-200 flex items-center gap-3 group"
+        >
+          <User size={18} className="text-primary-blue group-hover:scale-110 transition-transform duration-200" />
+          <span className="font-medium">{t("common.profile")}</span>
+        </div>
+      ),
+    },
+    {
       label: t("common.recentPosts"),
       template: () => (
         <div
@@ -135,6 +149,30 @@ export default function Header({
         >
           <Clock size={18} className="text-primary-blue group-hover:scale-110 transition-transform duration-200" />
           <span className="font-medium">{t("common.recentPosts")}</span>
+        </div>
+      ),
+    },
+    {
+      label: t("common.skinProfile"),
+      template: () => (
+        <div
+          onClick={() => router.push("/skin-profile")}
+          className="py-3 px-4 cursor-pointer hover:bg-gray-50 text-primary-dark rounded-xl !w-full transition-colors duration-200 flex items-center gap-3 group"
+        >
+          <Sparkle size={18} className="text-primary-blue group-hover:scale-110 transition-transform duration-200" />
+          <span className="font-medium">{t("common.skinProfile")}</span>
+        </div>
+      ),
+    },
+    {
+      label: t("common.routine"),
+      template: () => (
+        <div
+          onClick={() => router.push("/routine")}
+          className="py-3 px-4 cursor-pointer hover:bg-gray-50 text-primary-dark rounded-xl !w-full transition-colors duration-200 flex items-center gap-3 group"
+        >
+          <Clock size={18} className="text-primary-blue group-hover:scale-110 transition-transform duration-200" />
+          <span className="font-medium">{t("common.routine")}</span>
         </div>
       ),
     },
@@ -152,6 +190,10 @@ export default function Header({
       ),
     },
   ];
+
+  if (DEFAULT_PUBLIC_ROUTE === pathname || publicOnlyRoutes.includes(pathname)) {
+    return null;
+  }
 
   return (
     <>
@@ -182,7 +224,7 @@ export default function Header({
 
             {/* Desktop Navigation - Visible on desktop, hidden on mobile */}
             <div className="hidden lg:flex items-center gap-8">
-              {showCreateNew && isLoggedIn && (
+              {showCreateNew && !pathname.includes("/thread") && isLoggedIn && (
                 <button
                   className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary-blue to-primary-darkblue text-white text-sm font-semibold rounded-full cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-200 ease-out"
                   onClick={handleCreateNewThread}
@@ -340,7 +382,7 @@ export default function Header({
                 </div>
 
                 {/* Create New Button */}
-                {showCreateNew && isLoggedIn && (
+                {showCreateNew && !pathname.includes("/thread") && isLoggedIn && (
                   <button
                     onClick={() => {
                       handleCreateNewThread();
@@ -378,6 +420,36 @@ export default function Header({
                           </div>
 
                           <div className="space-y-2">
+                            <button
+                              onClick={() => {
+                                router.push("/profile");
+                                setIsMobileMenuOpen(false);
+                              }}
+                              className="w-full text-left py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center gap-3"
+                            >
+                              <User size={18} className="text-primary-blue" />
+                              <span className="font-medium">{t("common.profile")}</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                router.push("/skin-profile");
+                                setIsMobileMenuOpen(false);
+                              }}
+                              className="w-full text-left py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center gap-3"
+                            >
+                              <Sparkle size={18} className="text-primary-blue" />
+                              <span className="font-medium">{t("common.skinProfile")}</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                router.push("/routine");
+                                setIsMobileMenuOpen(false);
+                              }}
+                              className="w-full text-left py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center gap-3"
+                            >
+                              <Clock size={18} className="text-primary-blue" />
+                              <span className="font-medium">{t("common.routine")}</span>
+                            </button>
                             <button
                               onClick={() => {
                                 router.push("/recent-post");

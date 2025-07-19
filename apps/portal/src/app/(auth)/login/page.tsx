@@ -35,7 +35,7 @@ const LoginPage = () => {
     const exchangeCodeForToken = async () => {
       try {
         await AuthService.redirectGoogleLogin(code);
-        router.push("/thread");
+        window.location.reload();
       } catch (error) {
         console.error("Lỗi xác thực:", error);
       }
@@ -92,7 +92,7 @@ const LoginPage = () => {
       //   return;
       // }
 
-      router.push(AuthService.getDefaultAuthRoute());
+      window.location.reload();
 
       toastRef.current?.show({
         severity: "success",
@@ -131,7 +131,7 @@ const LoginPage = () => {
                 height={90}
                 alt="BroGlow Logo"
                 className="cursor-pointer"
-                onClick={() => router.push("/thread")}
+                onClick={() => window.location.reload()}
               />
             </div>
 
