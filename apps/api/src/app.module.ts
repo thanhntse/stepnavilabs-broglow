@@ -21,6 +21,7 @@ import { SkinProfileModule } from './skin-profile/skin-profile.module';
 import { BlogModule } from './blog/blog.module';
 import { RoutineQuestionModule } from './routine-suggestion/routine-question.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { SePayModule } from './sepay/sepay.module';
 
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     BlogModule,
     RoutineQuestionModule,
     NotificationsModule,
+    SePayModule,
   ],
   controllers: [AppController],
   providers: [AppService],
