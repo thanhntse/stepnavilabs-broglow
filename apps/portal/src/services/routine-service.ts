@@ -3,16 +3,23 @@ import { apiClient } from "@/lib/instance";
 export interface RoutineQuestion {
   _id: string;
   question: string;
+  description?: string;
+  type: 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'TEXT' | 'SCALE';
+  options?: Array<{
+    value: string;
+    label: string;
+    description?: string;
+  }>;
   order: number;
-  isRequired: boolean;
   isActive: boolean;
-  options?: string[];
-  questionType: 'text' | 'multiple_choice' | 'single_choice';
+  isRequired: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface RoutineAnswer {
   questionId: string;
-  answer: string | string[];
+  answers: string[];
 }
 
 export interface CreateRoutineAnswersDto {
@@ -28,10 +35,12 @@ export interface PaginationParams {
 
 export interface PaginatedResponse<T> {
   data: T[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }
 
 export interface RoutineSuggestionResponse {
@@ -75,7 +84,7 @@ export class RoutineService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify(answersData),
       });
@@ -89,8 +98,10 @@ export class RoutineService {
         throw new Error('No response stream available');
       }
 
+      let threadId = '';
+
       return {
-        threadId: '', // Will be set from the first data chunk
+        threadId,
         responseStream: new ReadableStream({
           start(controller) {
             function push() {
@@ -107,10 +118,14 @@ export class RoutineService {
                   if (line.startsWith('data: ')) {
                     try {
                       const data = JSON.parse(line.slice(6));
-                      if (data.threadId) {
-                        // Store threadId for later use
+
+                      // Extract threadId from the first message
+                      if (data.threadId && !threadId) {
+                        threadId = data.threadId;
+                        // Update the threadId in the response object
                         (response as any).threadId = data.threadId;
-                      } else {
+                      } else if (data.event && data.event !== 'thread.run.failed') {
+                        // Only send non-failure events to the stream
                         controller.enqueue(new TextEncoder().encode(data));
                       }
                     } catch (e: any) {

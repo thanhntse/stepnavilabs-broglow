@@ -108,6 +108,53 @@ export default function SkinProfilePage() {
   const currentQuestion = questions[currentQuestionIndex];
   const currentAnswer = answers.find(a => a.questionId === currentQuestion?._id);
 
+  // Helper function to get question type for display
+  const getQuestionType = (question: SkinQuestion) => {
+    switch (question.type) {
+      case 'SINGLE_CHOICE':
+        return 'single_choice';
+      case 'MULTIPLE_CHOICE':
+        return 'multiple_choice';
+      case 'TEXT':
+        return 'text';
+      case 'SCALE':
+        return 'scale';
+      default:
+        return 'text';
+    }
+  };
+
+  // Helper function to get options for display
+  const getQuestionOptions = (question: SkinQuestion) => {
+    if (!question.options) return [];
+    return question.options.map(option => {
+      return {
+        label: option.label,
+        value: option.value,
+        description: option.description,
+      }
+    });
+  };
+
+  // Helper function to check if current question is answered
+  const isCurrentQuestionAnswered = () => {
+    if (!currentQuestion) return false;
+
+    const answer = currentAnswer?.answer;
+    if (!answer) return false;
+
+    // For required questions, check if answer exists
+    if (currentQuestion.isRequired) {
+      if (Array.isArray(answer)) {
+        return answer.length > 0;
+      }
+      return answer.toString().trim().length > 0;
+    }
+
+    // For optional questions, always allow next
+    return true;
+  };
+
   if (isLoading) {
     return (
       <>
@@ -263,6 +310,9 @@ export default function SkinProfilePage() {
                     <h2 className="text-xl font-semibold text-gray-900 mb-2">
                       {currentQuestion.question}
                     </h2>
+                    {currentQuestion.description && (
+                      <p className="text-gray-600 mb-2">{currentQuestion.description}</p>
+                    )}
                     {currentQuestion.isRequired && (
                       <span className="inline-block px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs">
                         {t("common.required")}
@@ -272,7 +322,7 @@ export default function SkinProfilePage() {
 
                   {/* Answer Input */}
                   <div className="space-y-4">
-                    {currentQuestion.questionType === "text" && (
+                    {getQuestionType(currentQuestion) === "text" && (
                       <textarea
                         value={currentAnswer?.answer as string || ""}
                         onChange={(e) => handleAnswerChange(currentQuestion._id, e.target.value)}
@@ -282,42 +332,75 @@ export default function SkinProfilePage() {
                       />
                     )}
 
-                    {currentQuestion.questionType === "single_choice" && currentQuestion.options && (
+                    {getQuestionType(currentQuestion) === "single_choice" && getQuestionOptions(currentQuestion).length > 0 && (
                       <div className="space-y-3">
-                        {currentQuestion.options.map((option, index) => (
+                        {getQuestionOptions(currentQuestion).map((option, index) => (
                           <label key={index} className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
                             <input
                               type="radio"
                               name={`question-${currentQuestion._id}`}
-                              value={option}
-                              checked={currentAnswer?.answer === option}
+                              value={option.value}
+                              checked={currentAnswer?.answer === option.value}
                               onChange={(e) => handleAnswerChange(currentQuestion._id, e.target.value)}
                               className="text-purple-500 focus:ring-purple-500"
                             />
-                            <span className="flex-1">{option}</span>
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-900">{option.label}</div>
+                              {option.description && (
+                                <div className="text-sm text-gray-500 mt-1">{option.description}</div>
+                              )}
+                            </div>
                           </label>
                         ))}
                       </div>
                     )}
 
-                    {currentQuestion.questionType === "multiple_choice" && currentQuestion.options && (
+                    {getQuestionType(currentQuestion) === "multiple_choice" && getQuestionOptions(currentQuestion).length > 0 && (
                       <div className="space-y-3">
-                        {currentQuestion.options.map((option, index) => (
+                        {getQuestionOptions(currentQuestion).map((option, index) => (
                           <label key={index} className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
                             <input
                               type="checkbox"
-                              value={option}
-                              checked={(currentAnswer?.answer as string[] || []).includes(option)}
+                              value={option.value}
+                              checked={(currentAnswer?.answer as string[] || []).includes(option.value)}
                               onChange={(e) => {
                                 const currentAnswers = (currentAnswer?.answer as string[]) || [];
                                 const newAnswers = e.target.checked
-                                  ? [...currentAnswers, option]
-                                  : currentAnswers.filter(a => a !== option);
+                                  ? [...currentAnswers, option.value]
+                                  : currentAnswers.filter(a => a !== option.value);
                                 handleAnswerChange(currentQuestion._id, newAnswers);
                               }}
                               className="text-purple-500 focus:ring-purple-500"
                             />
-                            <span className="flex-1">{option}</span>
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-900">{option.label}</div>
+                              {option.description && (
+                                <div className="text-sm text-gray-500 mt-1">{option.description}</div>
+                              )}
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+
+                    {getQuestionType(currentQuestion) === "scale" && getQuestionOptions(currentQuestion).length > 0 && (
+                      <div className="space-y-3">
+                        {getQuestionOptions(currentQuestion).map((option, index) => (
+                          <label key={index} className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                            <input
+                              type="radio"
+                              name={`question-${currentQuestion._id}`}
+                              value={option.value}
+                              checked={currentAnswer?.answer === option.value}
+                              onChange={(e) => handleAnswerChange(currentQuestion._id, e.target.value)}
+                              className="text-purple-500 focus:ring-purple-500"
+                            />
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-900">{option.label}</div>
+                              {option.description && (
+                                <div className="text-sm text-gray-500 mt-1">{option.description}</div>
+                              )}
+                            </div>
                           </label>
                         ))}
                       </div>
@@ -356,7 +439,7 @@ export default function SkinProfilePage() {
                     ) : (
                       <button
                         onClick={handleNext}
-                        disabled={!currentAnswer?.answer}
+                        disabled={currentQuestion.isRequired && !isCurrentQuestionAnswered()}
                         className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {t("common.nextQuestion")}

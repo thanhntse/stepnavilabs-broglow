@@ -3,11 +3,18 @@ import { apiClient } from "@/lib/instance";
 export interface SkinQuestion {
   _id: string;
   question: string;
+  description?: string;
+  type: 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'TEXT' | 'SCALE';
+  options?: Array<{
+    value: string;
+    label: string;
+    description?: string;
+  }>;
   order: number;
-  isRequired: boolean;
   isActive: boolean;
-  options?: string[];
-  questionType: 'text' | 'multiple_choice' | 'single_choice';
+  isRequired: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface SkinProfileAnswer {
@@ -43,10 +50,12 @@ export interface PaginationParams {
 
 export interface PaginatedResponse<T> {
   data: T[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }
 
 export class SkinProfileService {

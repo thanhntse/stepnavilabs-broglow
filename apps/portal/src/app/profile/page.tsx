@@ -4,20 +4,22 @@ import { useLanguage } from "@/context/language-context";
 import { useUserContext } from "@/context/profile-context";
 import { ProfileService, UpdateUserDto } from "@/services/profile-service";
 import { AuthService } from "@/services/auth-service";
-import { Trash, User, Pencil, X, Check } from "@phosphor-icons/react";
+import { Trash, User, Pencil, X, Check, Camera } from "@phosphor-icons/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useEffect, useState, useRef } from "react";
+import { Toast } from "primereact/toast";
 
 export default function ProfilePage() {
   const { t } = useLanguage();
+  const toast = useRef<Toast>(null);
   const { user, addUser } = useUserContext();
   const router = useRouter();
-  const { showSuccess, showError } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [formData, setFormData] = useState<UpdateUserDto>({
     firstName: "",
@@ -25,6 +27,7 @@ export default function ProfilePage() {
     password: "",
     avatar: "",
   });
+  const [avatarPreview, setAvatarPreview] = useState<string>("");
 
   useEffect(() => {
     if (user) {
@@ -34,6 +37,7 @@ export default function ProfilePage() {
         password: "",
         avatar: user.avatar || "",
       });
+      setAvatarPreview(user.avatar || "");
     }
   }, [user]);
 
@@ -42,6 +46,53 @@ export default function ProfilePage() {
       ...prev,
       [field]: value,
     }));
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.current?.show({ severity: 'error', summary: t("common.error"), detail: t("errors.invalidFile"), life: 3000 });
+        return;
+      }
+
+      // Validate file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.current?.show({ severity: 'error', summary: t("common.error"), detail: t("errors.fileSizeLimit"), life: 3000 });
+        return;
+      }
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setAvatarPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+
+      // Upload file
+      handleAvatarUpload(file);
+    }
+  };
+
+  const handleAvatarUpload = async (file: File) => {
+    setIsUploading(true);
+    try {
+      const uploadResponse = await ProfileService.uploadAvatar(file);
+
+      // Update form data with the uploaded file URL
+      const fileUrl = `${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "")}/uploads/${uploadResponse.filename}`;
+      setFormData(prev => ({
+        ...prev,
+        avatar: fileUrl,
+      }));
+
+    } catch (error) {
+      console.error("Error uploading avatar:", error);
+      setAvatarPreview(user?.avatar || "");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleSave = async () => {
@@ -61,14 +112,14 @@ export default function ProfilePage() {
         return;
       }
 
-      const updatedUser = await ProfileService.updateProfile(user.id.toString(), updateData);
+      const updatedUser = await ProfileService.updateProfile(user._id.toString(), updateData);
       addUser(updatedUser);
       setIsEditing(false);
       setFormData(prev => ({ ...prev, password: "" })); // Clear password field
-      showSuccess({ detail: t("common.profileUpdated") });
+      toast.current?.show({ severity: 'success', summary: t("common.success"), detail: t("common.profileUpdated"), life: 3000 });
     } catch (error) {
       console.error("Error updating profile:", error);
-      showError({ detail: t("common.updateFailed") });
+      toast.current?.show({ severity: 'error', summary: t("common.error"), detail: t("common.updateFailed"), life: 3000 });
     } finally {
       setIsLoading(false);
     }
@@ -79,13 +130,13 @@ export default function ProfilePage() {
 
     setIsLoading(true);
     try {
-      await ProfileService.deleteProfile(user.id.toString());
+      await ProfileService.deleteProfile(user._id.toString());
       AuthService.logout();
       router.push("/");
-      showSuccess({ detail: t("common.profileDeleted") });
+      toast.current?.show({ severity: 'success', summary: t("common.success"), detail: t("common.profileDeleted"), life: 3000 });
     } catch (error) {
       console.error("Error deleting profile:", error);
-      showError({ detail: t("common.deleteFailed") });
+      toast.current?.show({ severity: 'error', summary: t("common.error"), detail: t("common.deleteFailed"), life: 3000 });
     } finally {
       setIsLoading(false);
       setShowDeleteConfirm(false);
@@ -114,25 +165,41 @@ export default function ProfilePage() {
   return (
     <>
       <div className="min-h-[calc(100vh-100px)] bg-gray-50">
+        <Toast ref={toast} />
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
             {/* Header */}
             <div className="bg-gradient-to-r from-primary-blue to-primary-darkblue px-6 py-8 text-white">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="flex items-center justify-center w-16 h-16 rounded-full bg-white/20 text-white font-semibold text-xl">
-                    {user.avatar ? (
-                      <Image
-                        src={user.avatar}
-                        alt="User Avatar"
-                        width={64}
-                        height={64}
-                        className="rounded-full"
-                      />
-                    ) : (
-                      displayName.toString().split(" ").map((name: string, index: number) => (
-                        <span key={index}>{name.charAt(0)}</span>
-                      ))
+                  <div className="relative">
+                    <div className="flex items-center justify-center w-17 h-17 rounded-full bg-gray-200 text-white font-semibold text-xl overflow-hidden">
+                      {avatarPreview ? (
+                        <Image
+                          src={avatarPreview}
+                          alt="User Avatar"
+                          width={64}
+                          height={64}
+                          className="rounded-full w-[64px] h-[64px] object-cover"
+                        />
+                      ) : (
+                        displayName.toString().split(" ").map((name: string, index: number) => (
+                          <span key={index}>{name.charAt(0)}</span>
+                        ))
+                      )}
+                    </div>
+                    {isEditing && (
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploading}
+                        className="absolute -bottom-1 -right-1 w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center hover:bg-orange-600 transition-colors duration-200 disabled:opacity-50"
+                      >
+                        {isUploading ? (
+                          <div className="w-3 h-3 animate-spin rounded-full border border-white border-t-transparent" />
+                        ) : (
+                          <Camera size={12} className="text-white" />
+                        )}
+                      </button>
                     )}
                   </div>
                   <div>
@@ -168,6 +235,7 @@ export default function ProfilePage() {
                             password: "",
                             avatar: user.avatar || "",
                           });
+                          setAvatarPreview(user.avatar || "");
                         }}
                         className="flex items-center gap-2 px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors duration-200"
                       >
@@ -254,24 +322,47 @@ export default function ProfilePage() {
                     )}
 
                     {isEditing && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Avatar URL ({t("common.optional")})
-                        </label>
-                        <input
-                          type="url"
-                          value={formData.avatar}
-                          onChange={(e) => handleInputChange("avatar", e.target.value)}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent"
-                          placeholder="https://example.com/avatar.jpg"
-                        />
-                      </div>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                      />
                     )}
                   </div>
                 </div>
 
                 {/* Account Actions */}
                 <div className="space-y-4">
+
+                  <h2 className="text-lg font-semibold text-gray-900">{t("common.createdAt")}</h2>
+                  <p className="px-4 py-3 bg-gray-50 rounded-lg text-gray-900">
+                    {user.createdAt
+                      ? new Date(user.createdAt).toLocaleDateString('vi-VN', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                      })
+                      : t("common.loading")}
+                  </p>
+
+                  <h2 className="text-lg font-semibold text-gray-900">{t("common.updatedAt")}</h2>
+                  <p className="px-4 py-3 bg-gray-50 rounded-lg text-gray-900">
+                    {user.updatedAt
+                      ? new Date(user.updatedAt).toLocaleDateString('vi-VN', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                      })
+                      : t("common.loading")}
+                  </p>
                   <h2 className="text-lg font-semibold text-gray-900">{t("common.accountActions")}</h2>
 
                   <div className="space-y-4">

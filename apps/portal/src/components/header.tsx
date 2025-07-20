@@ -278,7 +278,7 @@ export default function Header({
                                 alt="User Avatar"
                                 width={32}
                                 height={32}
-                                className="rounded-full"
+                                className="rounded-full object-cover h-8 w-8"
                               />
                             ) : (
                               displayName.toString().split(" ").map((name: string, index: number) => (

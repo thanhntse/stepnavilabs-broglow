@@ -44,12 +44,14 @@ export default function RoutinePage() {
   const handleAnswerChange = (questionId: string, answer: string | string[]) => {
     setAnswers(prev => {
       const existingIndex = prev.findIndex(a => a.questionId === questionId);
+      const answerArray = Array.isArray(answer) ? answer : [answer];
+
       if (existingIndex >= 0) {
         const newAnswers = [...prev];
-        newAnswers[existingIndex] = { questionId, answer };
+        newAnswers[existingIndex] = { questionId, answers: answerArray };
         return newAnswers;
       } else {
-        return [...prev, { questionId, answer }];
+        return [...prev, { questionId, answers: answerArray }];
       }
     });
   };
@@ -72,10 +74,10 @@ export default function RoutinePage() {
       const submitData: CreateRoutineAnswersDto = { answers };
       const response = await RoutineService.getSuggestions(submitData);
 
-      setThreadId(response.threadId);
-      setShowSuggestions(true);
+      // Extract threadId from the response
+      let extractedThreadId = "";
 
-      // Read the response stream
+      // Read the response stream to extract threadId and content
       const reader = response.responseStream.getReader();
       const decoder = new TextDecoder();
 
@@ -84,9 +86,35 @@ export default function RoutinePage() {
         if (done) break;
 
         const chunk = decoder.decode(value);
-        setSuggestionText(prev => prev + chunk);
+        const lines = chunk.split('\n');
+
+        lines.forEach(line => {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+
+              // Extract threadId from the first message
+              if (data.threadId && !extractedThreadId) {
+                extractedThreadId = data.threadId;
+                setThreadId(data.threadId);
+              } else if (data.event && data.event !== 'thread.run.failed') {
+                // Handle the actual content
+                if (data.content && data.content.length > 0) {
+                  const content = data.content[0];
+                  if (content.text && content.text.value) {
+                    setSuggestionText(prev => prev + content.text.value);
+                  }
+                }
+              }
+            } catch {
+              // If not JSON, treat as regular text
+              setSuggestionText(prev => prev + line);
+            }
+          }
+        });
       }
 
+      setShowSuggestions(true);
       showSuccess({ detail: t("errors.routineSuggestionsGenerated") });
     } catch (error) {
       console.error("Error getting routine suggestions:", error);
@@ -104,8 +132,60 @@ export default function RoutinePage() {
     setThreadId("");
   };
 
+  const handleContinueChat = () => {
+    if (threadId) {
+      router.push(`/thread/${threadId}`);
+    } else {
+      showError({ detail: "Thread ID not available" });
+    }
+  };
+
   const currentQuestion = questions[currentQuestionIndex];
   const currentAnswer = answers.find(a => a.questionId === currentQuestion?._id);
+
+  // Helper function to get question type for display
+  const getQuestionType = (question: RoutineQuestion) => {
+    switch (question.type) {
+      case 'SINGLE_CHOICE':
+        return 'single_choice';
+      case 'MULTIPLE_CHOICE':
+        return 'multiple_choice';
+      case 'TEXT':
+        return 'text';
+      case 'SCALE':
+        return 'scale';
+      default:
+        return 'text';
+    }
+  };
+
+  // Helper function to get options for display
+  const getQuestionOptions = (question: RoutineQuestion) => {
+    if (!question.options) return [];
+    return question.options.map(option => {
+      return {
+        label: option.label,
+        value: option.value,
+        description: option.description,
+      }
+    });
+  };
+
+  // Helper function to check if current question is answered
+  const isCurrentQuestionAnswered = () => {
+    if (!currentQuestion) return false;
+
+    const answer = currentAnswer?.answers;
+    if (!answer || answer.length === 0) return false;
+
+    // For required questions, check if answer exists
+    if (currentQuestion.isRequired) {
+      return answer.length > 0 && answer.some(a => a.trim().length > 0);
+    }
+
+    // For optional questions, always allow next
+    return true;
+  };
 
   if (isLoading) {
     return (
@@ -153,8 +233,9 @@ export default function RoutinePage() {
                 {/* Actions */}
                 <div className="flex gap-3">
                   <button
-                    onClick={() => router.push(`/thread/${threadId}`)}
-                    className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors duration-200"
+                    onClick={handleContinueChat}
+                    disabled={!threadId}
+                    className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Sparkle size={18} />
                     {t("common.continueChat")}
@@ -238,6 +319,9 @@ export default function RoutinePage() {
                     <h2 className="text-xl font-semibold text-gray-900 mb-2">
                       {currentQuestion.question}
                     </h2>
+                    {currentQuestion.description && (
+                      <p className="text-gray-600 mb-2">{currentQuestion.description}</p>
+                    )}
                     {currentQuestion.isRequired && (
                       <span className="inline-block px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs">
                         {t("common.required")}
@@ -247,9 +331,9 @@ export default function RoutinePage() {
 
                   {/* Answer Input */}
                   <div className="space-y-4">
-                    {currentQuestion.questionType === "text" && (
+                    {getQuestionType(currentQuestion) === "text" && (
                       <textarea
-                        value={currentAnswer?.answer as string || ""}
+                        value={currentAnswer?.answers?.[0] || ""}
                         onChange={(e) => handleAnswerChange(currentQuestion._id, e.target.value)}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
                         rows={4}
@@ -257,42 +341,75 @@ export default function RoutinePage() {
                       />
                     )}
 
-                    {currentQuestion.questionType === "single_choice" && currentQuestion.options && (
+                    {getQuestionType(currentQuestion) === "single_choice" && getQuestionOptions(currentQuestion).length > 0 && (
                       <div className="space-y-3">
-                        {currentQuestion.options.map((option, index) => (
+                        {getQuestionOptions(currentQuestion).map((option, index) => (
                           <label key={index} className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
                             <input
                               type="radio"
                               name={`question-${currentQuestion._id}`}
-                              value={option}
-                              checked={currentAnswer?.answer === option}
+                              value={option.value}
+                              checked={currentAnswer?.answers?.[0] === option.value}
                               onChange={(e) => handleAnswerChange(currentQuestion._id, e.target.value)}
                               className="text-orange-500 focus:ring-orange-500"
                             />
-                            <span className="flex-1">{option}</span>
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-900">{option.label}</div>
+                              {option.description && (
+                                <div className="text-sm text-gray-500 mt-1">{option.description}</div>
+                              )}
+                            </div>
                           </label>
                         ))}
                       </div>
                     )}
 
-                    {currentQuestion.questionType === "multiple_choice" && currentQuestion.options && (
+                    {getQuestionType(currentQuestion) === "multiple_choice" && getQuestionOptions(currentQuestion).length > 0 && (
                       <div className="space-y-3">
-                        {currentQuestion.options.map((option, index) => (
+                        {getQuestionOptions(currentQuestion).map((option, index) => (
                           <label key={index} className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
                             <input
                               type="checkbox"
-                              value={option}
-                              checked={(currentAnswer?.answer as string[] || []).includes(option)}
+                              value={option.value}
+                              checked={(currentAnswer?.answers || []).includes(option.value)}
                               onChange={(e) => {
-                                const currentAnswers = (currentAnswer?.answer as string[]) || [];
+                                const currentAnswers = currentAnswer?.answers || [];
                                 const newAnswers = e.target.checked
-                                  ? [...currentAnswers, option]
-                                  : currentAnswers.filter(a => a !== option);
+                                  ? [...currentAnswers, option.value]
+                                  : currentAnswers.filter(a => a !== option.value);
                                 handleAnswerChange(currentQuestion._id, newAnswers);
                               }}
                               className="text-orange-500 focus:ring-orange-500"
                             />
-                            <span className="flex-1">{option}</span>
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-900">{option.label}</div>
+                              {option.description && (
+                                <div className="text-sm text-gray-500 mt-1">{option.description}</div>
+                              )}
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+
+                    {getQuestionType(currentQuestion) === "scale" && getQuestionOptions(currentQuestion).length > 0 && (
+                      <div className="space-y-3">
+                        {getQuestionOptions(currentQuestion).map((option, index) => (
+                          <label key={index} className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                            <input
+                              type="radio"
+                              name={`question-${currentQuestion._id}`}
+                              value={option.value}
+                              checked={currentAnswer?.answers?.[0] === option.value}
+                              onChange={(e) => handleAnswerChange(currentQuestion._id, e.target.value)}
+                              className="text-orange-500 focus:ring-orange-500"
+                            />
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-900">{option.label}</div>
+                              {option.description && (
+                                <div className="text-sm text-gray-500 mt-1">{option.description}</div>
+                              )}
+                            </div>
                           </label>
                         ))}
                       </div>
@@ -331,7 +448,7 @@ export default function RoutinePage() {
                     ) : (
                       <button
                         onClick={handleNext}
-                        disabled={!currentAnswer?.answer}
+                        disabled={currentQuestion.isRequired && !isCurrentQuestionAnswered()}
                         className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {t("common.nextQuestion")}

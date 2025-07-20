@@ -53,14 +53,14 @@ export class OpenAiService {
       }
 
       // Create an enhanced content with skin profile information
-      let skinProfileInfo = {
+      const skinProfileInfo = {
         skinType: skinProfile.skinType || 'Chưa xác định',
         concerns: skinProfile.concerns || [],
         recommendations: skinProfile.recommendations || '',
         answers: [] as any[],
       };
 
-      // Format each answer with corresponding question
+      // Format each answer with corresponding question and description
       if (skinProfile.answers && skinProfile.answers.length > 0) {
         for (const answer of skinProfile.answers) {
           // Using any type to bypass TypeScript strict type checking
@@ -71,9 +71,36 @@ export class OpenAiService {
             typeof questionObj === 'object' &&
             questionObj.question
           ) {
+            // Find the selected option(s)
+            let selectedOptions: any[] = [];
+            if (Array.isArray(answer.answer)) {
+              // Multiple choice answers
+              selectedOptions = questionObj.options.filter((option: any) =>
+                answer.answer.includes(option.value),
+              );
+            } else {
+              // Single choice answer
+              const selectedOption = questionObj.options.find(
+                (option: any) => option.value === answer.answer,
+              );
+              if (selectedOption) {
+                selectedOptions = [selectedOption];
+              }
+            }
+
+            // Format answer with labels and descriptions
+            const answerLabels = selectedOptions
+              .map((option) => option.label)
+              .join(', ');
+            const answerDescriptions = selectedOptions
+              .filter((option) => option.description)
+              .map((option) => option.description)
+              .join('; ');
+
             skinProfileInfo.answers.push({
               question: questionObj.question,
-              answer: answer.answer,
+              answer: answerLabels,
+              description: answerDescriptions || undefined,
             });
           }
         }
@@ -85,7 +112,15 @@ export class OpenAiService {
         return `[THÔNG TIN HỒ SƠ DA CỦA NGƯỜI DÙNG]
 Loại da: ${skinProfileInfo.skinType}
 Các vấn đề quan tâm: ${skinProfileInfo.concerns.join(', ')}
-${skinProfileInfo.answers.map((a) => `Hỏi: ${a.question}\nTrả lời: ${a.answer}`).join('\n')}
+${skinProfileInfo.answers
+  .map((a) => {
+    let answerText = `Hỏi: ${a.question}\nTrả lời: ${a.answer}`;
+    if (a.description) {
+      answerText += `\nMô tả: ${a.description}`;
+    }
+    return answerText;
+  })
+  .join('\n')}
 [KẾT THÚC THÔNG TIN HỒ SƠ DA]
 
 Yêu cầu của người dùng: ${content}`;
@@ -94,18 +129,38 @@ Yêu cầu của người dùng: ${content}`;
         const skinProfileText = `[THÔNG TIN HỒ SƠ DA CỦA NGƯỜI DÙNG]
 Loại da: ${skinProfileInfo.skinType}
 Các vấn đề quan tâm: ${skinProfileInfo.concerns.join(', ')}
-${skinProfileInfo.answers.map((a) => `Hỏi: ${a.question}\nTrả lời: ${a.answer}`).join('\n')}
+${skinProfileInfo.answers
+  .map((a) => {
+    let answerText = `Hỏi: ${a.question}\nTrả lời: ${a.answer}`;
+    if (a.description) {
+      answerText += `\nMô tả: ${a.description}`;
+    }
+    return answerText;
+  })
+  .join('\n')}
 [KẾT THÚC THÔNG TIN HỒ SƠ DA]`;
+
+        // Create a new array instead of modifying the original content
+        let enhancedContent: any[];
 
         // Check if first item is text type and modify it, otherwise add new first item
         if (content.length > 0 && content[0].type === 'text') {
-          content[0].text =
-            skinProfileText + '\n\nYêu cầu của người dùng: ' + content[0].text;
-          return content;
+          // Create a deep copy of the first item and modify it
+          const firstItem = { ...content[0] };
+          firstItem.text =
+            skinProfileText + '\n\nYêu cầu của người dùng: ' + firstItem.text;
+
+          // Create new array with modified first item and rest of original content
+          enhancedContent = [firstItem, ...content.slice(1)];
         } else {
-          // Add new text item for skin profile
-          return [{ type: 'text', text: skinProfileText }, ...content];
+          // Add new text item for skin profile at the beginning
+          enhancedContent = [
+            { type: 'text', text: skinProfileText },
+            ...content,
+          ];
         }
+
+        return enhancedContent;
       }
 
       // Fallback: return original content
@@ -372,7 +427,7 @@ ${skinProfileInfo.answers.map((a) => `Hỏi: ${a.question}\nTrả lời: ${a.ans
     const formattedMessages = [];
 
     for (const message of messages) {
-      const files = await this.fileModel.find({ message: message._id });
+      // const files = await this.fileModel.find({ message: message._id });
 
       let messageContent;
       try {
@@ -449,6 +504,7 @@ ${skinProfileInfo.answers.map((a) => `Hỏi: ${a.question}\nTrả lời: ${a.ans
 
   async uploadFile(file: Express.Multer.File) {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const fs = require('fs');
       const fileBuffer = fs.readFileSync(file.path);
 
@@ -740,15 +796,15 @@ Tiêu đề:`;
           if (exists) {
             validProductIds.push(id);
           }
-        } catch (error) {
+        } catch {
           // Skip invalid IDs
           console.error(`Invalid product ID: ${id}`);
         }
       }
 
       return validProductIds;
-    } catch (error) {
-      console.error('Error parsing product recommendations:', error);
+    } catch {
+      console.error('Error parsing product recommendations');
       throw new CustomBadRequestException(
         'Không thể phân tích phản hồi gợi ý sản phẩm',
         'invalidRecommendationFormat',

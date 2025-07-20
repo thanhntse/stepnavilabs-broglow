@@ -107,7 +107,10 @@
     "loginToContinueService": "Please login to continue using the service",
     "checkEmailAndTryAgain": "Please check your email and try again",
     "loginNow": "Login Now",
-    "returnToLoginPage": "Return to Login Page"
+    "returnToLoginPage": "Return to Login Page",
+    "createdAt": "Created At",
+    "updatedAt": "Updated At",
+    "uploadAvatar": "Upload Avatar"
   },
   "errors": {
     "requiredField": "This field is required",
@@ -127,7 +130,9 @@
     "failedToSubmitSkinProfile": "Failed to submit skin profile",
     "skinProfileSubmitted": "Skin profile submitted successfully",
     "failedToDeleteSkinProfile": "Failed to delete skin profile",
-    "skinProfileDeleted": "Skin profile deleted successfully"
+    "skinProfileDeleted": "Skin profile deleted successfully",
+    "invalidFile": "Please select an image file",
+    "fileSizeLimit": "File size must be less than 5MB"
   },
   "apiErrors": {
     "threadNotFound": "Thread not found. It may have been deleted or is unavailable.",

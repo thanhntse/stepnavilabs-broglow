@@ -118,7 +118,7 @@ export class RoutineQuestionController {
     @Req() req: any,
     @Res() res: Response,
   ) {
-    const userId = req.user?._id;
+    const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
