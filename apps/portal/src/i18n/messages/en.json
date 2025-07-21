@@ -268,7 +268,17 @@
     "error": "Could not load post list",
     "noPosts": "You don't have any posts yet",
     "noPostsDescription": "Start your first conversation with BroGlow AI to see your posts here.",
-    "loading": "Loading posts..."
+    "loading": "Loading posts...",
+    "select": "Select",
+    "deselect": "Deselect",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All",
+    "deleteSelected": "Delete Selected",
+    "bulkDeleteSuccess": "Threads deleted successfully.",
+    "bulkDeletePartial": "Some threads could not be deleted.",
+    "confirmBulkDelete": "Delete selected threads?",
+    "confirmBulkDeleteDesc": "Are you sure you want to delete the selected threads? This cannot be undone.",
+    "cancelSelect": "Cancel Selection"
   },
   "thread": {
     "noTitle": "Post",

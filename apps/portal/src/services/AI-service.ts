@@ -123,6 +123,23 @@ export class AIService {
   }
 
   /**
+   * Xóa thread
+   * @param threadId ID của thread
+   * @returns Promise với thông tin thread
+   */
+  static async deleteThread(
+    threadId: string,
+  ) {
+    try {
+      const response = await apiClient.delete<any>(`/openai/thread/${threadId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error deleting thread:", error);
+      throw error;
+    }
+  }
+
+  /**
    * Submit tool outputs cho một run
    * @param threadId ID của thread
    * @param runId ID của run

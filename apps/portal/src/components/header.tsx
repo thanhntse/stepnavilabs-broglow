@@ -292,11 +292,10 @@ export default function Header({
                     {/* Nút Nâng cấp Pro nổi bật */}
                     <Link
                       href="/payment"
-                      className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-white font-bold shadow-lg hover:scale-105 transition-all magnetic-btn enhanced-glow border-2 border-yellow-300"
+                      className="flex items-center px-2 py-1 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-white font-bold shadow-lg hover:scale-105 transition-all border-2 border-yellow-300"
                       style={{ fontSize: 15 }}
                     >
                       <span className="text-lg">⚡</span>
-                      <span>Nâng cấp Pro</span>
                       <span className="ml-2 bg-white text-yellow-500 text-xs font-bold px-2 py-0.5 rounded-full border border-yellow-300">
                         -85%
                       </span>

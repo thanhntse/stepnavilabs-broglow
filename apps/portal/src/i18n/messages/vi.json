@@ -258,7 +258,17 @@
     "error": "Không thể tải danh sách tin đăng",
     "noPosts": "Bạn chưa có tin đăng nào",
     "noPostsDescription": "Bắt đầu cuộc trò chuyện đầu tiên với BroGlow AI để xem tin đăng của bạn ở đây.",
-    "loading": "Đang tải tin đăng..."
+    "loading": "Đang tải tin đăng...",
+    "select": "Chọn",
+    "deselect": "Bỏ chọn",
+    "selectAll": "Chọn tất cả",
+    "deselectAll": "Bỏ chọn tất cả",
+    "deleteSelected": "Xóa đã chọn",
+    "bulkDeleteSuccess": "Đã xóa các tin thành công.",
+    "bulkDeletePartial": "Một số tin không thể xóa được.",
+    "confirmBulkDelete": "Xóa các tin đã chọn?",
+    "confirmBulkDeleteDesc": "Bạn có chắc chắn muốn xóa các tin đã chọn? Hành động này không thể hoàn tác.",
+    "cancelSelect": "Hủy chọn"
   },
   "thread": {
     "noTitle": "Tin",
