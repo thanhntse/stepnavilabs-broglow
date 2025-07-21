@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import { BlogService, Blog } from "@/services/blog-service";
 import Image from "next/image";
@@ -11,27 +11,85 @@ import { useScrollAnimation } from "@/hooks/use-scroll-animation";
 export default function BlogPage() {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const blogAnimation = useScrollAnimation(0.1, 120);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
+  const loaderRef = useRef<HTMLDivElement>(null);
+  const observer = useRef<IntersectionObserver | null>(null);
   const router = useRouter();
   const { user } = useUserContext();
   const displayName = user?.firstName + " " + user?.lastName;
+
+  // Initial load of blogs
   useEffect(() => {
-    const fetchBlogs = async () => {
-      setLoading(true);
+    const fetchInitialBlogs = async () => {
+      setInitialLoading(true);
       try {
         const response = await BlogService.getBlogs({ page: 1, limit: 6, sortBy: "createdAt", sortOrder: "desc" });
         setBlogs(response.data);
+        setHasMore(response.pagination.page < response.pagination.totalPages);
+        setPage(2); // Next page to fetch would be page 2
       } catch (error) {
         setError("Failed to load blog posts. Please try again later.");
         console.error("Error fetching blogs:", error);
       } finally {
-        setLoading(false);
+        setInitialLoading(false);
       }
     };
 
-    fetchBlogs();
+    fetchInitialBlogs();
   }, []);
+
+  // Load more blogs
+  const loadMoreBlogs = useCallback(async () => {
+    if (loading || !hasMore) return;
+
+    setLoading(true);
+    try {
+      const response = await BlogService.getBlogs({
+        page,
+        limit: 6,
+        sortBy: "createdAt",
+        sortOrder: "desc"
+      });
+
+      if (response.data.length > 0) {
+        setBlogs(prevBlogs => [...prevBlogs, ...response.data]);
+        setPage(prev => prev + 1);
+      }
+
+      setHasMore(response.pagination.page < response.pagination.totalPages);
+    } catch (error) {
+      console.error("Error loading more blogs:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [page, loading, hasMore]);
+
+  // Setup IntersectionObserver for infinite loading
+  useEffect(() => {
+    observer.current = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasMore && !loading && !initialLoading) {
+          loadMoreBlogs();
+        }
+      },
+      { threshold: 1.0 }
+    );
+
+    const currentLoaderRef = loaderRef.current;
+    if (currentLoaderRef) {
+      observer.current.observe(currentLoaderRef);
+    }
+
+    return () => {
+      if (currentLoaderRef && observer.current) {
+        observer.current.unobserve(currentLoaderRef);
+      }
+    };
+  }, [loadMoreBlogs, hasMore, loading, initialLoading]);
 
   // Scroll detection for blog animation
   useEffect(() => {
@@ -168,105 +226,125 @@ export default function BlogPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {loading ? (
-              Array.from({ length: 3 }).map((_, index) => (
+          {initialLoading ? (
+            <div className="grid md:grid-cols-3 gap-8">
+              {Array.from({ length: 6 }).map((_, index) => (
                 <div key={index} className="bg-white rounded-2xl overflow-hidden shadow-lg p-8 animate-pulse h-80" />
-              ))
-            ) : error ? (
-              <div className="col-span-3 text-center text-red-500 py-12">{error}</div>
-            ) : blogs.length === 0 ? (
-              <div className="col-span-3 text-center text-gray-500 py-12">No blog articles found.</div>
-            ) : (
-              blogs.map((blog) => (
-                <div
-                  id={blog._id}
-                  key={blog._id}
-                  onClick={() => router.push(`/blog/${blog._id}`)}
+              ))}
+            </div>
+          ) : error ? (
+            <div className="col-span-3 text-center text-red-500 py-12">{error}</div>
+          ) : blogs.length === 0 ? (
+            <div className="col-span-3 text-center text-gray-500 py-12">No blog articles found.</div>
+          ) : (
+            <>
+              <div className="grid md:grid-cols-3 gap-8">
+                {blogs.map((blog) => (
+                  <div
+                    id={blog._id}
+                    key={blog._id}
+                    onClick={() => router.push(`/blog/${blog._id}`)}
                   className={`bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 enhanced-glow stagger-item group cursor-pointer`}
-                >
-                  {/* Article Image */}
-                  <div className="relative h-48 bg-gradient-to-br from-slate-100 to-blue-100 overflow-hidden">
-                    <div className={`absolute inset-0 bg-gradient-to-r from-primary-blue to-primary-lightblue opacity-20 group-hover:opacity-30 transition-opacity duration-300`}></div>
-                    {blog.images && blog.images[0]?.url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={blog.images[0].url}
-                        alt={blog.images[0].caption || blog.title}
-                        className="absolute inset-0 w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-20 h-20 bg-gradient-to-r from-primary-blue to-primary-lightblue rounded-full flex items-center justify-center transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
-                          <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                          </svg>
+                  >
+                    {/* Article Image */}
+                    <div className="relative h-48 bg-gradient-to-br from-slate-100 to-blue-100 overflow-hidden">
+                      <div className={`absolute inset-0 bg-gradient-to-r from-primary-blue to-primary-lightblue opacity-20 group-hover:opacity-30 transition-opacity duration-300`}></div>
+                      {blog.images && blog.images[0]?.url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={blog.images[0].url}
+                          alt={blog.images[0].caption || blog.title}
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-20 h-20 bg-gradient-to-r from-primary-blue to-primary-lightblue rounded-full flex items-center justify-center transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
+                            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                            </svg>
+                          </div>
                         </div>
+                      )}
+                    </div>
+
+                    {/* Category Badge (if tags) */}
+                    {blog.tags && blog.tags.length > 0 && (
+                      <div className="absolute top-4 left-4 z-10">
+                        <span className="bg-gradient-to-r from-primary-blue to-primary-lightblue text-white px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide">
+                          {blog.tags[0] || "Unknown"}
+                        </span>
                       </div>
                     )}
-                  </div>
 
-                  {/* Category Badge (if tags) */}
-                  {blog.tags && blog.tags.length > 0 && (
-                    <div className="absolute top-4 left-4 z-10">
-                      <span className="bg-gradient-to-r from-primary-blue to-primary-lightblue text-white px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide">
-                        {blog.tags[0] || "Unknown"}
-                      </span>
-                    </div>
-                  )}
+                    {/* Article Content */}
+                    <div className="p-6">
+                      <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
+                        <span className="flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          {"3 min read"}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          {blog.createdAt ? new Date(blog.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : ""}
+                        </span>
+                      </div>
 
-                  {/* Article Content */}
-                  <div className="p-6">
-                    <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
-                      <span className="flex items-center gap-1">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        {"3 min read"}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        {blog.createdAt ? new Date(blog.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : ""}
-                      </span>
-                    </div>
+                      <h3 className="text-xl font-bold text-slate-800 mb-3 group-hover:text-primary-blue transition-colors duration-300">
+                        {blog.title}
+                      </h3>
 
-                    <h3 className="text-xl font-bold text-slate-800 mb-3 group-hover:text-primary-blue transition-colors duration-300">
-                      {blog.title}
-                    </h3>
+                      <p className="text-gray-600 leading-relaxed mb-4 line-clamp-3">
+                        {blog.content?.replace(/<[^>]+>/g, '').slice(0, 120) || ""}
+                        {blog.content && blog.content.length > 120 ? "..." : ""}
+                      </p>
 
-                    <p className="text-gray-600 leading-relaxed mb-4 line-clamp-3">
-                      {blog.content?.replace(/<[^>]+>/g, '').slice(0, 120) || ""}
-                      {blog.content && blog.content.length > 120 ? "..." : ""}
-                    </p>
-
-                    <div className="flex items-center justify-between">
-                      <button className="text-primary-blue font-semibold hover:text-primary-darkblue transition-colors duration-300 flex items-center gap-2 group">
-                        Read More
-                        <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                        </svg>
-                      </button>
-
-                      <div className="flex items-center gap-2">
-                        <button className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-300 group">
-                          <svg className="w-4 h-4 text-gray-500 group-hover:text-primary-blue transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      <div className="flex items-center justify-between">
+                        <button className="text-primary-blue font-semibold hover:text-primary-darkblue transition-colors duration-300 flex items-center gap-2 group">
+                          Read More
+                          <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                           </svg>
                         </button>
-                        <button className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-300 group">
-                          <svg className="w-4 h-4 text-gray-500 group-hover:text-primary-blue transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
-                          </svg>
-                        </button>
+
+                        <div className="flex items-center gap-2">
+                          <button className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-300 group">
+                            <svg className="w-4 h-4 text-gray-500 group-hover:text-primary-blue transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                          </button>
+                          <button className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-300 group">
+                            <svg className="w-4 h-4 text-gray-500 group-hover:text-primary-blue transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))
-            )}
-          </div>
+                ))}
+              </div>
+
+              {/* Loader at the bottom for infinite scrolling */}
+              <div
+                ref={loaderRef}
+                className="flex justify-center items-center py-12"
+              >
+                {loading && (
+                  <div className="flex flex-col items-center">
+                    <div className="w-10 h-10 border-4 border-primary-blue border-t-transparent rounded-full animate-spin"></div>
+                    <p className="mt-4 text-gray-600">Loading more articles...</p>
+                  </div>
+                )}
+                {!loading && !hasMore && blogs.length > 0 && (
+                  <p className="text-gray-500">You&apos;ve reached the end of our articles</p>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </section>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { BlogService, Blog, CreateCommentDto } from "@/services/blog-service";
 import Image from "next/image";
@@ -21,6 +21,10 @@ export default function BlogDetailPage() {
   const { user } = useUserContext();
   const displayName = user?.firstName + " " + user?.lastName;
   const toast = useToast();
+
+  // Share popup state
+  const [showSharePopup, setShowSharePopup] = useState(false);
+  const sharePopupRef = useRef<HTMLDivElement>(null);
 
   const id = params.id as string;
 
@@ -59,6 +63,20 @@ export default function BlogDetailPage() {
       fetchBlogDetail();
     }
   }, [id]);
+
+  // Close share popup when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (sharePopupRef.current && !sharePopupRef.current.contains(event.target as Node)) {
+        setShowSharePopup(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,13 +135,16 @@ export default function BlogDetailPage() {
     }
   };
 
-  const handleShareBlog = async () => {
-    try {
-      const result = await BlogService.shareBlog(id);
-      // Could show a toast notification here with the share URL
-      console.log("Blog shared:", result);
+  const handleShareBlog = () => {
+    // Toggle the share popup instead of immediately copying
+    setShowSharePopup(!showSharePopup);
+  };
 
-      // Copy to clipboard
+  const handleCopyLink = async () => {
+    try {
+      // const result = await BlogService.shareBlog(id);
+      // console.log("Blog shared:", result);
+
       if (navigator.clipboard && window) {
         await navigator.clipboard.writeText(window.location.href);
         toast.toast.current?.show({
@@ -133,15 +154,51 @@ export default function BlogDetailPage() {
           life: 3000
         });
       }
-    } catch (error) {
+    } catch (error) {        
       console.error("Error sharing blog:", error);
       toast.toast.current?.show({
         severity: "error",
         summary: "Error",
-        detail: "Failed to share blog. Please login to try again.",
+        detail: "Failed to share blog. Please try again.",
         life: 3000
       });
     }
+    setShowSharePopup(false);
+  };
+
+  const handleShareFacebook = () => {
+    try {
+      const url = encodeURIComponent(window.location.href);
+      const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+      window.open(facebookUrl, '_blank');
+    } catch (error) {
+      console.error("Error sharing to Facebook:", error);
+      toast.toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: "Could not open Facebook sharing dialog",
+        life: 3000
+      });
+    }
+    setShowSharePopup(false);
+  };
+
+  const handleShareTwitter = () => {
+    try {
+      const url = encodeURIComponent(window.location.href);
+      const text = encodeURIComponent(blog?.title || "Check out this article on BroGlow");
+      const twitterUrl = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
+      window.open(twitterUrl, '_blank');
+    } catch (error) {
+      console.error("Error sharing to Twitter:", error);
+      toast.toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: "Could not open X (Twitter) sharing dialog",
+        life: 3000
+      });
+    }
+    setShowSharePopup(false);
   };
 
   if (loading) {
@@ -375,7 +432,7 @@ export default function BlogDetailPage() {
                     ))}
                   </div>
 
-                  <div className="flex gap-4">
+                  <div className="flex gap-4 relative">
                     <button
                       onClick={handleLikeBlog}
                       className="flex items-center gap-2 hover:text-primary-blue transition-colors"
@@ -395,6 +452,47 @@ export default function BlogDetailPage() {
                       </svg>
                       Share
                     </button>
+
+                    {/* Share Popup */}
+                    {showSharePopup && (
+                      <div
+                        ref={sharePopupRef}
+                        className="absolute right-0 bottom-12 bg-white rounded-lg shadow-xl p-4 min-w-[180px] z-10 border border-gray-200 animate-fade-in"
+                      >
+                        <div className="flex flex-col gap-2">
+                          <button
+                            onClick={handleShareFacebook}
+                            className="flex items-center gap-2 px-4 py-2 hover:bg-blue-50 rounded-md text-blue-600 transition-colors text-left"
+                          >
+                            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                            </svg>
+                            Facebook
+                          </button>
+
+                          <button
+                            onClick={handleShareTwitter}
+                            className="flex items-center gap-2 px-4 py-2 hover:bg-blue-50 rounded-md text-black transition-colors text-left"
+                          >
+                            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                            </svg>
+                            X (Twitter)
+                          </button>
+
+                          <button
+                            onClick={handleCopyLink}
+                            className="flex items-center gap-2 px-4 py-2 hover:bg-blue-50 rounded-md text-gray-700 transition-colors text-left"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                            </svg>
+                            Copy Link
+                          </button>
+                        </div>
+                        <div className="absolute w-3 h-3 bg-white transform rotate-45 right-4 -bottom-1.5 border-r border-b border-gray-200"></div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
