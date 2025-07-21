@@ -9,6 +9,7 @@ import {
   useCountAnimation,
   useTypingAnimation
 } from "@/hooks/use-scroll-animation";
+import { BlogService, Blog } from "@/services/blog-service";
 
 export default function Home() {
   const [showStickyHeader, setShowStickyHeader] = useState(false);
@@ -25,7 +26,6 @@ export default function Home() {
   const { createRef: createFeatureRef, isVisible: isFeatureVisible } = useScrollAnimationMultiple(0.1, 200);
   const { createRef: createStepRef, isVisible: isStepVisible } = useScrollAnimationMultiple(0.1, 150);
   const { createRef: createTestimonialRef, isVisible: isTestimonialVisible } = useScrollAnimationMultiple(0.1, 250);
-  const { createRef: createBlogRef, isVisible: isBlogVisible } = useScrollAnimationMultiple(0.1, 200);
 
   // Counter animations for statistics
   const satisfactionCounter = useCountAnimation(98, 2000);
@@ -34,6 +34,27 @@ export default function Home() {
 
   // Typing animation for hero title
   const heroTitle = useTypingAnimation("Level Up Your", 80);
+
+  // Blog state
+  const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [blogLoading, setBlogLoading] = useState(true);
+  const [blogError, setBlogError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Fetch latest blogs (limit 3)
+    const fetchBlogs = async () => {
+      setBlogLoading(true);
+      try {
+        const res = await BlogService.getBlogs({ page: 1, limit: 3, sortBy: "createdAt", sortOrder: "desc" });
+        setBlogs(res.data.map((blog, index) => ({ ...blog, id: index })));
+      } catch {
+        setBlogError("Could not load blog articles.");
+      } finally {
+        setBlogLoading(false);
+      }
+    };
+    fetchBlogs();
+  }, []);
 
   // Scroll detection for sticky header
   useEffect(() => {
@@ -49,6 +70,29 @@ export default function Home() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Scroll detection for blog animation
+  useEffect(() => {
+    const handleScroll = async () => {
+      const blogSection = document.getElementById('blog-section');
+      if (blogSection) {
+        const blogTop = blogSection.offsetTop - 300;
+        const scrollPosition = window.scrollY;
+        if (scrollPosition > blogTop) {
+          for (const blog of blogs) {
+            const blogElement = document.getElementById(blog._id);
+            if (blogElement) {
+              blogElement.classList.add('animate-in');
+            }
+            await new Promise(resolve => setTimeout(resolve, 200));
+          }
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [blogs]);
 
   // Smooth scroll function
   const scrollToSection = (sectionId: string) => {
@@ -459,121 +503,102 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                category: "AI Technology",
-                title: "How AI is Revolutionizing Men's Skincare",
-                excerpt: "Discover how artificial intelligence is changing the game in personalized skincare routines for modern men.",
-                image: "/home-chat-img.svg",
-                readTime: "5 min read",
-                date: "Dec 15, 2024",
-                color: "from-primary-blue to-primary-lightblue"
-              },
-              {
-                category: "Skincare Tips",
-                title: "The 5-Minute Morning Routine That Changed Everything",
-                excerpt: "A simple yet effective morning skincare routine that busy men can follow for maximum results.",
-                image: "/home-upload-img.svg",
-                readTime: "3 min read",
-                date: "Dec 12, 2024",
-                color: "from-green-500 to-emerald-500"
-              },
-              {
-                category: "Product Guide",
-                title: "Choosing the Right Products for Your Skin Type",
-                excerpt: "Navigate the overwhelming world of skincare products with our comprehensive guide tailored for men.",
-                image: "/home-share-img.svg",
-                readTime: "7 min read",
-                date: "Dec 10, 2024",
-                color: "from-purple-500 to-pink-500"
-              }
-            ].map((article, index) => (
-              <div
-                key={index}
-                ref={createBlogRef(index)}
-                className={`bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 enhanced-glow stagger-item group cursor-pointer ${isBlogVisible(index) ? 'animate-in' : ''
-                  }`}
-              >
-                {/* Article Image */}
-                <div className="relative h-48 bg-gradient-to-br from-slate-100 to-blue-100 overflow-hidden">
-                  <div className={`absolute inset-0 bg-gradient-to-r ${article.color} opacity-20 group-hover:opacity-30 transition-opacity duration-300`}></div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className={`w-20 h-20 bg-gradient-to-r ${article.color} rounded-full flex items-center justify-center transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-500`}>
-                      {index === 0 && (
-                        <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                        </svg>
-                      )}
-                      {index === 1 && (
-                        <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {blogLoading ? (
+              Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className="bg-white rounded-2xl overflow-hidden shadow-lg p-8 animate-pulse h-80" />
+              ))
+            ) : blogError ? (
+              <div className="col-span-3 text-center text-red-500 py-12">{blogError}</div>
+            ) : blogs.length === 0 ? (
+              <div className="col-span-3 text-center text-gray-500 py-12">No blog articles found.</div>
+            ) : (
+              blogs.map((blog) => (
+                <div
+                  id={blog._id}
+                  key={blog._id}
+                  className={`bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 enhanced-glow stagger-item group cursor-pointer`}
+                >
+                  {/* Article Image */}
+                  <div className="relative h-48 bg-gradient-to-br from-slate-100 to-blue-100 overflow-hidden">
+                    <div className={`absolute inset-0 bg-gradient-to-r from-primary-blue to-primary-lightblue opacity-20 group-hover:opacity-30 transition-opacity duration-300`}></div>
+                    {blog.images && blog.images[0]?.url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={blog.images[0].url}
+                        alt={blog.images[0].caption || blog.title}
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-20 h-20 bg-gradient-to-r from-primary-blue to-primary-lightblue rounded-full flex items-center justify-center transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
+                          <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                          </svg>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Category Badge (if tags) */}
+                  {blog.tags && blog.tags.length > 0 && (
+                    <div className="absolute top-4 left-4 z-10">
+                      <span className="bg-gradient-to-r from-primary-blue to-primary-lightblue text-white px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide">
+                        {blog.tags[0] || "Unknown"}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Article Content */}
+                  <div className="p-6">
+                    <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
+                      <span className="flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                      )}
-                      {index === 2 && (
-                        <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        {"3 min read"}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                      )}
+                        {blog.createdAt ? new Date(blog.createdAt).toLocaleDateString("vi-VN") : ""}
+                      </span>
                     </div>
-                  </div>
 
-                  {/* Category Badge */}
-                  <div className="absolute top-4 left-4">
-                    <span className={`bg-gradient-to-r ${article.color} text-white px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide`}>
-                      {article.category}
-                    </span>
-                  </div>
-                </div>
+                    <h3 className="text-xl font-bold text-slate-800 mb-3 group-hover:text-primary-blue transition-colors duration-300">
+                      {blog.title}
+                    </h3>
 
-                {/* Article Content */}
-                <div className="p-6">
-                  <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
-                    <span className="flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      {article.readTime}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      {article.date}
-                    </span>
-                  </div>
+                    <p className="text-gray-600 leading-relaxed mb-4 line-clamp-3">
+                      {blog.content?.replace(/<[^>]+>/g, '').slice(0, 120) || ""}
+                      {blog.content && blog.content.length > 120 ? "..." : ""}
+                    </p>
 
-                  <h3 className="text-xl font-bold text-slate-800 mb-3 group-hover:text-primary-blue transition-colors duration-300">
-                    {article.title}
-                  </h3>
-
-                  <p className="text-gray-600 leading-relaxed mb-4">
-                    {article.excerpt}
-                  </p>
-
-                  <div className="flex items-center justify-between">
-                    <button className="text-primary-blue font-semibold hover:text-primary-darkblue transition-colors duration-300 flex items-center gap-2 group">
-                      Read More
-                      <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
-                    </button>
-
-                    <div className="flex items-center gap-2">
-                      <button className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-300 group">
-                        <svg className="w-4 h-4 text-gray-500 group-hover:text-primary-blue transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    <div className="flex items-center justify-between">
+                      <button className="text-primary-blue font-semibold hover:text-primary-darkblue transition-colors duration-300 flex items-center gap-2 group">
+                        Read More
+                        <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                         </svg>
                       </button>
-                      <button className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-300 group">
-                        <svg className="w-4 h-4 text-gray-500 group-hover:text-primary-blue transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
-                        </svg>
-                      </button>
+
+                      <div className="flex items-center gap-2">
+                        <button className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-300 group">
+                          <svg className="w-4 h-4 text-gray-500 group-hover:text-primary-blue transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                          </svg>
+                        </button>
+                        <button className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-300 group">
+                          <svg className="w-4 h-4 text-gray-500 group-hover:text-primary-blue transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
 
           {/* View All Articles Button */}
