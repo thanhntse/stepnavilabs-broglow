@@ -3,7 +3,8 @@ import { Metadata, ResolvingMetadata } from 'next';
 import BlogDetailContent from './blog-detail-content';
 
 type Props = {
-  params: { id: string }
+  params: { id: string };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 export async function generateMetadata(
