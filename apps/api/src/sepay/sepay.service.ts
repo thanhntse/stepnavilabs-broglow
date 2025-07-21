@@ -122,7 +122,9 @@ export class SePayService {
    * @param referenceCode Mã tham chiếu của giao dịch
    * @returns Thông tin trạng thái thanh toán
    */
-  async checkPaymentStatus(referenceCode: string): Promise<{ success: boolean; message: string }> {
+  async checkPaymentStatus(
+    referenceCode: string,
+  ): Promise<{ success: boolean; message: string }> {
     try {
       // Tìm giao dịch trong database dựa trên referenceCode
       const payment = await this.paymentModel.findOne({ referenceCode }).exec();
@@ -140,7 +142,10 @@ export class SePayService {
         message: 'Giao dịch đã được thanh toán thành công',
       };
     } catch (error) {
-      this.logger.error(`Lỗi khi kiểm tra trạng thái thanh toán: ${error.message}`, error.stack);
+      this.logger.error(
+        `Lỗi khi kiểm tra trạng thái thanh toán: ${error.message}`,
+        error.stack,
+      );
       return {
         success: false,
         message: `Lỗi khi kiểm tra trạng thái thanh toán: ${error.message}`,

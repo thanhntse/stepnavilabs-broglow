@@ -7,7 +7,15 @@ import { TokenStorage } from "@/lib/token-storage";
 import { AIService } from "@/services/AI-service";
 import { AuthService } from "@/services/auth-service";
 import { DEFAULT_PUBLIC_ROUTE, publicOnlyRoutes } from "@/utils/auth-routes";
-import { List, Plus, X, SignOut, Clock, Sparkle, User } from "@phosphor-icons/react/dist/ssr";
+import {
+  Clock,
+  List,
+  Plus,
+  SignOut,
+  Sparkle,
+  User,
+  X,
+} from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -96,7 +104,7 @@ export default function Header({
     if (onCreateNew) {
       onCreateNew();
     } else {
-      router.push('/thread');
+      router.push("/thread");
     }
   };
 
@@ -120,7 +128,9 @@ export default function Header({
         <div className="py-4 px-4 flex flex-col gap-2 rounded-xl text-primary-dark bg-gradient-to-r from-gray-50 to-white">
           <div className="flex items-center justify-center gap-3">
             <div className="flex-1 pl-4">
-              <div className="text-lg font-semibold text-gray-900">{displayName}</div>
+              <div className="text-lg font-semibold text-gray-900">
+                {displayName}
+              </div>
               <div className="text-sm text-gray-500">{user?.email}</div>
             </div>
           </div>
@@ -135,7 +145,10 @@ export default function Header({
           onClick={() => router.push("/profile")}
           className="py-3 px-4 cursor-pointer hover:bg-gray-50 text-primary-dark rounded-xl !w-full transition-colors duration-200 flex items-center gap-3 group"
         >
-          <User size={18} className="text-primary-blue group-hover:scale-110 transition-transform duration-200" />
+          <User
+            size={18}
+            className="text-primary-blue group-hover:scale-110 transition-transform duration-200"
+          />
           <span className="font-medium">{t("common.profile")}</span>
         </div>
       ),
@@ -147,7 +160,10 @@ export default function Header({
           onClick={() => router.push("/recent-post")}
           className="py-3 px-4 cursor-pointer hover:bg-gray-50 text-primary-dark rounded-xl !w-full transition-colors duration-200 flex items-center gap-3 group"
         >
-          <Clock size={18} className="text-primary-blue group-hover:scale-110 transition-transform duration-200" />
+          <Clock
+            size={18}
+            className="text-primary-blue group-hover:scale-110 transition-transform duration-200"
+          />
           <span className="font-medium">{t("common.recentPosts")}</span>
         </div>
       ),
@@ -159,7 +175,10 @@ export default function Header({
           onClick={() => router.push("/skin-profile")}
           className="py-3 px-4 cursor-pointer hover:bg-gray-50 text-primary-dark rounded-xl !w-full transition-colors duration-200 flex items-center gap-3 group"
         >
-          <Sparkle size={18} className="text-primary-blue group-hover:scale-110 transition-transform duration-200" />
+          <Sparkle
+            size={18}
+            className="text-primary-blue group-hover:scale-110 transition-transform duration-200"
+          />
           <span className="font-medium">{t("common.skinProfile")}</span>
         </div>
       ),
@@ -171,7 +190,10 @@ export default function Header({
           onClick={() => router.push("/routine")}
           className="py-3 px-4 cursor-pointer hover:bg-gray-50 text-primary-dark rounded-xl !w-full transition-colors duration-200 flex items-center gap-3 group"
         >
-          <Clock size={18} className="text-primary-blue group-hover:scale-110 transition-transform duration-200" />
+          <Clock
+            size={18}
+            className="text-primary-blue group-hover:scale-110 transition-transform duration-200"
+          />
           <span className="font-medium">{t("common.routine")}</span>
         </div>
       ),
@@ -184,23 +206,32 @@ export default function Header({
           onClick={logout}
           className="py-3 px-4 cursor-pointer hover:bg-red-50 text-red-600 rounded-xl transition-colors duration-200 flex items-center gap-3 group"
         >
-          <SignOut size={18} className="group-hover:scale-110 transition-transform duration-200" />
+          <SignOut
+            size={18}
+            className="group-hover:scale-110 transition-transform duration-200"
+          />
           <span className="font-medium">{t("common.logout")}</span>
         </div>
       ),
     },
   ];
 
-  if (DEFAULT_PUBLIC_ROUTE === pathname || publicOnlyRoutes.includes(pathname)) {
+  if (
+    DEFAULT_PUBLIC_ROUTE === pathname ||
+    publicOnlyRoutes.includes(pathname)
+  ) {
     return null;
   }
 
   return (
     <>
-      <div className="w-full bg-white/95 backdrop-blur-sm border-b border-gray-100">
+      <div className="w-full bg-white/95 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-40">
         <header
-          className={`${variant !== "home" ? "sticky top-0 bg-white/95 backdrop-blur-sm z-40" : ""
-            } w-full flex justify-between items-center py-4 lg:py-5 px-4 md:px-6 lg:px-8 xl:px-12 max-w-7xl mx-auto ${className}`}
+          className={`${
+            variant !== "home"
+              ? "sticky top-0 bg-white/95 backdrop-blur-sm z-40"
+              : ""
+          } w-full flex justify-between items-center py-4 lg:py-5 px-4 md:px-6 lg:px-8 xl:px-12 max-w-7xl mx-auto ${className}`}
         >
           <div className="flex items-center gap-3 lg:gap-8">
             <button
@@ -236,10 +267,15 @@ export default function Header({
 
               {variant === "home" && isLoggedIn && (
                 <div className="flex items-center gap-8 text-sm font-medium text-gray-700">
-                  <Link href="/" className="hover:text-primary-blue transition-colors duration-200">
+                  <Link
+                    href="/"
+                    className="hover:text-primary-blue transition-colors duration-200"
+                  >
                     {t("common.home")}
                   </Link>
-                  <span className="text-primary-blue font-semibold">BroGlow AI</span>
+                  <span className="text-primary-blue font-semibold">
+                    BroGlow AI
+                  </span>
                 </div>
               )}
             </div>
@@ -253,6 +289,18 @@ export default function Header({
               <>
                 {isLoggedIn ? (
                   <div className="flex items-center gap-4">
+                    {/* Nút Nâng cấp Pro nổi bật */}
+                    <Link
+                      href="/payment"
+                      className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-white font-bold shadow-lg hover:scale-105 transition-all magnetic-btn enhanced-glow border-2 border-yellow-300"
+                      style={{ fontSize: 15 }}
+                    >
+                      <span className="text-lg">⚡</span>
+                      <span>Nâng cấp Pro</span>
+                      <span className="ml-2 bg-white text-yellow-500 text-xs font-bold px-2 py-0.5 rounded-full border border-yellow-300">
+                        -85%
+                      </span>
+                    </Link>
                     {/* Credits Display */}
                     <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-50 to-orange-100 rounded-full border border-orange-200">
                       <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
@@ -263,7 +311,6 @@ export default function Header({
                         {t("common.freeDaily")}
                       </span>
                     </div>
-
                     {/* User Menu */}
                     <div className="flex items-center gap-3">
                       <button
@@ -281,9 +328,12 @@ export default function Header({
                                 className="rounded-full object-cover h-8 w-8"
                               />
                             ) : (
-                              displayName.toString().split(" ").map((name: string, index: number) => (
-                                <span key={index}>{name.charAt(0)}</span>
-                              ))
+                              displayName
+                                .toString()
+                                .split(" ")
+                                .map((name: string, index: number) => (
+                                  <span key={index}>{name.charAt(0)}</span>
+                                ))
                             )}
                           </div>
                           <span className="font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-200">
@@ -382,18 +432,20 @@ export default function Header({
                 </div>
 
                 {/* Create New Button */}
-                {showCreateNew && !pathname.includes("/thread") && isLoggedIn && (
-                  <button
-                    onClick={() => {
-                      handleCreateNewThread();
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="flex gap-3 items-center justify-center py-4 px-6 font-semibold bg-gradient-to-r from-primary-blue to-primary-darkblue text-white hover:shadow-lg hover:scale-105 transition-all duration-200 ease-out rounded-xl"
-                  >
-                    <Plus size={20} weight="bold" />
-                    {t("common.createNew")}
-                  </button>
-                )}
+                {showCreateNew &&
+                  !pathname.includes("/thread") &&
+                  isLoggedIn && (
+                    <button
+                      onClick={() => {
+                        handleCreateNewThread();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="flex gap-3 items-center justify-center py-4 px-6 font-semibold bg-gradient-to-r from-primary-blue to-primary-darkblue text-white hover:shadow-lg hover:scale-105 transition-all duration-200 ease-out rounded-xl"
+                    >
+                      <Plus size={20} weight="bold" />
+                      {t("common.createNew")}
+                    </button>
+                  )}
 
                 {/* User Section */}
                 {!isLoading && (
@@ -414,8 +466,12 @@ export default function Header({
                         <div className="bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-200 p-4">
                           <div className="flex items-center gap-3 mb-4">
                             <div className="flex-1">
-                              <div className="text-lg font-semibold text-gray-900">{displayName}</div>
-                              <div className="text-sm text-gray-500">{user?.email}</div>
+                              <div className="text-lg font-semibold text-gray-900">
+                                {displayName}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {user?.email}
+                              </div>
                             </div>
                           </div>
 
@@ -428,7 +484,9 @@ export default function Header({
                               className="w-full text-left py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center gap-3"
                             >
                               <User size={18} className="text-primary-blue" />
-                              <span className="font-medium">{t("common.profile")}</span>
+                              <span className="font-medium">
+                                {t("common.profile")}
+                              </span>
                             </button>
                             <button
                               onClick={() => {
@@ -437,8 +495,13 @@ export default function Header({
                               }}
                               className="w-full text-left py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center gap-3"
                             >
-                              <Sparkle size={18} className="text-primary-blue" />
-                              <span className="font-medium">{t("common.skinProfile")}</span>
+                              <Sparkle
+                                size={18}
+                                className="text-primary-blue"
+                              />
+                              <span className="font-medium">
+                                {t("common.skinProfile")}
+                              </span>
                             </button>
                             <button
                               onClick={() => {
@@ -448,7 +511,9 @@ export default function Header({
                               className="w-full text-left py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center gap-3"
                             >
                               <Clock size={18} className="text-primary-blue" />
-                              <span className="font-medium">{t("common.routine")}</span>
+                              <span className="font-medium">
+                                {t("common.routine")}
+                              </span>
                             </button>
                             <button
                               onClick={() => {
@@ -458,7 +523,9 @@ export default function Header({
                               className="w-full text-left py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center gap-3"
                             >
                               <Clock size={18} className="text-primary-blue" />
-                              <span className="font-medium">{t("common.recentPosts")}</span>
+                              <span className="font-medium">
+                                {t("common.recentPosts")}
+                              </span>
                             </button>
                             <button
                               onClick={() => {
@@ -468,7 +535,9 @@ export default function Header({
                               className="w-full text-left py-3 px-4 rounded-lg hover:bg-red-50 transition-colors duration-200 flex items-center gap-3 text-red-600"
                             >
                               <SignOut size={18} />
-                              <span className="font-medium">{t("common.logout")}</span>
+                              <span className="font-medium">
+                                {t("common.logout")}
+                              </span>
                             </button>
                           </div>
                         </div>
@@ -490,7 +559,9 @@ export default function Header({
                     <div className="text-xs text-gray-400">
                       {t("common.poweredBy")}
                     </div>
-                    <h1 className="text-xs text-gray-400 font-medium">STEPNAVI Labs</h1>
+                    <h1 className="text-xs text-gray-400 font-medium">
+                      STEPNAVI Labs
+                    </h1>
                   </div>
                 </div>
               </div>
