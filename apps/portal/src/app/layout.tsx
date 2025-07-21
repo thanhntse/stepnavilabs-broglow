@@ -17,11 +17,20 @@ export const metadata: Metadata = {
     description: "Revolutionary AI skincare designed specifically for men. Scan, track, and transform your skin with personalized recommendations.",
     type: "website",
     locale: "en_US",
+    images: [
+      {
+        url: '/thumbnail.png',
+        width: 1200,
+        height: 630,
+        alt: 'BroGlow - Level Up Your Skin Game'
+      }
+    ]
   },
   twitter: {
     card: "summary_large_image",
     title: "BroGlow - AI-Powered Men's Skincare",
     description: "Revolutionary AI skincare designed specifically for men. Scan, track, and transform your skin with personalized recommendations.",
+    images: ['/thumbnail.png']
   },
 };
 
