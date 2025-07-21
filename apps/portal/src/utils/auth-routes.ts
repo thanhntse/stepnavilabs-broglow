@@ -9,5 +9,7 @@ export const protectedRoutes = [
 
 export const publicOnlyRoutes = ["/login", "/register", "/forgot-password", "/reset-password"];
 
+export const commonRoutes = ["/blog", "/blog/[id]", "/"];
+
 export const DEFAULT_AUTH_ROUTE = "/thread";
 export const DEFAULT_PUBLIC_ROUTE = "/";

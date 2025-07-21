@@ -10,9 +10,14 @@ import {
   useTypingAnimation
 } from "@/hooks/use-scroll-animation";
 import { BlogService, Blog } from "@/services/blog-service";
+import { useUserContext } from "@/context/profile-context";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [showStickyHeader, setShowStickyHeader] = useState(false);
+  const { user } = useUserContext();
+  const displayName = user?.firstName + " " + user?.lastName;
+  const router = useRouter();
 
   // Enhanced scroll animations with delays
   const heroAnimation = useScrollAnimation(0.1, 300);
@@ -46,7 +51,7 @@ export default function Home() {
       setBlogLoading(true);
       try {
         const res = await BlogService.getBlogs({ page: 1, limit: 3, sortBy: "createdAt", sortOrder: "desc" });
-        setBlogs(res.data.map((blog, index) => ({ ...blog, id: index })));
+        setBlogs(res.data);
       } catch {
         setBlogError("Could not load blog articles.");
       } finally {
@@ -117,8 +122,8 @@ export default function Home() {
     <div className="broglow-landing-page min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Sticky Header */}
       <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${showStickyHeader
-          ? 'translate-y-0 opacity-100 backdrop-blur-md bg-white/90 shadow-lg border-b border-gray-200'
-          : '-translate-y-full opacity-0'
+        ? 'translate-y-0 opacity-100 backdrop-blur-md bg-white/90 shadow-lg border-b border-gray-200'
+        : '-translate-y-full opacity-0'
         }`}>
         <div className="container mx-auto px-6 lg:px-20">
           <div className="flex items-center justify-between py-4">
@@ -169,20 +174,52 @@ export default function Home() {
             </nav>
 
             {/* CTA Buttons */}
-            <div className="flex items-center space-x-4">
-              <Link
-                href="/login"
-                className="hidden sm:block text-slate-700 hover:text-primary-blue font-medium transition-colors duration-300"
+            {user ? (
+              <button
+                className="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-100 transition-colors duration-200 group cursor-pointer"
+                onClick={() => router.push("/thread")}
               >
-                Sign In
-              </Link>
-              <Link
-                href="/register"
-                className="bg-gradient-to-r from-primary-blue to-primary-lightblue text-white px-6 py-2 rounded-full font-semibold hover:shadow-lg hover:scale-105 transform transition-all duration-300 magnetic-btn"
-              >
-                Get Started
-              </Link>
-            </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-primary-blue to-primary-darkblue text-white font-semibold text-sm">
+                    {user?.avatar ? (
+                      <Image
+                        src={user?.avatar}
+                        alt="User Avatar"
+                        width={32}
+                        height={32}
+                        className="rounded-full object-cover h-8 w-8"
+                      />
+                    ) : (
+
+                      displayName
+                        .toString()
+                        .split(" ")
+                        .map((name: string, index: number) => (
+                          <span key={index}>{name.charAt(0)}</span>
+                        ))
+                    )}
+                  </div>
+                  <span className="hidden sm:block font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-200">
+                    {displayName}
+                  </span>
+                </div>
+              </button>
+            ) : (
+              <div className="flex items-center space-x-4">
+                <Link
+                  href="/login"
+                  className="hidden sm:block text-slate-700 hover:text-primary-blue font-medium transition-colors duration-300"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/register"
+                  className="bg-gradient-to-r from-primary-blue to-primary-lightblue text-white px-6 py-2 rounded-full font-semibold hover:shadow-lg hover:scale-105 transform transition-all duration-300 magnetic-btn"
+                >
+                  Get Started
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -516,6 +553,7 @@ export default function Home() {
                 <div
                   id={blog._id}
                   key={blog._id}
+                  onClick={() => router.push(`/blog/${blog._id}`)}
                   className={`bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 enhanced-glow stagger-item group cursor-pointer`}
                 >
                   {/* Article Image */}
@@ -604,12 +642,12 @@ export default function Home() {
           {/* View All Articles Button */}
           <div className={`text-center mt-12 transform transition-all duration-1000 delay-300 ${blogAnimation.isVisible ? 'translate-y-0 opacity-100' : 'translate-y-5 opacity-0'
             }`}>
-            <button className="bg-gradient-to-r from-primary-blue to-primary-lightblue text-white px-8 py-4 rounded-full font-semibold text-lg hover:shadow-2xl hover:scale-105 transform transition-all duration-300 magnetic-btn enhanced-glow">
+            <Link href="/blog" className="bg-gradient-to-r from-primary-blue to-primary-lightblue text-white px-8 py-4 rounded-full font-semibold text-lg hover:shadow-2xl hover:scale-105 transform transition-all duration-300 magnetic-btn enhanced-glow">
               View All Articles
               <svg className="w-5 h-5 ml-2 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
-            </button>
+            </Link>
           </div>
         </div>
       </section>

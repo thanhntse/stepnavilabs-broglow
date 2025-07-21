@@ -28,7 +28,6 @@ export interface Blog {
   images: BlogImage[];
   createdAt?: string;
   updatedAt?: string;
-  id: number;
 }
 
 export interface CreateCommentDto {

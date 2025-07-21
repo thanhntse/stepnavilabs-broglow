@@ -218,7 +218,8 @@ export default function Header({
 
   if (
     DEFAULT_PUBLIC_ROUTE === pathname ||
-    publicOnlyRoutes.includes(pathname)
+    publicOnlyRoutes.includes(pathname) ||
+    pathname.includes("/blog")
   ) {
     return null;
   }
