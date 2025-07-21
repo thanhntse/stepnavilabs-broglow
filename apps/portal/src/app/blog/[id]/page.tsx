@@ -3,7 +3,8 @@ import { Metadata, ResolvingMetadata } from 'next';
 import BlogDetailContent from './blog-detail-content';
 
 type Props = {
-  params: { id: string }
+  params: Promise<{ id: string }>;
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 export async function generateMetadata(
@@ -11,7 +12,7 @@ export async function generateMetadata(
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   // Get the blog id from the params
-  const id = params.id;
+  const id = (await params).id;
 
   // Fetch blog data
   try {
@@ -55,6 +56,7 @@ export async function generateMetadata(
   }
 }
 
-export default function BlogDetailPage({ params }: Props) {
-  return <BlogDetailContent id={params.id} />;
+export default async function BlogDetailPage({ params }: Props) {
+  const { id } = await params;
+  return <BlogDetailContent id={id} />;
 }
