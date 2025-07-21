@@ -43,9 +43,9 @@ export interface PaginatedResponse<T> {
   };
 }
 
-export interface RoutineSuggestionResponse {
-  threadId: string;
-  responseStream: ReadableStream;
+export interface RoutineSuggestionStream {
+  getThreadId: () => Promise<string>;
+  getTextStream: () => AsyncGenerator<string, void, unknown>;
 }
 
 export class RoutineService {
@@ -78,77 +78,90 @@ export class RoutineService {
   }
 
   // Submit routine answers and get suggestions
-  static async getSuggestions(answersData: CreateRoutineAnswersDto): Promise<RoutineSuggestionResponse> {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/routine-questions/suggestions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify(answersData),
-      });
+  static async getSuggestions(answersData: CreateRoutineAnswersDto): Promise<RoutineSuggestionStream> {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/routine-questions/suggestions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: JSON.stringify(answersData),
+    });
 
-      if (!response.ok) {
-        throw new Error('Failed to get routine suggestions');
-      }
-
-      const reader = response.body?.getReader();
-      if (!reader) {
-        throw new Error('No response stream available');
-      }
-
-      let threadId = '';
-
-      return {
-        threadId,
-        responseStream: new ReadableStream({
-          start(controller) {
-            function push() {
-              reader?.read().then(({ done, value }) => {
-                if (done) {
-                  controller.close();
-                  return;
-                }
-
-                const chunk = new TextDecoder().decode(value);
-                const lines = chunk.split('\n');
-
-                lines.forEach(line => {
-                  if (line.startsWith('data: ')) {
-                    try {
-                      const data = JSON.parse(line.slice(6));
-
-                      // Extract threadId from the first message
-                      if (data.threadId && !threadId) {
-                        threadId = data.threadId;
-                        // Update the threadId in the response object
-                        (response as any).threadId = data.threadId;
-                      } else if (data.event && data.event !== 'thread.run.failed') {
-                        // Only send non-failure events to the stream
-                        controller.enqueue(new TextEncoder().encode(data));
-                      }
-                    } catch (e: any) {
-                      console.error("Error parsing JSON:", e.message || e);
-                      // If not JSON, treat as regular text
-                      controller.enqueue(value);
-                    }
-                  }
-                });
-
-                push();
-              }).catch(error => {
-                controller.error(error);
-              });
-            }
-
-            push();
-          }
-        })
-      };
-    } catch (error) {
-      console.error("Error getting routine suggestions:", error);
-      throw error;
+    if (!response.ok) {
+      throw new Error('Failed to get routine suggestions');
     }
+
+    const reader = response.body && response.body.getReader ? response.body.getReader() : undefined;
+    if (!reader) {
+      throw new Error('No response stream available');
+    }
+
+    let threadId = '';
+    let threadIdPromiseResolve: ((id: string) => void) | null = null;
+    const threadIdPromise = new Promise<string>((resolve) => {
+      threadIdPromiseResolve = resolve;
+    });
+
+    async function* textStreamGenerator() {
+      if (!reader) return;
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (!line.trim()) continue; // Skip empty lines
+
+          if (line.startsWith('data: ')) {
+            try {
+              // First line containing threadId
+              const jsonData = line.slice(6); // Remove 'data: ' prefix
+              const data = JSON.parse(jsonData);
+
+              if (data.threadId && !threadId) {
+                threadId = data.threadId;
+                if (threadIdPromiseResolve) threadIdPromiseResolve(threadId);
+                continue;
+              }
+            } catch (err) {
+              console.log('Error parsing threadId line:', err);
+            }
+          } else {
+            try {
+              // All other events as JSON objects
+              const data = JSON.parse(line);
+
+              // Handle message delta events which contain the actual text content
+              if (data.event === 'thread.message.delta') {
+                const delta = data.data?.delta;
+
+                if (delta?.content && delta.content.length > 0) {
+                  const content = delta.content[0];
+
+                  if (content.type === 'text' && content.text?.value) {
+                    yield content.text.value;
+                  }
+                }
+              }
+            } catch (err) {
+              console.log('Error parsing event line:', line, err);
+            }
+          }
+        }
+      }
+    }
+
+    return {
+      getThreadId: async () => {
+        if (threadId) return threadId;
+        return threadIdPromise;
+      },
+      getTextStream: textStreamGenerator,
+    };
   }
 }

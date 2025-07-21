@@ -6,11 +6,14 @@ import { ArrowLeft, ArrowRight, CheckCircle, Clock, Sparkle } from "@phosphor-ic
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { Toast } from "primereact/toast";
+import Markdown from "react-markdown";
 
 export default function RoutinePage() {
   const { t } = useLanguage();
   const router = useRouter();
   const { showSuccess, showError } = useToast();
+  const toast = useToast();
 
   const [questions, setQuestions] = useState<RoutineQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -20,6 +23,7 @@ export default function RoutinePage() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestionText, setSuggestionText] = useState("");
   const [threadId, setThreadId] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
 
   useEffect(() => {
     loadQuestions();
@@ -70,57 +74,43 @@ export default function RoutinePage() {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    setIsStreaming(true);
+    setShowSuggestions(true); // Switch to suggestion view immediately
+    setSuggestionText("");
+    console.log("Starting submission process...");
+
     try {
       const submitData: CreateRoutineAnswersDto = { answers };
-      const response = await RoutineService.getSuggestions(submitData);
+      console.log("Sending answers:", submitData);
 
-      // Extract threadId from the response
-      let extractedThreadId = "";
+      const suggestionStream = await RoutineService.getSuggestions(submitData);
+      console.log("Stream connection established");
 
-      // Read the response stream to extract threadId and content
-      const reader = response.responseStream.getReader();
-      const decoder = new TextDecoder();
+      // Set threadId as soon as it is available
+      suggestionStream.getThreadId().then(id => {
+        console.log("Received threadId:", id);
+        setThreadId(id);
+      });
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+      // Accumulate text from the stream
+      let accumulatedText = "";
+      let chunkCount = 0;
+      console.log("Starting to read stream...");
 
-        const chunk = decoder.decode(value);
-        const lines = chunk.split('\n');
-
-        lines.forEach(line => {
-          if (line.startsWith('data: ')) {
-            try {
-              const data = JSON.parse(line.slice(6));
-
-              // Extract threadId from the first message
-              if (data.threadId && !extractedThreadId) {
-                extractedThreadId = data.threadId;
-                setThreadId(data.threadId);
-              } else if (data.event && data.event !== 'thread.run.failed') {
-                // Handle the actual content
-                if (data.content && data.content.length > 0) {
-                  const content = data.content[0];
-                  if (content.text && content.text.value) {
-                    setSuggestionText(prev => prev + content.text.value);
-                  }
-                }
-              }
-            } catch {
-              // If not JSON, treat as regular text
-              setSuggestionText(prev => prev + line);
-            }
-          }
-        });
+      for await (const textChunk of suggestionStream.getTextStream()) {
+        chunkCount++;
+        accumulatedText += textChunk;
+        setSuggestionText(accumulatedText);
       }
 
-      setShowSuggestions(true);
+      console.log("Stream completed with", chunkCount, "chunks");
       showSuccess({ detail: t("errors.routineSuggestionsGenerated") });
     } catch (error) {
       console.error("Error getting routine suggestions:", error);
       showError({ detail: t("errors.failedToGetRoutineSuggestions") });
     } finally {
       setIsSubmitting(false);
+      setIsStreaming(false);
     }
   };
 
@@ -223,9 +213,27 @@ export default function RoutinePage() {
                   <h2 className="text-xl font-semibold text-gray-900 mb-4">{t("common.personalizedRoutine")}</h2>
                   <div className="bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-6">
                     <div className="prose max-w-none">
-                      <pre className="whitespace-pre-wrap text-gray-800 font-sans text-sm leading-relaxed">
-                        {suggestionText || t("common.loadingSuggestions")}
-                      </pre>
+                      <div className="flex items-start gap-2">
+                        <div className="text-gray-800 flex-1 prose prose-sm max-w-none">
+                          <Markdown
+                            components={{
+                              p: ({ children }) => <p className="mb-3 last:mb-0 leading-relaxed">{children}</p>,
+                              ul: ({ children }) => <ul className="list-disc list-inside mb-3 space-y-1">{children}</ul>,
+                              ol: ({ children }) => <ol className="list-decimal list-inside mb-3 space-y-1">{children}</ol>,
+                              li: ({ children }) => <li className="text-gray-700">{children}</li>,
+                              strong: ({ children }) => <strong className="font-semibold text-gray-900">{children}</strong>,
+                              em: ({ children }) => <em className="italic text-gray-700">{children}</em>,
+                              code: ({ children }) => <code className="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono">{children}</code>,
+                              pre: ({ children }) => <pre className="bg-gray-100 p-3 rounded-lg overflow-x-auto text-sm">{children}</pre>,
+                            }}
+                          >
+                            {suggestionText || (isStreaming ? "" : t("common.loadingSuggestions"))}
+                          </Markdown>
+                        </div>
+                        {isStreaming && (
+                          <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-orange-400 border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -234,7 +242,7 @@ export default function RoutinePage() {
                 <div className="flex gap-3">
                   <button
                     onClick={handleContinueChat}
-                    disabled={!threadId}
+                    disabled={!threadId || isStreaming}
                     className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Sparkle size={18} />
@@ -242,7 +250,8 @@ export default function RoutinePage() {
                   </button>
                   <button
                     onClick={handleRestart}
-                    className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                    disabled={isStreaming}
+                    className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Clock size={18} />
                     {t("common.startNewAssessment")}
@@ -273,6 +282,7 @@ export default function RoutinePage() {
   return (
     <>
       <div className="min-h-[calc(100vh-100px)] bg-gray-50">
+        <Toast ref={toast.toast} />
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
             {/* Header */}
@@ -430,10 +440,10 @@ export default function RoutinePage() {
                     {currentQuestionIndex === questions.length - 1 ? (
                       <button
                         onClick={handleSubmit}
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || isStreaming}
                         className="flex items-center gap-2 px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors duration-200 disabled:opacity-50"
                       >
-                        {isSubmitting ? (
+                        {isSubmitting || isStreaming ? (
                           <>
                             <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
                             {t("common.loadingSuggestions")}

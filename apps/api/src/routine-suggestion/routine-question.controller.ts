@@ -10,6 +10,7 @@ import {
   Query,
   Res,
   Req,
+  UseInterceptors,
 } from '@nestjs/common';
 import { RoutineQuestionService } from './routine-question.service';
 import { CreateRoutineQuestionDto } from './dto/create-routine-question.dto';
@@ -28,6 +29,7 @@ import { PaginationParams } from '@api/skin-profile/skin-profile.service';
 import { CreateRoutineAnswersDto } from './dto/create-routine-answers.dto';
 import { Response } from 'express';
 import { Readable } from 'stream';
+import { AILimitInterceptor } from '@api/openai/interceptors/ai-limit.interceptor';
 
 @ApiTags('routine-questions')
 @Controller('routine-questions')
@@ -113,6 +115,7 @@ export class RoutineQuestionController {
   }
 
   @Post('suggestions')
+  @UseInterceptors(AILimitInterceptor)
   async getSuggestions(
     @Body() answersDto: CreateRoutineAnswersDto,
     @Req() req: any,

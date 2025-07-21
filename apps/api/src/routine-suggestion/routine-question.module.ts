@@ -8,6 +8,7 @@ import {
 } from './schema/routine-question.schema';
 import { CaslModule } from '@api/casl/casl.module';
 import { OpenAiModule } from '@api/openai/openai.module';
+import { UsersModule } from '@api/users/users.module';
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -15,6 +16,7 @@ import { OpenAiModule } from '@api/openai/openai.module';
     ]),
     CaslModule,
     OpenAiModule,
+    UsersModule,
   ],
   controllers: [RoutineQuestionController],
   providers: [RoutineQuestionService],
