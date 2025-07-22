@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
       'down-vn.img.susercontent.com',
       'shopee.vn',
       'lh3.googleusercontent.com',
+      process.env.NEXT_PUBLIC_API_URL?.replace('/api', '').replace('http://', '').replace('https://', '') || 'localhost',
     ],
   },
   // Các cấu hình khác
