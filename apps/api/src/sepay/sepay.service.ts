@@ -87,7 +87,7 @@ export class SePayService {
       }
 
       const subscription = await this.subscriptionModel.findOne({
-        price: (payment.transferAmount / (85 / 100)).toFixed(0),
+        price: (payment.transferAmount / (1 - 85 / 100)).toFixed(0),
       });
       if (!subscription) {
         this.logger.error('Không tìm thấy subscription với amount này!');
