@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -57,52 +57,23 @@ export class SePayService {
     try {
       this.logger.log(`Nhận webhook từ SePay: ID giao dịch ${payload.id}`);
 
-      // Ghi log thông tin giao dịch
-      this.logger.debug('Thông tin giao dịch:', JSON.stringify(payload));
-
-      // Lưu thông tin giao dịch vào database
-      const paymentData = {
-        gateway: payload.gateway,
-        transactionDate: payload.transactionDate,
-        accountNumber: payload.accountNumber,
-        code: payload.code,
-        content: payload.content,
-        transferType: payload.transferType,
-        transferAmount: payload.transferAmount,
-        accumulated: payload.accumulated,
-        subAccount: payload.subAccount,
+      // Tìm payment session đã tạo trước đó
+      const payment = await this.paymentModel.findOne({
         referenceCode: payload.referenceCode,
-        description: payload.description,
-      };
+      });
+      if (!payment) {
+        this.logger.error(
+          'Không tìm thấy payment session với referenceCode này!',
+        );
+        return { success: false, message: 'Không tìm thấy payment session' };
+      }
 
-      // Tạo bản ghi thanh toán mới
-      const payment = new this.paymentModel(paymentData);
+      // Cập nhật trạng thái/thông tin giao dịch nếu cần
+      // payment.status = 'paid'; // nếu có trường status
+      // payment.transactionDate = payload.transactionDate; // nếu muốn lưu thêm
       await payment.save();
 
-      this.logger.log(`Đã lưu thông tin giao dịch ID: ${payment._id}`);
-
-      // TODO: Xử lý dữ liệu giao dịch theo logic nghiệp vụ
-      // Ví dụ:
-      // 1. Kiểm tra giao dịch đã tồn tại chưa
-      // 2. Cập nhật trạng thái đơn hàng
-      // 3. Gửi thông báo cho người dùng
-
-      // Đoạn này sẽ thực hiện logic xử lý khi nhận webhook
-      // Ví dụ kiểm tra mã đơn hàng trong nội dung chuyển khoản và cập nhật trạng thái
-
-      if (payload.transferType === 'in') {
-        // Xử lý giao dịch tiền vào
-        this.logger.log(
-          `Giao dịch tiền vào: ${payload.transferAmount} VND từ ${payload.gateway}`,
-        );
-
-        // TODO: Cập nhật trạng thái thanh toán trong hệ thống
-      } else {
-        // Xử lý giao dịch tiền ra (nếu cần)
-        this.logger.log(
-          `Giao dịch tiền ra: ${payload.transferAmount} VND đến ${payload.gateway}`,
-        );
-      }
+      this.logger.log(`Đã cập nhật trạng thái giao dịch ID: ${payment._id}`);
 
       return {
         success: true,
@@ -151,5 +122,34 @@ export class SePayService {
         message: `Lỗi khi kiểm tra trạng thái thanh toán: ${error.message}`,
       };
     }
+  }
+
+  async createPaymentSession(amount: number, userId: string) {
+    const referenceCode = 'PAY' + Date.now() + Math.floor(Math.random() * 1000);
+    await this.paymentModel.create({
+      referenceCode,
+      transferAmount: amount,
+      userId,
+      description: userId,
+    });
+    return { referenceCode };
+  }
+
+  async getPaymentSession(referenceCode: string) {
+    const payment = await this.paymentModel.findOne({ referenceCode });
+    if (!payment) throw new NotFoundException('Không tìm thấy giao dịch');
+    const accountNumber = this.configService.get<string>(
+      'SEPAY_ACCOUNT_NUMBER',
+    );
+    const bankCode = this.configService.get<string>('SEPAY_BANK_CODE');
+    const encodedDescription = encodeURIComponent(payment.description || '');
+    const qrUrl = `https://qr.sepay.vn/img?acc=${accountNumber}&bank=${bankCode}&amount=${payment.transferAmount}&des=${encodedDescription}`;
+    return {
+      qrUrl,
+      amount: payment.transferAmount,
+      description: payment.description,
+      referenceCode: payment.referenceCode,
+      // status: payment.status, // nếu có
+    };
   }
 }

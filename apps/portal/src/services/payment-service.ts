@@ -9,6 +9,17 @@ export interface PaymentResult {
   message: string;
 }
 
+export interface PaymentSessionInfo {
+  qrUrl: string;
+  amount: number;
+  description: string;
+  referenceCode: string;
+}
+
+export interface CreateSessionResponse {
+  referenceCode: string;
+}
+
 export class PaymentService {
   /**
    * Tạo QR code cho thanh toán
@@ -52,5 +63,25 @@ export class PaymentService {
       console.error("Lỗi khi kiểm tra trạng thái thanh toán:", error);
       throw error;
     }
+  }
+
+  static async getPaymentSession(
+    referenceCode: string
+  ): Promise<PaymentSessionInfo> {
+    const response = await apiClient.get<PaymentSessionInfo>(
+      `/sepay/session/${referenceCode}`
+    );
+    return response.data;
+  }
+
+  static async createPaymentSession(
+    amount: number,
+    userId: string
+  ): Promise<CreateSessionResponse> {
+    const response = await apiClient.post<CreateSessionResponse>(
+      "/sepay/create-session",
+      { amount, userId }
+    );
+    return response.data;
   }
 }

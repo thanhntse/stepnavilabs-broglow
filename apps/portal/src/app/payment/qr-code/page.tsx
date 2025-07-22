@@ -1,123 +1,59 @@
 "use client";
 
-import { PaymentService } from "@/services/payment-service";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Button } from "primereact/button";
-import { Card } from "primereact/card";
-import { ProgressSpinner } from "primereact/progressspinner";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { PaymentService, PaymentSessionInfo } from "@/services/payment-service";
 
 export default function QRCodePage() {
-  const [qrUrl, setQrUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
-  const router = useRouter();
-
-  const amount = searchParams.get("amount");
-  const userId = searchParams.get("userId");
-  const referenceCode = searchParams.get("reference") || "";
+  const referenceCode = searchParams.get("ref");
+  const [session, setSession] = useState<PaymentSessionInfo | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const generateQR = async () => {
-      if (!amount || !userId) {
-        setError("Thiếu thông tin thanh toán");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        const response = await PaymentService.generateQRCode(
-          Number(amount),
-          userId
-        );
-        setQrUrl(response.qrUrl);
-      } catch (error) {
-        console.error("Lỗi khi tạo mã QR:", error);
-        setError("Không thể tạo mã QR thanh toán");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    generateQR();
-
-    // Thiết lập kiểm tra trạng thái thanh toán mỗi 5 giây
-    const interval = setInterval(async () => {
-      if (referenceCode) {
-        try {
-          const result = await PaymentService.checkPaymentStatus(referenceCode);
-          if (result.success) {
-            // Nếu thanh toán thành công, chuyển hướng đến trang kết quả
-            router.push(
-              `/payment/result?status=success&reference=${referenceCode}`
-            );
-          }
-        } catch (error) {
-          console.error("Lỗi khi kiểm tra trạng thái thanh toán:", error);
-        }
-      }
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [amount, userId, referenceCode, router]);
-
-  const handleCancel = () => {
-    router.back();
-  };
-
-  const header = (
-    <div className="text-center p-4">
-      <h2 className="text-xl font-bold mb-2">Thanh toán</h2>
-      <p className="text-sm text-gray-600">Quét mã QR dưới đây để thanh toán</p>
-    </div>
-  );
-
-  const footer = (
-    <div className="flex justify-center p-3">
-      <Button label="Hủy bỏ" outlined onClick={handleCancel} />
-    </div>
-  );
+    if (referenceCode) {
+      setLoading(true);
+      PaymentService.getPaymentSession(referenceCode)
+        .then((info) => {
+          setSession(info);
+          setError(null);
+        })
+        .catch(() => {
+          setError("Không tìm thấy giao dịch hoặc đã hết hạn.");
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [referenceCode]);
 
   return (
-    <div className="container py-8 max-w-md mx-auto">
-      <Card header={header} footer={footer} className="w-full">
-        <div className="flex flex-col items-center">
-          {loading ? (
-            <div className="flex items-center justify-center h-64">
-              <ProgressSpinner style={{ width: "50px", height: "50px" }} />
-              <span className="ml-2">Đang tạo mã QR...</span>
-            </div>
-          ) : error ? (
-            <div className="text-center text-red-500 py-8">{error}</div>
-          ) : (
-            <>
-              <div className="relative h-64 w-64 mb-4">
-                {qrUrl && (
-                  <img
-                    src={qrUrl}
-                    alt="QR Code Thanh toán"
-                    style={{ objectFit: "contain" }}
-                  />
-                )}
-              </div>
-              <div className="text-center mb-4">
-                <p className="font-medium">
-                  Số tiền:{" "}
-                  {new Intl.NumberFormat("vi-VN", {
-                    style: "currency",
-                    currency: "VND",
-                  }).format(Number(amount || 0))}
-                </p>
-                <p className="text-sm text-gray-500 mt-1">
-                  Quét mã QR bằng ứng dụng ngân hàng để thanh toán
-                </p>
-              </div>
-            </>
-          )}
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-8 px-2">
+      <h1 className="text-2xl font-bold mb-4 text-[var(--color-primary-blue)]">
+        Quét mã QR để thanh toán
+      </h1>
+      {loading && <div>Đang tải...</div>}
+      {error && <div className="text-red-500 font-semibold mb-4">{error}</div>}
+      {session && (
+        <div className="flex flex-col items-center gap-4 bg-white p-6 rounded-xl shadow-lg">
+          <img
+            src={session.qrUrl}
+            alt="QR Code"
+            className="w-64 h-64 object-contain border-2 border-[var(--color-primary-blue)] rounded-lg"
+          />
+          <div className="text-lg font-semibold text-gray-700">
+            Số tiền:{" "}
+            <span className="text-[var(--color-primary-blue)]">
+              {session.amount.toLocaleString("vi-VN")}đ
+            </span>
+          </div>
+          <div className="text-gray-500 text-sm">
+            Nội dung: {session.description}
+          </div>
+          <div className="text-xs text-gray-400">
+            Mã giao dịch: {session.referenceCode}
+          </div>
         </div>
-      </Card>
+      )}
     </div>
   );
 }

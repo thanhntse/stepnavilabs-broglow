@@ -1,5 +1,6 @@
+import { User } from '@api/users/schema/user.schema';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class Payment extends Document {
@@ -35,6 +36,9 @@ export class Payment extends Document {
 
   @Prop({ type: String, default: '' })
   description: string;
+
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
+  userId: User;
 }
 
 export const PaymentSchema = SchemaFactory.createForClass(Payment);

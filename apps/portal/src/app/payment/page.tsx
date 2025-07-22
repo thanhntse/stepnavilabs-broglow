@@ -4,6 +4,7 @@ import { useUserContext } from "@/context/profile-context";
 import { useRouter } from "next/navigation";
 import { Button } from "primereact/button";
 import { useState } from "react";
+import { PaymentService } from "@/services/payment-service";
 
 const features = [
   {
@@ -81,11 +82,15 @@ export default function SubscriptionPlans() {
   const { user } = useUserContext();
   const router = useRouter();
 
-  const handleUpgrade = () => {
+  const handleUpgrade = async () => {
     if (!user?._id) return;
     const plan = proPlans.find((p) => p.id === selectedProPlan);
     if (!plan) return;
-    router.push(`/payment/qr-code?amount=${plan.price}&userId=${user._id}`);
+    const { referenceCode } = await PaymentService.createPaymentSession(
+      plan.price,
+      user._id
+    );
+    router.push(`/payment/qr-code?ref=${referenceCode}`);
   };
 
   return (

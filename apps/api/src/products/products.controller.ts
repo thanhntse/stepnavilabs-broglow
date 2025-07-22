@@ -33,12 +33,19 @@ export class ProductsController {
   @Get()
   @ApiOperation({ summary: 'Get all products with pagination' })
   @ApiResponse({ status: 200, description: 'Return paginated products.' })
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (starts from 1)' })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Number of items per page (default: 10, max: 100)' })
-  findAll(
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,
-  ) {
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number (starts from 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Number of items per page (default: 10, max: 100)',
+  })
+  findAll(@Query('page') page: number = 1, @Query('limit') limit: number = 10) {
     limit = Math.min(limit, 100);
     return this.productsService.findAll(page, limit);
   }
@@ -49,8 +56,18 @@ export class ProductsController {
     status: 200,
     description: 'Return paginated products for a specific brand.',
   })
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (starts from 1)' })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Number of items per page (default: 10, max: 100)' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number (starts from 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Number of items per page (default: 10, max: 100)',
+  })
   findByBrand(
     @Param('brand') brand: string,
     @Query('page') page: number = 1,

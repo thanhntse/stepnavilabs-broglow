@@ -66,4 +66,14 @@ export class SePayController {
     this.logger.log(`Kiểm tra trạng thái thanh toán: ${referenceCode}`);
     return this.sePayService.checkPaymentStatus(referenceCode);
   }
+
+  @Post('create-session')
+  async createSession(@Body() body: { amount: number; userId: string }) {
+    return this.sePayService.createPaymentSession(body.amount, body.userId);
+  }
+
+  @Get('session/:referenceCode')
+  async getSession(@Param('referenceCode') referenceCode: string) {
+    return this.sePayService.getPaymentSession(referenceCode);
+  }
 }

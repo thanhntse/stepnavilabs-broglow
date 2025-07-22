@@ -16,7 +16,10 @@ export class ProductsService {
     return createdProduct.save();
   }
 
-  async findAll(page = 1, limit = 10): Promise<{ data: Product[]; total: number; page: number; limit: number }> {
+  async findAll(
+    page = 1,
+    limit = 10,
+  ): Promise<{ data: Product[]; total: number; page: number; limit: number }> {
     const skip = (page - 1) * limit;
     const [data, total] = await Promise.all([
       this.productModel.find().skip(skip).limit(limit).exec(),
@@ -31,7 +34,11 @@ export class ProductsService {
     };
   }
 
-  async findByBrand(brand: string, page = 1, limit = 10): Promise<{ data: Product[]; total: number; page: number; limit: number }> {
+  async findByBrand(
+    brand: string,
+    page = 1,
+    limit = 10,
+  ): Promise<{ data: Product[]; total: number; page: number; limit: number }> {
     const skip = (page - 1) * limit;
     const [data, total] = await Promise.all([
       this.productModel.find({ brand }).skip(skip).limit(limit).exec(),
