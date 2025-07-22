@@ -61,13 +61,14 @@ export class SePayService {
   ): Promise<SePayWebhookResponse> {
     try {
       this.logger.log(`Nhận webhook từ SePay: ${JSON.stringify(payload)}`);
-      this.logger.log(
-        `Reference code: ${payload.description.split('  ')[2].split(' ')[0].trim()}`,
-      );
+      // Lọc referenceCode từ description bằng regex
+      const match = payload.description.match(/PAY\d+/);
+      const referenceCode = match ? match[0] : null;
+      this.logger.log(`Reference code: ${referenceCode}`);
       // Tìm payment session đã tạo trước đó
-      const payment = await this.paymentModel.findOne({
-        referenceCode: payload.description.split('  ')[2].split(' ')[0].trim(),
-      });
+      const payment = referenceCode
+        ? await this.paymentModel.findOne({ referenceCode })
+        : null;
       if (!payment) {
         this.logger.error(
           'Không tìm thấy payment session với referenceCode này!',
