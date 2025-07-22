@@ -34,7 +34,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     profile: any,
     done: VerifyCallback,
   ): Promise<any> {
-    let user = await this.userModel.findOne({ googleId: profile.id }).exec();
+    let user = await this.userModel
+      .findOne({ email: profile.emails[0].value })
+      .exec();
 
     if (!user) {
       const userRole = await this.roleService.findOneByName('user');
@@ -85,7 +87,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     }
 
     user = await this.userModel
-      .findOne({ googleId: profile.id })
+      .findOne({ email: profile.emails[0].value })
       .select(
         'id firstName lastName email avatar createdAt updatedAt proExpiresAt',
       )
@@ -94,6 +96,13 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         populate: { path: 'permissions' },
       })
       .exec();
+
+    if (user && !user.googleId) {
+      user.googleId = profile.id;
+      user.avatar = profile.photos[0].value;
+      user.isEmailVerified = true;
+      await user.save();
+    }
 
     done(null, { ...user?.toObject(), accessToken });
   }
