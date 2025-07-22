@@ -63,6 +63,7 @@ function formatVND(amount: number) {
 export default function SubscriptionPlans() {
   const [selectedProPlan, setSelectedProPlan] = useState("monthly");
   const { user } = useUserContext();
+  const isPro = user?.proExpiresAt && new Date(user?.proExpiresAt?.toString() || "").getTime() > new Date().getTime();
   const router = useRouter();
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
 
@@ -93,7 +94,9 @@ export default function SubscriptionPlans() {
           <div className="text-[var(--color-primary-blue)] text-2xl font-bold mb-1">
             Miễn Phí
           </div>
-          <div className="text-gray-500 text-sm mb-4">(Gói hiện tại)</div>
+          {!isPro && (
+            <div className="text-gray-500 text-sm mb-4">(Gói hiện tại)</div>
+          )}
           <ul className="w-full mb-6">
             {features.map((f, idx) => (
               <li
@@ -118,8 +121,15 @@ export default function SubscriptionPlans() {
         <div className="flex-1 bg-gradient-to-b from-[var(--color-primary-blue)] to-[var(--color-primary-lightblue)] rounded-2xl p-1 shadow-lg">
           <div className="bg-white rounded-2xl p-6 flex flex-col items-center min-h-full">
             <div className="text-[var(--color-primary-blue)] text-2xl font-bold mb-1">
-              PRO
+              {
+                isPro ? "Gia hạn gói PRO" : "PRO"
+              }
             </div>
+            {
+              isPro && (
+                <div className="text-gray-500 text-sm mb-4">(Gói hiện tại)</div>
+              )
+            }
             {/* Plan options */}
             {subscriptions.length > 0 ? (
             <div className="w-full flex flex-col gap-2 mb-4">
