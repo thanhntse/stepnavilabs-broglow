@@ -86,7 +86,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
 
     user = await this.userModel
       .findOne({ googleId: profile.id })
-      .select('id firstName lastName email avatar createdAt updatedAt')
+      .select(
+        'id firstName lastName email avatar createdAt updatedAt proExpiresAt',
+      )
       .populate({
         path: 'roles',
         populate: { path: 'permissions' },

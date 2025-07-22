@@ -51,6 +51,7 @@ export default function Header({
   const { t } = useLanguage();
 
   const { user, addUser, clearUser } = useUserContext();
+  const isPro = user?.proExpiresAt && new Date(user?.proExpiresAt?.toString() || "").getTime() > new Date().getTime();
 
   // Fetch prompt count
   const fetchPromptCount = async () => {
@@ -228,11 +229,10 @@ export default function Header({
     <>
       <div className="w-full bg-white/95 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-40">
         <header
-          className={`${
-            variant !== "home"
+          className={`${variant !== "home"
               ? "sticky top-0 bg-white/95 backdrop-blur-sm z-40"
               : ""
-          } w-full flex justify-between items-center py-4 lg:py-5 px-4 md:px-6 lg:px-8 xl:px-12 max-w-7xl mx-auto ${className}`}
+            } w-full flex justify-between items-center py-4 lg:py-5 px-4 md:px-6 lg:px-8 xl:px-12 max-w-7xl mx-auto ${className}`}
         >
           <div className="flex items-center gap-3 lg:gap-8">
             <button
@@ -305,10 +305,10 @@ export default function Header({
                     <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-50 to-orange-100 rounded-full border border-orange-200">
                       <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
                       <span className="text-sm font-semibold text-orange-700">
-                        {10 - promptCount}/10
+                        {isPro ? "Pro" : `${10 - promptCount}/10`}
                       </span>
                       <span className="text-xs text-orange-600">
-                        {t("common.freeDaily")}
+                        {isPro ? t("common.unlimited") : t("common.freeDaily")}
                       </span>
                     </div>
                     {/* User Menu */}
@@ -457,7 +457,7 @@ export default function Header({
                           <div className="w-3 h-3 bg-orange-400 rounded-full animate-pulse"></div>
                           <div className="flex-1">
                             <div className="text-sm font-semibold text-orange-700">
-                              {10 - promptCount}/10 {t("common.freeDaily")}
+                              {isPro ? "Pro " + t("common.unlimited") : `${10 - promptCount}/10 ${t("common.freeDaily")}`}
                             </div>
                           </div>
                         </div>

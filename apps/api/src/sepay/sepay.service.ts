@@ -9,6 +9,8 @@ import {
   SePayWebhookResponse,
 } from './interfaces/sepay.interface';
 import { Payment } from './schema/payment.schema';
+import { User } from '@api/users/schema/user.schema';
+import { Subscription } from '@api/subscription/schema/subscription.schema';
 
 @Injectable()
 export class SePayService {
@@ -17,6 +19,9 @@ export class SePayService {
   constructor(
     private configService: ConfigService,
     @InjectModel(Payment.name) private paymentModel: Model<Payment>,
+    @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(Subscription.name)
+    private subscriptionModel: Model<Subscription>,
   ) {}
 
   /**
@@ -74,6 +79,32 @@ export class SePayService {
       payment.status = 'paid';
       payment.transactionDate = new Date().toISOString();
       await payment.save();
+
+      const user = await this.userModel.findById(payment.userId.toString());
+      if (!user) {
+        this.logger.error('Không tìm thấy user với ID: ' + payment.userId);
+        return { success: false, message: 'Không tìm thấy user' };
+      }
+
+      const subscription = await this.subscriptionModel.findOne({
+        price: payment.transferAmount,
+      });
+      if (!subscription) {
+        this.logger.error('Không tìm thấy subscription với amount này!');
+        return { success: false, message: 'Không tìm thấy subscription' };
+      }
+
+      if (user.proExpiresAt && user.proExpiresAt > new Date()) {
+        user.proExpiresAt = new Date(
+          user.proExpiresAt.getTime() +
+            subscription.duration * 24 * 60 * 60 * 1000,
+        );
+      } else {
+        user.proExpiresAt = new Date(
+          Date.now() + subscription.duration * 24 * 60 * 60 * 1000,
+        );
+      }
+      await user.save();
 
       this.logger.log(`Đã cập nhật trạng thái giao dịch ID: ${payment._id}`);
 

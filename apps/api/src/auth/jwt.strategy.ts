@@ -30,7 +30,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     const user = await this.userModel
       .findById(payload.sub)
-      .select('id firstName lastName email avatar createdAt updatedAt')
+      .select(
+        'id firstName lastName email avatar createdAt updatedAt proExpiresAt',
+      )
       .populate({
         path: 'roles',
         populate: {

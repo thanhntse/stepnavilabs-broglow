@@ -110,7 +110,8 @@
     "returnToLoginPage": "Quay lại trang đăng nhập",
     "createdAt": "Ngày tạo",
     "updatedAt": "Ngày cập nhật",
-    "uploadAvatar": "Tải ảnh lên"
+    "uploadAvatar": "Tải ảnh lên",
+    "unlimited": "Không giới hạn"
   },
   "errors": {
     "requiredField": "Trường này không được để trống",

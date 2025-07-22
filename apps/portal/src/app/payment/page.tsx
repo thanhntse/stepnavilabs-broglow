@@ -3,8 +3,9 @@
 import { useUserContext } from "@/context/profile-context";
 import { useRouter } from "next/navigation";
 import { Button } from "primereact/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PaymentService } from "@/services/payment-service";
+import { SubscriptionService } from "@/services/subscription-service";
 
 const features = [
   {
@@ -49,29 +50,11 @@ const features = [
   },
 ];
 
-const proPlans = [
-  {
-    id: "weekly",
-    label: "Hàng tuần",
-    price: 19000,
-    original: 127000,
-    popular: false,
-  },
-  {
-    id: "monthly",
-    label: "Hàng tháng",
-    price: 38000,
-    original: 255000,
-    popular: true,
-  },
-  {
-    id: "yearly",
-    label: "Hàng năm",
-    price: 192000,
-    original: 1276000,
-    popular: false,
-  },
-];
+const subscriptionType = {
+  weekly: "Hàng tuần",
+  monthly: "Hàng tháng",
+  yearly: "Hàng năm",
+};
 
 function formatVND(amount: number) {
   return amount.toLocaleString("vi-VN") + "đ";
@@ -81,10 +64,19 @@ export default function SubscriptionPlans() {
   const [selectedProPlan, setSelectedProPlan] = useState("monthly");
   const { user } = useUserContext();
   const router = useRouter();
+  const [subscriptions, setSubscriptions] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchSubscriptions = async () => {
+      const subscriptions = await SubscriptionService.getSubscription();
+      setSubscriptions(subscriptions as any);
+    };
+    fetchSubscriptions();
+  }, []);
 
   const handleUpgrade = async () => {
     if (!user?._id) return;
-    const plan = proPlans.find((p) => p.id === selectedProPlan);
+    const plan = subscriptions.find((p: any ) => p._id === selectedProPlan);
     if (!plan) return;
     const { referenceCode } = await PaymentService.createPaymentSession(
       plan.price,
@@ -129,12 +121,13 @@ export default function SubscriptionPlans() {
               PRO
             </div>
             {/* Plan options */}
+            {subscriptions.length > 0 ? (
             <div className="w-full flex flex-col gap-2 mb-4">
-              {proPlans.map((plan) => (
+              {subscriptions.map((plan) => (
                 <label
-                  key={plan.id}
+                  key={plan._id}
                   className={`flex items-center justify-between border rounded-lg px-4 py-2 cursor-pointer transition-all relative ${
-                    selectedProPlan === plan.id
+                    selectedProPlan === plan._id
                       ? "border-[var(--color-primary-blue)] bg-[var(--color-primary-pastel)]"
                       : "border-gray-300 hover:border-[var(--color-primary-blue)]"
                   }`}
@@ -143,29 +136,34 @@ export default function SubscriptionPlans() {
                     <input
                       type="radio"
                       name="proPlan"
-                      value={plan.id}
-                      checked={selectedProPlan === plan.id}
-                      onChange={() => setSelectedProPlan(plan.id)}
+                      value={plan._id}
+                      checked={selectedProPlan === plan._id}
+                      onChange={() => setSelectedProPlan(plan._id)}
                       className="accent-[var(--color-primary-blue)] mr-3"
                     />
-                    <span className="font-medium mr-2">{plan.label}</span>
+                    <span className="font-medium mr-2">{subscriptionType[plan.type as keyof typeof subscriptionType]}</span>
                   </div>
                   <div className="flex flex-col items-end min-w-[120px]">
                     <div className="flex items-center gap-2">
                       <span className="text-gray-400 line-through text-sm">
-                        {formatVND(plan.original)}
+                        {formatVND(plan.price)}
                       </span>
                       <span className="text-[var(--color-primary-blue)] font-bold text-lg">
-                        {formatVND(plan.price)}
+                        {formatVND(plan.price * (1 - plan.discount / 100))}
                       </span>
                     </div>
                     <span className="text-xs text-green-600 font-semibold mt-0.5">
-                      Giảm 85%
+                      {plan.discount ? `Giảm ${plan.discount}%` : ""}
                     </span>
                   </div>
                 </label>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-gray-500 text-sm mb-4">
+                Đang tải gói nâng cấp...
+              </div>
+            )}
             {/* Features */}
             <ul className="w-full mb-6 mt-2">
               {features.map((f, idx) => (

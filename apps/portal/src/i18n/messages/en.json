@@ -110,7 +110,8 @@
     "returnToLoginPage": "Return to Login Page",
     "createdAt": "Created At",
     "updatedAt": "Updated At",
-    "uploadAvatar": "Upload Avatar"
+    "uploadAvatar": "Upload Avatar",
+    "unlimited": "Unlimited"
   },
   "errors": {
     "requiredField": "This field is required",

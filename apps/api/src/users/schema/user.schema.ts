@@ -44,6 +44,9 @@ export class User {
 
   @Prop({ default: 10 })
   dailyPromptLimit: number;
+
+  @Prop()
+  proExpiresAt?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -24,16 +24,22 @@ export class AILimitInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest();
     const user = await this.userService.findOne(request.user.id);
 
-    const allowed = await this.openaiService.incrementUsage(
-      user as UserDocument,
-      user.dailyPromptLimit,
-    );
+    const isPro =
+      user.proExpiresAt &&
+      new Date(user.proExpiresAt.toString()).getTime() > new Date().getTime();
 
-    if (!allowed) {
-      throw new CustomForbiddenException(
-        'You have used all your free credits today. Please try again tomorrow or upgrade your plan.',
-        'dailyLimitExceeded',
+    if (!isPro) {
+      const allowed = await this.openaiService.incrementUsage(
+        user as UserDocument,
+        user.dailyPromptLimit,
       );
+
+      if (!allowed) {
+        throw new CustomForbiddenException(
+          'You have used all your free credits today. Please try again tomorrow or upgrade your plan.',
+          'dailyLimitExceeded',
+        );
+      }
     }
 
     return next.handle();
