@@ -230,11 +230,11 @@ export default function Header({
       <div className="w-full bg-white/95 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-40">
         <header
           className={`${variant !== "home"
-              ? "sticky top-0 bg-white/95 backdrop-blur-sm z-40"
-              : ""
+            ? "sticky top-0 bg-white/95 backdrop-blur-sm z-40"
+            : ""
             } w-full flex justify-between items-center py-4 lg:py-5 px-4 md:px-6 lg:px-8 xl:px-12 max-w-7xl mx-auto ${className}`}
         >
-          <div className="flex items-center gap-3 lg:gap-8">
+          <div className="flex items-center gap-3 lg:gap-8 w-full md:w-auto">
             <button
               className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
               onClick={() => setIsMobileMenuOpen(true)}
@@ -252,6 +252,16 @@ export default function Header({
                 className="cursor-pointer transition-transform duration-200 hover:scale-105"
                 onClick={() => router.push("/")}
               />
+            </div>
+
+            <div className="md:hidden flex-1 flex justify-end">
+              <Link
+                href="/payment"
+                className="flex items-center w-fit px-2 py-1 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-white font-bold shadow-lg hover:scale-105 transition-all border-2 border-yellow-300"
+                style={{ fontSize: 15 }}
+              >
+                <span className="text-lg">⚡</span>
+              </Link>
             </div>
 
             {/* Desktop Navigation - Visible on desktop, hidden on mobile */}
