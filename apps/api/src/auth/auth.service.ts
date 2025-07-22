@@ -41,7 +41,7 @@ export class AuthService {
 
     // Check if user exists
     const existingUser = await this.userModel.findOne({ email });
-    if (existingUser) {
+    if (existingUser && existingUser.isEmailVerified) {
       throw new CustomUnauthorizedException(
         'User with this email already exists',
         'userAlreadyExists',
@@ -55,17 +55,27 @@ export class AuthService {
     // Generate verification token
     const verificationToken = uuidv4();
 
-    // Create new user with verification token and unverified status
-    const user = new this.userModel({
-      firstName,
-      lastName,
-      email,
-      password: hashedPassword,
-      roles: userRole ? [userRole] : [],
-      isEmailVerified: false,
-      verificationToken,
-    });
-    await user.save();
+    if (existingUser && !existingUser.isEmailVerified) {
+      existingUser.firstName = firstName;
+      existingUser.lastName = lastName;
+      existingUser.verificationToken = verificationToken;
+      existingUser.isEmailVerified = false;
+      existingUser.password = hashedPassword;
+      existingUser.roles = userRole ? [userRole] : [];
+      await existingUser.save();
+    } else {
+      // Create new user with verification token and unverified status
+      const user = new this.userModel({
+        firstName,
+        lastName,
+        email,
+        password: hashedPassword,
+        roles: userRole ? [userRole] : [],
+        isEmailVerified: false,
+        verificationToken,
+      });
+      await user.save();
+    }
 
     // Generate verification URL
     const publicUrl = this.configService.get('PUBLIC_URL') || '';
