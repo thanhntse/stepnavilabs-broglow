@@ -39,6 +39,13 @@ export class Payment extends Document {
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
   userId: User;
+
+  @Prop({
+    type: String,
+    enum: ['pending', 'paid', 'failed'],
+    default: 'pending',
+  })
+  status: string;
 }
 
 export const PaymentSchema = SchemaFactory.createForClass(Payment);

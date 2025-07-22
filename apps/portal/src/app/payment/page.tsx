@@ -94,7 +94,7 @@ export default function SubscriptionPlans() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--color-primary-pastel)] py-8 px-2 flex flex-col items-center">
+    <div className="min-h-[calc(100vh-100px)] bg-[var(--color-primary-pastel)] py-8 px-2 flex flex-col items-center">
       <div className="flex flex-col md:flex-row gap-8 w-full max-w-4xl justify-center">
         {/* Free Plan */}
         <div className="flex-1 bg-white border-2 border-[var(--color-primary-blue)] rounded-2xl p-6 flex flex-col items-center shadow-sm">

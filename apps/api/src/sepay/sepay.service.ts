@@ -55,11 +55,13 @@ export class SePayService {
     payload: SePayWebhookPayload,
   ): Promise<SePayWebhookResponse> {
     try {
-      this.logger.log(`Nhận webhook từ SePay: ID giao dịch ${payload.id}`);
-
+      this.logger.log(`Nhận webhook từ SePay: ${JSON.stringify(payload)}`);
+      this.logger.log(
+        `Reference code: ${payload.description.split('  ')[2].split(' ')[0].trim()}`,
+      );
       // Tìm payment session đã tạo trước đó
       const payment = await this.paymentModel.findOne({
-        referenceCode: payload.referenceCode,
+        referenceCode: payload.description.split('  ')[2].split(' ')[0].trim(),
       });
       if (!payment) {
         this.logger.error(
@@ -69,8 +71,8 @@ export class SePayService {
       }
 
       // Cập nhật trạng thái/thông tin giao dịch nếu cần
-      // payment.status = 'paid'; // nếu có trường status
-      // payment.transactionDate = payload.transactionDate; // nếu muốn lưu thêm
+      payment.status = 'paid';
+      payment.transactionDate = new Date().toISOString();
       await payment.save();
 
       this.logger.log(`Đã cập nhật trạng thái giao dịch ID: ${payment._id}`);
@@ -103,14 +105,20 @@ export class SePayService {
       if (!payment) {
         return {
           success: false,
-          message: 'Không tìm thấy giao dịch',
+          message: 'Payment not found',
         };
       }
 
-      // Giao dịch đã tồn tại, xác nhận thanh toán thành công
+      if (payment.status === 'paid') {
+        return {
+          success: true,
+          message: 'The transaction has been paid successfully.',
+        };
+      }
+
       return {
-        success: true,
-        message: 'Giao dịch đã được thanh toán thành công',
+        success: false,
+        message: 'Payment not paid',
       };
     } catch (error) {
       this.logger.error(
@@ -130,7 +138,7 @@ export class SePayService {
       referenceCode,
       transferAmount: amount,
       userId,
-      description: userId,
+      description: referenceCode,
     });
     return { referenceCode };
   }
