@@ -111,7 +111,9 @@
     "createdAt": "Ngày tạo",
     "updatedAt": "Ngày cập nhật",
     "uploadAvatar": "Tải ảnh lên",
-    "unlimited": "Không giới hạn"
+    "unlimited": "Không giới hạn",
+    "currentPlan": "Gói hiện tại",
+    "proExpiresAt": "Ngày hết hạn"
   },
   "errors": {
     "requiredField": "Trường này không được để trống",

@@ -111,7 +111,9 @@
     "createdAt": "Created At",
     "updatedAt": "Updated At",
     "uploadAvatar": "Upload Avatar",
-    "unlimited": "Unlimited"
+    "unlimited": "Unlimited",
+    "currentPlan": "Current Plan",
+    "proExpiresAt": "Pro Expires At"
   },
   "errors": {
     "requiredField": "This field is required",

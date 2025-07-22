@@ -9,11 +9,15 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import { Toast } from "primereact/toast";
+import { AIService } from "@/services/AI-service";
+import { TokenStorage } from "@/lib/token-storage";
 
 export default function ProfilePage() {
   const { t } = useLanguage();
   const toast = useRef<Toast>(null);
   const { user, addUser } = useUserContext();
+  const [promptCount, setPromptCount] = useState<number>(0);
+  const isPro = user?.proExpiresAt && new Date(user?.proExpiresAt?.toString() || "").getTime() > new Date().getTime();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -29,6 +33,21 @@ export default function ProfilePage() {
   });
   const [avatarPreview, setAvatarPreview] = useState<string>("");
 
+  const fetchPromptCount = async () => {
+    const tokens = TokenStorage.getTokens();
+    if (tokens) {
+      try {
+        const prompt = await AIService.getAIUsage();
+        setPromptCount(prompt.data);
+        return prompt.data;
+      } catch (error) {
+        console.error("Failed to fetch prompt count:", error);
+        return 0;
+      }
+    }
+    return 0;
+  };
+
   useEffect(() => {
     if (user) {
       setFormData({
@@ -38,6 +57,7 @@ export default function ProfilePage() {
         avatar: user.avatar || "",
       });
       setAvatarPreview(user.avatar || "");
+      fetchPromptCount();
     }
   }, [user]);
 
@@ -335,6 +355,32 @@ export default function ProfilePage() {
 
                 {/* Account Actions */}
                 <div className="space-y-4">
+
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1">
+                      <h2 className="text-lg font-semibold text-gray-900">{t("common.currentPlan")}</h2>
+                      <p className="px-4 py-3 bg-gray-50 rounded-lg text-gray-900">
+                        {isPro
+                          ? "Pro " + t("common.unlimited")
+                          : "Free " + `${10 - promptCount}/10 ` + t("common.freeDaily")}
+                      </p>
+                    </div>
+                    <div className="flex-1">
+                      <h2 className="text-lg font-semibold text-gray-900">{t("common.proExpiresAt")}</h2>
+                      <p className="px-4 py-3 bg-gray-50 rounded-lg text-gray-900">
+                        {isPro && user.proExpiresAt
+                          ? new Date(user.proExpiresAt).toLocaleDateString('vi-VN', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                          })
+                          : t("common.loading")}
+                      </p>
+                    </div>
+                  </div>
 
                   <h2 className="text-lg font-semibold text-gray-900">{t("common.createdAt")}</h2>
                   <p className="px-4 py-3 bg-gray-50 rounded-lg text-gray-900">
