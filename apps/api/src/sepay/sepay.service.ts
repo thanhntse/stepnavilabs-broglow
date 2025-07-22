@@ -62,7 +62,7 @@ export class SePayService {
     try {
       this.logger.log(`Nhận webhook từ SePay: ${JSON.stringify(payload)}`);
       // Lọc referenceCode từ description: chỉ lấy PAY + 16 số
-      const match = payload.description.match(/PAY\d{15}/);
+      const match = payload.description.match(/PAY\d{11,}/);
       const referenceCode = match ? match[0] : null;
       this.logger.log(`Reference code: ${referenceCode}`);
       // Tìm payment session đã tạo trước đó
