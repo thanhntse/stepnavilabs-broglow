@@ -76,4 +76,9 @@ export class SePayController {
   async getSession(@Param('referenceCode') referenceCode: string) {
     return this.sePayService.getPaymentSession(referenceCode);
   }
+
+  @Post('update-miss-payment')
+  async updateMissPayment(@Body() body: { referenceCode: string }) {
+    return this.sePayService.updateMissPayment(body.referenceCode);
+  }
 }

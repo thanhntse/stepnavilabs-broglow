@@ -192,4 +192,40 @@ export class SePayService {
       // status: payment.status, // nếu có
     };
   }
+
+  async updateMissPayment(referenceCode: string) {
+    const payment = await this.paymentModel.findOne({ referenceCode });
+    if (!payment) throw new NotFoundException('Không tìm thấy giao dịch');
+    // Cập nhật trạng thái/thông tin giao dịch nếu cần
+    payment.status = 'paid';
+    payment.transactionDate = new Date().toISOString();
+    await payment.save();
+
+    const user = await this.userModel.findById(payment.userId.toString());
+    if (!user) {
+      this.logger.error('Không tìm thấy user với ID: ' + payment.userId);
+      return { success: false, message: 'Không tìm thấy user' };
+    }
+
+    const subscription = await this.subscriptionModel.findOne({
+      price: (payment.transferAmount / (1 - 85 / 100)).toFixed(0),
+    });
+    if (!subscription) {
+      this.logger.error('Không tìm thấy subscription với amount này!');
+      return { success: false, message: 'Không tìm thấy subscription' };
+    }
+
+    if (user.proExpiresAt && user.proExpiresAt > new Date()) {
+      user.proExpiresAt = new Date(
+        user.proExpiresAt.getTime() +
+          subscription.duration * 24 * 60 * 60 * 1000,
+      );
+    } else {
+      user.proExpiresAt = new Date(
+        Date.now() + subscription.duration * 24 * 60 * 60 * 1000,
+      );
+    }
+    await user.save();
+    return { success: true, message: 'Đã cập nhật trạng thái giao dịch' };
+  }
 }
