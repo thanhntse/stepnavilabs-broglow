@@ -79,7 +79,7 @@ export default function SubscriptionPlans() {
     const plan = subscriptions.find((p: any ) => p._id === selectedProPlan);
     if (!plan) return;
     const { referenceCode } = await PaymentService.createPaymentSession(
-      plan.price * (1 - plan.discount / 100),
+      Number((plan.price * (1 - plan.discount / 100)).toFixed(0)),
       user._id
     );
     router.push(`/payment/qr-code?ref=${referenceCode}`);
