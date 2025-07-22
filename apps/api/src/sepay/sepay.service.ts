@@ -61,8 +61,8 @@ export class SePayService {
   ): Promise<SePayWebhookResponse> {
     try {
       this.logger.log(`Nhận webhook từ SePay: ${JSON.stringify(payload)}`);
-      // Lọc referenceCode từ description bằng regex
-      const match = payload.description.match(/PAY\d+/);
+      // Lọc referenceCode từ description: chỉ lấy PAY + 16 số
+      const match = payload.description.match(/PAY\d{15}/);
       const referenceCode = match ? match[0] : null;
       this.logger.log(`Reference code: ${referenceCode}`);
       // Tìm payment session đã tạo trước đó
