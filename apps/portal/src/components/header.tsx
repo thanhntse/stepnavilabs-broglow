@@ -6,7 +6,9 @@ import { useUserContext } from "@/context/profile-context";
 import { TokenStorage } from "@/lib/token-storage";
 import { AIService } from "@/services/AI-service";
 import { AuthService } from "@/services/auth-service";
+import { SkinProfile, SkinProfileService } from "@/services/skin-profile-service";
 import { DEFAULT_PUBLIC_ROUTE, publicOnlyRoutes } from "@/utils/auth-routes";
+import { ArrowRight, Bell, Calendar, Users } from "@phosphor-icons/react";
 import {
   Clock,
   List,
@@ -44,6 +46,8 @@ export default function Header({
   const [promptCount, setPromptCount] = useState<number>(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [skinProfile, setSkinProfile] = useState<SkinProfile | null>(null);
+  const [isSkinProfileLoading, setIsSkinProfileLoading] = useState<boolean>(true);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -78,6 +82,14 @@ export default function Header({
           const user = await AuthService.getUserProfile();
           addUser(user);
           await fetchPromptCount();
+          try {
+            const skinProfile = await SkinProfileService.getUserSkinProfile();
+            setSkinProfile(skinProfile);
+          } catch (error) {
+            console.error("Failed to get skin profile:", error);
+          } finally {
+            setIsSkinProfileLoading(false);
+          }
         } catch (error) {
           console.error("Failed to get user profile:", error);
         }
@@ -191,11 +203,42 @@ export default function Header({
           onClick={() => router.push("/routine")}
           className="py-3 px-4 cursor-pointer hover:bg-gray-50 text-primary-dark rounded-xl !w-full transition-colors duration-200 flex items-center gap-3 group"
         >
-          <Clock
+          <Calendar
             size={18}
             className="text-primary-blue group-hover:scale-110 transition-transform duration-200"
           />
           <span className="font-medium">{t("common.routine")}</span>
+        </div>
+      ),
+    },
+    { separator: true },
+    {
+      label: t("common.notification"),
+      template: () => (
+        <div
+          onClick={() => router.push("/notifications")}
+          className="py-3 px-4 cursor-pointer hover:bg-gray-50 text-primary-dark rounded-xl !w-full transition-colors duration-200 flex items-center gap-3 group"
+        >
+          <Bell
+            size={18}
+            className="text-primary-blue group-hover:scale-110 transition-transform duration-200"
+          />
+          <span className="font-medium">{t("common.notification")}</span>
+        </div>
+      ),
+    },
+    {
+      label: t("common.community"),
+      template: () => (
+        <div
+          onClick={() => router.push("/blog")}
+          className="py-3 px-4 cursor-pointer hover:bg-gray-50 text-primary-dark rounded-xl !w-full transition-colors duration-200 flex items-center gap-3 group"
+        >
+          <Users
+            size={18}
+            className="text-primary-blue group-hover:scale-110 transition-transform duration-200"
+          />
+          <span className="font-medium">{t("common.community")}</span>
         </div>
       ),
     },
@@ -234,7 +277,7 @@ export default function Header({
             : ""
             } w-full flex justify-between items-center py-4 lg:py-5 px-4 md:px-6 lg:px-8 xl:px-12 max-w-7xl mx-auto ${className}`}
         >
-          <div className="flex items-center gap-3 lg:gap-8 w-full md:w-auto">
+          <div className="flex items-center gap-3 lg:gap-8 w-full lg:w-auto">
             <button
               className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
               onClick={() => setIsMobileMenuOpen(true)}
@@ -254,7 +297,7 @@ export default function Header({
               />
             </div>
 
-            <div className="md:hidden flex-1 flex justify-end">
+            <div className="lg:hidden flex-1 flex justify-end">
               <Link
                 href="/payment"
                 className="flex items-center w-fit px-2 py-1 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-white font-bold shadow-lg hover:scale-105 transition-all border-2 border-yellow-300"
@@ -293,7 +336,7 @@ export default function Header({
           </div>
 
           {/* Desktop user info - Visible on desktop, hidden on mobile */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden lg:flex items-center gap-4">
             <LanguageSwitcher variant={variant} />
 
             {!isLoading && (
@@ -380,6 +423,19 @@ export default function Header({
             )}
           </div>
         </header>
+        {
+          !isSkinProfileLoading && !skinProfile && pathname.includes("/thread") && (
+            <div className="w-full bg-gradient-to-r from-orange-50 to-orange-100 backdrop-blur-sm border border-orange-200 sticky top-0 z-40">
+              <div className="flex flex-col lg:flex-row items-center justify-center py-4 gap-4 lg:gap-10">
+                <h1 className="text-base font-medium text-center px-4">{t("common.plsCompleteSkinProfile")}</h1>
+                <button className="bg-white text-primary-dark font-semibold px-6 py-2.5 rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-200 ease-out cursor-pointer flex items-center gap-2 border border-orange-200" onClick={() => router.push("/skin-profile")}>
+                  {t("common.go")}
+                  <ArrowRight size={16} />
+                </button>
+              </div>
+            </div>
+          )
+        }
       </div>
 
       {/* Mobile Menu Overlay */}
@@ -418,29 +474,6 @@ export default function Header({
 
               {/* Menu Items */}
               <div className="flex-1 flex flex-col p-6 gap-6">
-                {/* Navigation Links */}
-                <div className="flex flex-col gap-2">
-                  <button
-                    onClick={() => {
-                      router.push("/");
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="text-left py-4 px-4 font-semibold text-lg hover:bg-gray-50 rounded-xl transition-colors duration-200 flex items-center gap-3"
-                  >
-                    <div className="w-2 h-2 bg-primary-blue rounded-full"></div>
-                    {t("common.home")}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="text-left py-4 px-4 font-semibold text-lg hover:bg-gray-50 rounded-xl transition-colors duration-200 flex items-center gap-3"
-                  >
-                    <div className="w-2 h-2 bg-primary-orange rounded-full"></div>
-                    BroGlow AI
-                  </button>
-                </div>
-
                 {/* Create New Button */}
                 {showCreateNew &&
                   !pathname.includes("/thread") &&
@@ -535,6 +568,30 @@ export default function Header({
                               <Clock size={18} className="text-primary-blue" />
                               <span className="font-medium">
                                 {t("common.recentPosts")}
+                              </span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                router.push("/notifications");
+                                setIsMobileMenuOpen(false);
+                              }}
+                              className="w-full text-left py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center gap-3"
+                            >
+                              <Bell size={18} className="text-primary-blue" />
+                              <span className="font-medium">
+                                {t("common.notification")}
+                              </span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                router.push("/blog");
+                                setIsMobileMenuOpen(false);
+                              }}
+                              className="w-full text-left py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center gap-3"
+                            >
+                              <Users size={18} className="text-primary-blue" />
+                              <span className="font-medium">
+                                {t("common.community")}
                               </span>
                             </button>
                             <button

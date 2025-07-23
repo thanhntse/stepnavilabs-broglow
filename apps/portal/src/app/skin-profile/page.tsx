@@ -3,12 +3,16 @@
 import { useLanguage } from "@/context/language-context";
 import { SkinProfileService, SkinQuestion, SkinProfileAnswer, SubmitSkinProfileDto, SkinProfile } from "@/services/skin-profile-service";
 import { ArrowLeft, ArrowRight, CheckCircle, Sparkle } from "@phosphor-icons/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { Toast } from "primereact/toast";
+import { useRouter } from "next/navigation";
 
 export default function SkinProfilePage() {
   const { t } = useLanguage();
-  const { showSuccess, showError } = useToast();
+  const { showError } = useToast();
+  const toast = useRef<Toast>(null);
+  const router = useRouter();
 
   const [questions, setQuestions] = useState<SkinQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -82,7 +86,11 @@ export default function SkinProfilePage() {
       const profile = await SkinProfileService.submitSkinProfile(submitData);
       setUserProfile(profile);
       setShowResults(true);
-      showSuccess({ detail: t("errors.skinProfileSubmitted") });
+      toast.current?.show({ severity: "success", summary: t("errors.skinProfileSubmitted"), life: 3000 });
+      router.push("/thread");
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (error) {
       console.error("Error submitting skin profile:", error);
       showError({ detail: t("errors.failedToSubmitSkinProfile") });
@@ -98,7 +106,7 @@ export default function SkinProfilePage() {
       setShowResults(false);
       setAnswers([]);
       setCurrentQuestionIndex(0);
-      showSuccess({ detail: t("errors.skinProfileDeleted") });
+      toast.current?.show({ severity: "success", summary: t("errors.skinProfileDeleted"), life: 3000 });
     } catch (error) {
       console.error("Error deleting skin profile:", error);
       showError({ detail: t("errors.failedToDeleteSkinProfile") });
@@ -175,7 +183,7 @@ export default function SkinProfilePage() {
           <div className="max-w-7xl mx-auto px-4 py-8">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
               {/* Header */}
-              <div className="bg-gradient-to-r from-purple-500 to-purple-600 px-6 py-8 text-white">
+              <div className="bg-gradient-to-r from-purple-900 to-purple-950 px-6 py-8 text-white">
                 <div className="flex items-center gap-4">
                   <Sparkle size={32} />
                   <div>
@@ -227,7 +235,7 @@ export default function SkinProfilePage() {
                       setAnswers([]);
                       setCurrentQuestionIndex(0);
                     }}
-                    className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors duration-200"
+                    className="flex items-center gap-2 px-4 py-2 bg-purple-900 text-white rounded-lg hover:bg-purple-950 transition-colors duration-200"
                   >
                     <Sparkle size={18} />
                     {t("common.retakeAssessment")}
@@ -264,10 +272,11 @@ export default function SkinProfilePage() {
   return (
     <>
       <div className="min-h-[calc(100vh-100px)] bg-gray-50">
+        <Toast ref={toast} />
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
             {/* Header */}
-            <div className="bg-gradient-to-r from-purple-500 to-purple-600 px-6 py-8 text-white">
+            <div className="bg-gradient-to-r from-purple-900 to-purple-950 px-6 py-8 text-white">
               <div className="flex items-center gap-4">
                 <Sparkle size={32} />
                 <div>
@@ -288,7 +297,7 @@ export default function SkinProfilePage() {
                     <div
                       key={index}
                       className={`w-2 h-2 rounded-full ${
-                        index <= currentQuestionIndex ? "bg-purple-500" : "bg-gray-300"
+                        index <= currentQuestionIndex ? "bg-purple-900" : "bg-gray-300"
                       }`}
                     />
                   ))}
@@ -296,7 +305,7 @@ export default function SkinProfilePage() {
               </div>
               <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
                 <div
-                  className="bg-purple-500 h-2 rounded-full transition-all duration-300"
+                  className="bg-purple-900 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
                 />
               </div>
@@ -326,7 +335,7 @@ export default function SkinProfilePage() {
                       <textarea
                         value={currentAnswer?.answer as string || ""}
                         onChange={(e) => handleAnswerChange(currentQuestion._id, e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-900 focus:border-transparent resize-none"
                         rows={4}
                         placeholder={t("common.enterAnswer")}
                       />
@@ -342,7 +351,7 @@ export default function SkinProfilePage() {
                               value={option.value}
                               checked={currentAnswer?.answer === option.value}
                               onChange={(e) => handleAnswerChange(currentQuestion._id, e.target.value)}
-                              className="text-purple-500 focus:ring-purple-500"
+                              className="text-purple-900 focus:ring-purple-900"
                             />
                             <div className="flex-1">
                               <div className="font-medium text-gray-900">{option.label}</div>
@@ -370,7 +379,7 @@ export default function SkinProfilePage() {
                                   : currentAnswers.filter(a => a !== option.value);
                                 handleAnswerChange(currentQuestion._id, newAnswers);
                               }}
-                              className="text-purple-500 focus:ring-purple-500"
+                              className="text-purple-900 focus:ring-purple-900"
                             />
                             <div className="flex-1">
                               <div className="font-medium text-gray-900">{option.label}</div>
@@ -393,7 +402,7 @@ export default function SkinProfilePage() {
                               value={option.value}
                               checked={currentAnswer?.answer === option.value}
                               onChange={(e) => handleAnswerChange(currentQuestion._id, e.target.value)}
-                              className="text-purple-500 focus:ring-purple-500"
+                              className="text-purple-900 focus:ring-purple-900"
                             />
                             <div className="flex-1">
                               <div className="font-medium text-gray-900">{option.label}</div>
@@ -422,7 +431,7 @@ export default function SkinProfilePage() {
                       <button
                         onClick={handleSubmit}
                         disabled={isSubmitting}
-                        className="flex items-center gap-2 px-6 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors duration-200 disabled:opacity-50"
+                        className="flex items-center gap-2 px-6 py-2 bg-purple-900 text-white rounded-lg hover:bg-purple-950 transition-colors duration-200 disabled:opacity-50"
                       >
                         {isSubmitting ? (
                           <>
@@ -440,7 +449,7 @@ export default function SkinProfilePage() {
                       <button
                         onClick={handleNext}
                         disabled={currentQuestion.isRequired && !isCurrentQuestionAnswered()}
-                        className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center gap-2 px-4 py-2 bg-purple-900 text-white rounded-lg hover:bg-purple-950 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {t("common.nextQuestion")}
                         <ArrowRight size={18} />

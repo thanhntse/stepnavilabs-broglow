@@ -27,6 +27,9 @@ import {
 } from '@nestjs/swagger';
 import { PoliciesGuard } from '@api/casl/guards/policies.guard';
 import { AuthGuard } from '@nestjs/passport';
+import { RolesGuard } from '@api/casl/guards/roles.guard';
+import { Roles } from '@api/casl/decorators/roles.decorator';
+import { Role } from '@api/roles/enums/role.enum';
 
 @ApiTags('blogs')
 @Controller('blogs')
@@ -264,5 +267,19 @@ export class BlogController {
   })
   shareBlog(@Param('id') id: string) {
     return this.blogService.shareBlog(id);
+  }
+
+  @Post(':id/approve')
+  @ApiBearerAuth('JWT-auth')
+  @ApiSecurity('API-Key-auth')
+  @UseGuards(AuthGuard(['api-key', 'jwt']), RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Approve a blog post' })
+  @ApiResponse({
+    status: 200,
+    description: 'The blog post has been approved.',
+  })
+  approveBlog(@Param('id') id: string) {
+    return this.blogService.approveBlog(id);
   }
 }

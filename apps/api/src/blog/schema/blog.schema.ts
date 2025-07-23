@@ -61,7 +61,7 @@ export class Blog {
   @Prop({ type: [{ type: CommentSchema }], default: [] })
   comments: Comment[];
 
-  @Prop({ default: true })
+  @Prop({ default: false })
   isActive: boolean;
 
   @Prop({ type: [String], default: [] })

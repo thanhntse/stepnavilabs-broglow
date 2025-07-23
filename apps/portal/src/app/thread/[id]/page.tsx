@@ -381,7 +381,7 @@ export default function ChatPage() {
         toast.showWarning(
           {
             summary: "Không có thông tin",
-            detail: "Bạn vui lòng quét da để mình gợi ý sản phẩm nhé!",
+            detail: "Bạn vui lòng hoàn thành bài kiểm tra da hoặc quét da để mình gợi ý sản phẩm nhé!",
           }
         );
       } else {

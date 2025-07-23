@@ -534,14 +534,28 @@ export default function BlogDetailContent({ id }: BlogDetailContentProps) {
                           <div className="flex justify-between items-start">
                             <div className="flex items-center gap-3">
                               <div className="w-10 h-10 bg-gradient-to-r from-primary-blue to-primary-lightblue rounded-full flex items-center justify-center text-white">
-                                {comment.author && typeof comment.author === 'object' && (comment.author.name || comment.author.email)
-                                  ? (comment.author.name || comment.author.email).charAt(0)
-                                  : "U"}
+                                {comment?.author && comment?.author?.avatar ? (
+                                  <Image
+                                    src={comment?.author?.avatar}
+                                    alt="User Avatar"
+                                    width={40}
+                                    height={40}
+                                    className="rounded-full object-cover h-10 w-10"
+                                  />
+                                ) : (
+                                  <span className="text-white">
+                                    {
+                                      comment?.author?.firstName && comment?.author?.lastName
+                                        ? comment?.author?.firstName?.charAt(0) + comment?.author?.lastName?.charAt(0)
+                                        : "U"
+                                    }
+                                  </span>
+                                )}
                               </div>
                               <div>
                                 <h4 className="font-semibold">
-                                  {comment.author && typeof comment.author === 'object' && (comment.author.name || comment.author.email)
-                                    ? comment.author.name || comment.author.email.split("@")[0]
+                                  {comment?.author && typeof comment?.author === 'object' && (comment?.author?.firstName + " " + comment?.author?.lastName)
+                                    ? comment?.author?.firstName + " " + comment?.author?.lastName
                                     : "Anonymous User"}
                                 </h4>
                                 <p className="text-sm text-gray-500">
@@ -588,14 +602,28 @@ export default function BlogDetailContent({ id }: BlogDetailContentProps) {
                   <h3 className="text-xl font-bold text-slate-800 mb-4">About the Author</h3>
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-gradient-to-r from-primary-blue to-primary-lightblue rounded-full flex items-center justify-center text-white">
-                      {blog.author && typeof blog.author === 'object' && (blog.author.name || blog.author.email)
-                        ? (blog.author.name || blog.author.email).charAt(0)
-                        : "A"}
+                      {blog?.author && blog?.author?.avatar ? (
+                        <Image
+                          src={blog?.author?.avatar}
+                          alt="User Avatar"
+                          width={40}
+                          height={40}
+                          className="rounded-full object-cover h-10 w-10"
+                        />
+                      ) : (
+                        <span className="text-white">
+                          {
+                            blog?.author?.firstName && blog?.author?.lastName
+                              ? blog?.author?.firstName?.charAt(0) + blog?.author?.lastName?.charAt(0)
+                              : "U"
+                          }
+                        </span>
+                      )}
                     </div>
                     <div>
                       <h4 className="font-semibold">
-                        {blog.author && typeof blog.author === 'object' && (blog.author.name || blog.author.email)
-                          ? blog.author.name || blog.author.email.split("@")[0]
+                        {blog?.author && typeof blog?.author === 'object' && (blog?.author?.firstName + " " + blog?.author?.lastName)
+                          ? blog?.author?.firstName + " " + blog?.author?.lastName
                           : "BroGlow Author"}
                       </h4>
                     </div>

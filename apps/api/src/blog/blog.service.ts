@@ -5,6 +5,8 @@ import { Blog, BlogDocument, Comment } from './schema/blog.schema';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
+import { NotificationsService } from '@api/notifications/notifications.service';
+import { NotificationType } from '@api/notifications/dto/create-notification.dto';
 
 export interface PaginationParams {
   page?: number;
@@ -27,6 +29,7 @@ export interface PaginatedResult<T> {
 export class BlogService {
   constructor(
     @InjectModel(Blog.name) private readonly blogModel: Model<BlogDocument>,
+    private readonly notificationService: NotificationsService,
   ) {}
 
   async create(createBlogDto: CreateBlogDto, userId: string): Promise<Blog> {
@@ -35,6 +38,15 @@ export class BlogService {
       author: new Types.ObjectId(userId),
     });
     const savedBlog = await newBlog.save();
+    await this.notificationService.create(userId, {
+      type: NotificationType.INFO,
+      category: 'blog',
+      title: 'blogCreated',
+      message: 'blogCreatedMessage',
+      data: {
+        blogId: savedBlog._id.toString(),
+      },
+    });
     return this.findOne(savedBlog._id.toString());
   }
 
@@ -55,20 +67,20 @@ export class BlogService {
         .sort(sortOptions as any)
         .skip(skip)
         .limit(limit)
-        .populate('author', 'name email')
-        .populate('likedBy', 'name email')
+        .populate('author', 'firstName lastName avatar email')
+        .populate('likedBy', 'firstName lastName avatar email')
         .populate({
           path: 'comments',
           populate: {
             path: 'author',
-            select: 'name email',
+            select: 'firstName lastName avatar email',
           },
         })
         .populate({
           path: 'comments',
           populate: {
             path: 'likedBy',
-            select: 'name email',
+            select: 'firstName lastName avatar email',
           },
         })
         .exec(),
@@ -91,20 +103,20 @@ export class BlogService {
   async findOne(id: string): Promise<BlogDocument> {
     const blog = await this.blogModel
       .findById(id)
-      .populate('author', 'name email')
-      .populate('likedBy', 'name email')
+      .populate('author', 'firstName lastName avatar email')
+      .populate('likedBy', 'firstName lastName avatar email')
       .populate({
         path: 'comments',
         populate: {
           path: 'author',
-          select: 'name email',
+          select: 'firstName lastName avatar email',
         },
       })
       .populate({
         path: 'comments',
         populate: {
           path: 'likedBy',
-          select: 'name email',
+          select: 'firstName lastName avatar email',
         },
       })
       .exec();
@@ -138,6 +150,19 @@ export class BlogService {
       throw new NotFoundException(`Blog with ID ${id} not found`);
     }
 
+    updatedBlog.isActive = false;
+    await updatedBlog.save();
+
+    await this.notificationService.create(userId || '', {
+      type: NotificationType.INFO,
+      category: 'blog',
+      title: 'blogUpdated',
+      message: 'blogUpdatedMessage',
+      data: {
+        blogId: updatedBlog._id.toString(),
+      },
+    });
+
     return this.findOne(id);
   }
 
@@ -156,6 +181,16 @@ export class BlogService {
     if (!result) {
       throw new NotFoundException(`Blog with ID ${id} not found`);
     }
+
+    await this.notificationService.create(userId || '', {
+      type: NotificationType.ERROR,
+      category: 'blog',
+      title: 'blogDeleted',
+      message: 'blogDeletedMessage',
+      data: {
+        blogId: blog._id.toString(),
+      },
+    });
   }
 
   // Comment-related methods
@@ -174,6 +209,17 @@ export class BlogService {
     } as Comment);
 
     await blog.save();
+
+    await this.notificationService.create(blog.author as any, {
+      type: NotificationType.INFO,
+      category: 'blog',
+      title: 'blogCommented',
+      message: 'blogCommentedMessage',
+      data: {
+        blogId: blog._id.toString(),
+      },
+    });
+
     return this.findOne(blogId);
   }
 
@@ -227,6 +273,17 @@ export class BlogService {
     }
 
     await blog.save();
+
+    await this.notificationService.create(blog.author as any, {
+      type: NotificationType.INFO,
+      category: 'blog',
+      title: 'blogLiked',
+      message: 'blogLikedMessage',
+      data: {
+        blogId: blog._id.toString(),
+      },
+    });
+
     return this.findOne(blogId);
   }
 
@@ -261,6 +318,17 @@ export class BlogService {
     }
 
     await blog.save();
+
+    await this.notificationService.create(comment.author as any, {
+      type: NotificationType.INFO,
+      category: 'blog',
+      title: 'blogCommentLiked',
+      message: 'blogCommentLikedMessage',
+      data: {
+        blogId: blog._id.toString(),
+      },
+    });
+
     return this.findOne(blogId);
   }
 
@@ -297,20 +365,20 @@ export class BlogService {
         .sort(sortOptions as any)
         .skip(skip)
         .limit(limit)
-        .populate('author', 'name email')
-        .populate('likedBy', 'name email')
+        .populate('author', 'firstName lastName avatar email')
+        .populate('likedBy', 'firstName lastName avatar email')
         .populate({
           path: 'comments',
           populate: {
             path: 'author',
-            select: 'name email',
+            select: 'firstName lastName avatar email',
           },
         })
         .populate({
           path: 'comments',
           populate: {
             path: 'likedBy',
-            select: 'name email',
+            select: 'firstName lastName avatar email',
           },
         })
         .exec(),
@@ -328,5 +396,21 @@ export class BlogService {
         totalPages,
       },
     };
+  }
+
+  async approveBlog(blogId: string): Promise<Blog> {
+    const blog = await this.findOne(blogId);
+    blog.isActive = true;
+    await blog.save();
+    await this.notificationService.create(blog.author as any, {
+      type: NotificationType.SUCCESS,
+      category: 'blog',
+      title: 'blogApproved',
+      message: 'blogApprovedMessage',
+      data: {
+        blogId: blog._id.toString(),
+      },
+    });
+    return this.findOne(blogId);
   }
 }
