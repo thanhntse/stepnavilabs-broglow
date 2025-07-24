@@ -24,16 +24,18 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
-import { PoliciesGuard } from '@api/casl/guards/policies.guard';
 import { PaginationParams } from '@api/skin-profile/skin-profile.service';
 import { CreateRoutineAnswersDto } from './dto/create-routine-answers.dto';
 import { Response } from 'express';
 import { Readable } from 'stream';
 import { AILimitInterceptor } from '@api/openai/interceptors/ai-limit.interceptor';
+import { RolesGuard } from '@api/casl/guards/roles.guard';
+import { Role } from '@api/roles/enums/role.enum';
+import { Roles } from '@api/casl/decorators/roles.decorator';
 
 @ApiTags('routine-questions')
 @Controller('routine-questions')
-@UseGuards(AuthGuard(['api-key', 'jwt']), PoliciesGuard)
+@UseGuards(AuthGuard(['api-key', 'jwt']), RolesGuard)
 @ApiSecurity('API-Key-auth')
 @ApiBearerAuth('JWT-auth')
 export class RoutineQuestionController {
@@ -44,6 +46,7 @@ export class RoutineQuestionController {
   @Post()
   @ApiOperation({ summary: 'Create a new routine question' })
   @ApiResponse({ status: 201, description: 'Question created successfully' })
+  @Roles(Role.ADMIN)
   create(@Body() createRoutineQuestionDto: CreateRoutineQuestionDto) {
     return this.routineQuestionService.create(createRoutineQuestionDto);
   }
@@ -100,6 +103,7 @@ export class RoutineQuestionController {
   @Patch(':id')
   @ApiOperation({ summary: 'Update a routine question by ID' })
   @ApiResponse({ status: 200, description: 'Question updated successfully' })
+  @Roles(Role.ADMIN)
   update(
     @Param('id') id: string,
     @Body() updateRoutineQuestionDto: UpdateRoutineQuestionDto,
@@ -110,6 +114,7 @@ export class RoutineQuestionController {
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a routine question by ID' })
   @ApiResponse({ status: 200, description: 'Question deleted successfully' })
+  @Roles(Role.ADMIN)
   remove(@Param('id') id: string) {
     return this.routineQuestionService.remove(id);
   }

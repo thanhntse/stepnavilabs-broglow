@@ -22,12 +22,14 @@ import { SkinProfileService, PaginationParams } from './skin-profile.service';
 import { CreateSkinQuestionDto } from './dto/create-skin-question.dto';
 import { UpdateSkinQuestionDto } from './dto/update-skin-question.dto';
 import { SubmitSkinProfileDto } from './dto/submit-skin-profile.dto';
-import { PoliciesGuard } from '@api/casl/guards/policies.guard';
 import { AuthGuard } from '@nestjs/passport';
+import { RolesGuard } from '@api/casl/guards/roles.guard';
+import { Role } from '@api/roles/enums/role.enum';
+import { Roles } from '@api/casl/decorators/roles.decorator';
 
 @ApiTags('skin-profile')
 @Controller('skin-profile')
-@UseGuards(AuthGuard(['api-key', 'jwt']), PoliciesGuard)
+@UseGuards(AuthGuard(['api-key', 'jwt']), RolesGuard)
 @ApiSecurity('API-Key-auth')
 @ApiBearerAuth('JWT-auth')
 export class SkinProfileController {
@@ -37,6 +39,7 @@ export class SkinProfileController {
   @Post('questions')
   @ApiOperation({ summary: 'Create a new skin profile question' })
   @ApiResponse({ status: 201, description: 'Question created successfully' })
+  @Roles(Role.ADMIN)
   createQuestion(@Body() createSkinQuestionDto: CreateSkinQuestionDto) {
     return this.skinProfileService.createQuestion(createSkinQuestionDto);
   }
@@ -95,6 +98,7 @@ export class SkinProfileController {
   @ApiOperation({ summary: 'Update a skin profile question' })
   @ApiResponse({ status: 200, description: 'Question updated successfully' })
   @ApiResponse({ status: 404, description: 'Question not found' })
+  @Roles(Role.ADMIN)
   updateQuestion(
     @Param('id') id: string,
     @Body() updateSkinQuestionDto: UpdateSkinQuestionDto,
@@ -106,6 +110,7 @@ export class SkinProfileController {
   @ApiOperation({ summary: 'Delete a skin profile question' })
   @ApiResponse({ status: 200, description: 'Question deleted successfully' })
   @ApiResponse({ status: 404, description: 'Question not found' })
+  @Roles(Role.ADMIN)
   removeQuestion(@Param('id') id: string) {
     return this.skinProfileService.removeQuestion(id);
   }
@@ -152,6 +157,7 @@ export class SkinProfileController {
   @ApiOperation({ summary: 'Get skin profile for specific user (Admin)' })
   @ApiResponse({ status: 200, description: 'Return the user skin profile' })
   @ApiResponse({ status: 404, description: 'Skin profile not found' })
+  @Roles(Role.ADMIN)
   getUserSkinProfileByAdmin(@Param('userId') userId: string) {
     return this.skinProfileService.getUserSkinProfile(userId);
   }

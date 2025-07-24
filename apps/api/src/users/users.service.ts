@@ -24,6 +24,7 @@ export class UsersService {
       ...createUserDto,
       password: hashedPassword,
       roles: userRole ? [userRole] : [],
+      isEmailVerified: true,
     });
     return user.save();
   }
