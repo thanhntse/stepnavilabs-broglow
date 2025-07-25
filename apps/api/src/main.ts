@@ -22,8 +22,10 @@ async function bootstrap() {
   // Enhanced CORS configuration for mobile development
   const origins = [
     'http://localhost:3000',
+    'http://localhost:4000',
     'http://localhost:8081',
     'http://172.28.64.1:3000',
+    'http://172.28.64.1:4000',
     'http://172.28.64.1:8081',
     /^http:\/\/192\.168\.\d+\.\d+:(3000|8081)$/,
     /^http:\/\/172\.\d+\.\d+\.\d+:(3000|8081)$/,
@@ -33,6 +35,9 @@ async function bootstrap() {
   // Add production URL if defined
   if (process.env.PUBLIC_URL) {
     origins.push(process.env.PUBLIC_URL);
+  }
+  if (process.env.ADMIN_URL) {
+    origins.push(process.env.ADMIN_URL);
   }
 
   app.enableCors({
