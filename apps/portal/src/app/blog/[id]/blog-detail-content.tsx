@@ -359,7 +359,7 @@ export default function BlogDetailContent({ id }: BlogDetailContentProps) {
 
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-center">{blog.title}</h1>
 
-            <div className="flex items-center gap-4 text-blue-100">
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-4 text-blue-100">
               <span className="flex items-center gap-1">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -412,9 +412,12 @@ export default function BlogDetailContent({ id }: BlogDetailContentProps) {
                 )}
 
                 {/* Blog Content */}
-                <div className="prose prose-lg max-w-none mb-12">
+                <div className="prose prose-lg prose-slate max-w-none mb-12 blog-content">
                   {blog.content ? (
-                    <div dangerouslySetInnerHTML={{ __html: blog.content }} />
+                    <div
+                      dangerouslySetInnerHTML={{ __html: blog.content }}
+                      className="blog-content"
+                    />
                   ) : (
                     <p className="text-gray-600">No content available for this article.</p>
                   )}
@@ -466,7 +469,7 @@ export default function BlogDetailContent({ id }: BlogDetailContentProps) {
                             className="flex items-center gap-2 px-4 py-2 hover:bg-blue-50 rounded-md text-blue-600 transition-colors text-left"
                           >
                             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                             </svg>
                             Facebook
                           </button>
@@ -476,7 +479,7 @@ export default function BlogDetailContent({ id }: BlogDetailContentProps) {
                             className="flex items-center gap-2 px-4 py-2 hover:bg-blue-50 rounded-md text-black transition-colors text-left"
                           >
                             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                             </svg>
                             X (Twitter)
                           </button>
@@ -518,9 +521,8 @@ export default function BlogDetailContent({ id }: BlogDetailContentProps) {
                     <button
                       type="submit"
                       disabled={submitting || !comment.trim()}
-                      className={`mt-4 px-6 py-2 bg-primary-blue text-white rounded-full hover:bg-primary-lightblue transition-colors ${
-                        submitting || !comment.trim() ? "opacity-50 cursor-not-allowed" : ""
-                      }`}
+                      className={`mt-4 px-6 py-2 bg-primary-blue text-white rounded-full hover:bg-primary-lightblue transition-colors ${submitting || !comment.trim() ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
                     >
                       {submitting ? "Posting..." : "Post Comment"}
                     </button>
@@ -561,10 +563,10 @@ export default function BlogDetailContent({ id }: BlogDetailContentProps) {
                                 <p className="text-sm text-gray-500">
                                   {comment.createdAt
                                     ? new Date(comment.createdAt).toLocaleDateString("en-US", {
-                                        month: "short",
-                                        day: "numeric",
-                                        year: "numeric"
-                                      })
+                                      month: "short",
+                                      day: "numeric",
+                                      year: "numeric"
+                                    })
                                     : ""}
                                 </p>
                               </div>
