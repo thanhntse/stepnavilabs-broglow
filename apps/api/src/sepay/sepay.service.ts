@@ -2,6 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import * as XLSX from 'xlsx';
 import {
   SePayQrRequest,
   SePayQrResponse,
@@ -227,5 +228,85 @@ export class SePayService {
     }
     await user.save();
     return { success: true, message: 'Đã cập nhật trạng thái giao dịch' };
+  }
+
+  /**
+   * Xuất danh sách thanh toán đã thanh toán thành file Excel
+   * @returns Buffer của file Excel
+   */
+  async exportPaymentsToExcel(): Promise<Buffer> {
+    try {
+      // Lấy tất cả payments có status = 'paid' và populate user information
+      const payments = await this.paymentModel
+        .find({ status: 'paid' })
+        .populate('userId', 'firstName lastName email proExpiresAt')
+        .exec();
+
+      // Tạo dữ liệu cho Excel
+      const excelData = [];
+
+      for (const payment of payments) {
+        const user = payment.userId as any;
+
+        // Tính toán subscription package dựa trên payment amount
+        const originalAmount = payment.transferAmount / (1 - 85 / 100);
+        const subscription = await this.subscriptionModel.findOne({
+          price: originalAmount.toFixed(0),
+        });
+
+        excelData.push({
+          'Reference Code': payment.referenceCode,
+          'Transfer Amount': payment.transferAmount,
+          'Original Amount': originalAmount.toFixed(0),
+          'Transaction Date': payment.transactionDate
+            ? new Date(payment.transactionDate).toLocaleString()
+            : '',
+          Status: payment.status,
+          'User First Name': user?.firstName || '',
+          'User Last Name': user?.lastName || '',
+          'User Email': user?.email || '',
+          'Pro Expires At': user?.proExpiresAt
+            ? new Date(user.proExpiresAt).toLocaleString()
+            : '',
+          'Package Name': subscription?.name || 'Unknown',
+          'Package Type': subscription?.type || 'Unknown',
+        });
+      }
+
+      // Tạo workbook và worksheet
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+      // Thiết lập độ rộng cột
+      const columnWidths = [
+        { wch: 20 }, // Reference Code
+        { wch: 15 }, // Transfer Amount
+        { wch: 15 }, // Original Amount
+        { wch: 20 }, // Transaction Date
+        { wch: 10 }, // Status
+        { wch: 15 }, // User First Name
+        { wch: 15 }, // User Last Name
+        { wch: 25 }, // User Email
+        { wch: 20 }, // Pro Expires At
+        { wch: 20 }, // Package Name
+        { wch: 15 }, // Package Type
+      ];
+      worksheet['!cols'] = columnWidths;
+
+      // Thêm worksheet vào workbook
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Paid Payments');
+
+      // Tạo buffer từ workbook
+      const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+
+      this.logger.log(
+        `Đã xuất ${excelData.length} bản ghi thanh toán thành Excel`,
+      );
+
+      return buffer;
+    } catch (error) {
+      this.logger.error(`Lỗi khi xuất Excel: ${error.message}`, error.stack);
+      throw new Error(`Lỗi khi xuất Excel: ${error.message}`);
+    }
   }
 }

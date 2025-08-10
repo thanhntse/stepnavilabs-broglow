@@ -7,7 +7,9 @@ import {
   Logger,
   Get,
   Param,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SePayService } from './sepay.service';
 import { GenerateQrDto } from './dto/generate-qr.dto';
@@ -80,5 +82,33 @@ export class SePayController {
   @Post('update-miss-payment')
   async updateMissPayment(@Body() body: { referenceCode: string }) {
     return this.sePayService.updateMissPayment(body.referenceCode);
+  }
+
+  @Get('export-payments')
+  @ApiOperation({ summary: 'Xuất danh sách thanh toán thành file Excel' })
+  @ApiResponse({
+    status: 200,
+    description: 'File Excel đã được tạo thành công',
+    content: {
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': {
+        schema: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  async exportPayments(@Res() res: Response): Promise<void> {
+    this.logger.log('Xuất danh sách thanh toán thành Excel');
+    const buffer = await this.sePayService.exportPaymentsToExcel();
+
+    res.set({
+      'Content-Type':
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': `attachment; filename="payments-export-${new Date().toISOString().split('T')[0]}.xlsx"`,
+      'Content-Length': buffer.length.toString(),
+    });
+
+    res.end(buffer);
   }
 }
