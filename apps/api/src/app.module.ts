@@ -23,6 +23,7 @@ import { RoutineQuestionModule } from './routine-suggestion/routine-question.mod
 import { NotificationsModule } from './notifications/notifications.module';
 import { SePayModule } from './sepay/sepay.module';
 import { SubscriptionModule } from './subscription/subscription.module';
+import { PayosModule } from './payos/payos.module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
     NotificationsModule,
     SePayModule,
     SubscriptionModule,
+    PayosModule,
   ],
   controllers: [AppController],
   providers: [AppService],
