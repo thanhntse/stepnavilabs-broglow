@@ -232,9 +232,13 @@ export const seedEmailTemplates = async (
                   </p>
                   <p>Welcome to BroGlow - the revolutionary AI-powered skincare platform designed specifically for men who want real results!</p>
                   <p>Your account has been successfully created with the email address: <strong>{{email}}</strong></p>
-                  <p>Your default password is: <strong>{{defaultPassword}}</strong></p>
-                  <p>Please change your password after logging in.</p>
-                  <p>Change your password? Click <a href="{{changePasswordUrl}}">here</a> to reset it.</p>
+
+                  {{#if defaultPassword}}
+                    <p>Your default password is: <strong>{{defaultPassword}}</strong></p>
+                    <p>Please change your password after logging in.</p>
+                    <p>Change your password? Click <a href="{{changePasswordUrl}}">here</a> to reset it.</p>
+                  {{/if}}
+                  
                   <p>You're now ready to:</p>
                   <ul style="margin: 16px 0; padding-left: 20px;">
                     <li>Get AI-powered skin analysis in seconds</li>
