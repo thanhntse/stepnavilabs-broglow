@@ -53,15 +53,14 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         firstName = nameParts.join(' ');
       }
 
+      const defaultPassword = Math.random().toString(36).substring(2, 10);
+
       user = new this.userModel({
         googleId: profile.id,
         email: profile.emails[0].value,
         firstName: firstName,
         lastName: lastName,
-        password: await bcrypt.hash(
-          Math.random().toString(36).substring(2, 15),
-          10,
-        ),
+        password: await bcrypt.hash(defaultPassword, 10),
         roles: userRole ? [userRole] : [],
         isEmailVerified: true,
         avatar: profile.photos[0].value,
@@ -82,6 +81,10 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
             ? `${this.configService.get('PUBLIC_URL')}/login`
             : '/login',
           currentYear: new Date().getFullYear(),
+          defaultPassword: defaultPassword,
+          changePasswordUrl: this.configService.get('PUBLIC_URL')
+            ? `${this.configService.get('PUBLIC_URL')}/forgot-password`
+            : '/forgot-password',
         },
       });
     }
